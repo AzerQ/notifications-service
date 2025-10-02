@@ -1,83 +1,73 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <title>Новое задание</title>
-    <style>
-        .edo-header {
-            background: linear-gradient(90deg, #0057b7 0%, #00c3ff 100%);
-            color: #fff;
-            padding: 24px 0 12px 0;
-            border-radius: 8px 8px 0 0;
-        }
-        .edo-logo {
-            width: 40px; height: 40px; vertical-align: middle; margin-right: 12px;
-        }
-        .edo-title {
-            font-size: 24px; font-weight: bold; display: inline-block; vertical-align: middle;
-        }
-        .edo-table {
-            background: #fff; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px #e0e7ef;
-        }
-        .edo-row td {
-            padding: 8px 0; font-size: 15px;
-        }
-        .edo-label { color: #0057b7; font-weight: bold; }
-        .edo-value { color: #222; }
-        .edo-btn {
-            display: inline-block; margin-top: 18px; padding: 10px 28px; background: #0057b7; color: #fff; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 16px;
-        }
-        .edo-footer {
-            color: #7f8c8d; font-size: 12px; padding: 18px 0 0 0; text-align: center;
-        }
-    </style>
 </head>
-<body style="font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f6fb;">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f6fb;">
-        <tr>
-            <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" border="0" class="edo-table">
-                    <tr>
-                        <td class="edo-header">
-                            <span class="edo-logo" style="display:inline-block; vertical-align:middle;">
-                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect x="6" y="6" width="28" height="32" rx="4" fill="#0057b7"/>
-                                    <rect x="10" y="10" width="20" height="24" rx="2" fill="#fff"/>
-                                    <rect x="13" y="14" width="14" height="2.5" rx="1.25" fill="#0057b7"/>
-                                    <rect x="13" y="19" width="14" height="2.5" rx="1.25" fill="#0057b7"/>
-                                    <rect x="13" y="24" width="8" height="2.5" rx="1.25" fill="#0057b7"/>
-                                </svg>
-                            </span>
-                            <span class="edo-title">Электронный документооборот: Новое задание</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:24px 32px 12px 32px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                                <tr class="edo-row"><td class="edo-label">Автор:</td><td class="edo-value">{{AuthorName}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Тема:</td><td class="edo-value">{{TaskSubject}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Описание:</td><td class="edo-value">{{TaskDescription}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Тип задания:</td><td class="edo-value">{{TaskType}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Плановый срок:</td><td class="edo-value">{{DueDate}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Дата создания:</td><td class="edo-value">{{CreatedDate}}</td></tr>
-                            </table>
-                            <a href="#" class="edo-btn">Открыть в системе ЭДО</a>
-                        </td>
-                    </tr>
-                </table>
-                <div class="edo-footer">
-                    <span style="vertical-align:middle; margin-right:6px; display:inline-block;">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="2" y="4" width="16" height="12" rx="2" fill="#0057b7"/>
-                            <rect x="4" y="6" width="12" height="8" rx="1" fill="#fff"/>
-                            <path d="M4 6l6 5l6-5" stroke="#0057b7" stroke-width="1.5" fill="none"/>
-                        </svg>
-                    </span>
-                    Это уведомление создано автоматически системой электронного документооборота Docsvision.
-                </div>
-            </td>
-        </tr>
-    </table>
+<body style="margin:0; padding:0; font-family:Arial, sans-serif; background-color:#f4f4f4;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;">
+    <tr>
+        <td align="center" style="padding:20px 0;">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+                <!-- Заголовок -->
+                <tr>
+                    <td style="background-color:#2196F3; padding:20px; text-align:center;">
+                        <h1 style="margin:0; color:#ffffff; font-size:24px;">Электронный документооборот: Новое задание</h1>
+                    </td>
+                </tr>
+                <!-- Содержимое -->
+                <tr>
+                    <td style="padding:30px;">
+                        <table width="100%" cellpadding="5" cellspacing="0" border="0">
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0; width:200px;"><strong>Автор:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{AuthorName}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Тема:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{TaskSubject}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Описание:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{TaskDescription}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Тип задания:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{TaskType}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Плановый срок:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{DueDate}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Дата создания:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{CreatedDate}}</td>
+                            </tr>
+                        </table>
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
+                            <tr>
+                                <td align="center" style="padding:15px;">
+                                    <a href="#" style="background-color:#2196F3; color:#ffffff; padding:12px 30px; text-decoration:none; font-size:16px; display:inline-block;">Открыть в системе ЭДО</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <!-- Футер -->
+                <tr>
+                    <td style="background-color:#f9f9f9; padding:15px; text-align:center; border-top:1px solid #dddddd;">
+                        <p style="margin:0; color:#999999; font-size:12px;">Это уведомление создано автоматически системой электронного документооборота Docsvision.</p>
+                    </td>
+                </tr>
+                <!-- Плашка с названием сервера внизу -->
+                <tr>
+                    <td style="background-color:#0D47A1; padding:5px 15px; text-align:left;">
+                        <p style="margin:0; color:#ffffff; font-size:10px; font-weight:bold; letter-spacing:0.5px;">DOCSVISION</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
 </html>
