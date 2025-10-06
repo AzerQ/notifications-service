@@ -69,8 +69,9 @@ builder.Services.AddNotificationDataResolversContext(typeof( NotificationService
 
 var app = builder.Build();
 
+bool enableSwaggerUI = builder.Configuration.GetValue<bool>("EnableSwaggerUI");
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (enableSwaggerUI)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
