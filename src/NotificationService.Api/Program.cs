@@ -2,6 +2,7 @@ using DocsvisionWebClientApi.Base.Extensions;
 using DocsvisionWebClientApi.DI.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NotificationService.Api;
 using NotificationService.Application.Extensions;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
@@ -86,6 +87,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Apply migrations and seed initial data
 await DbInitializer.InitializeAsync(app.Services);
