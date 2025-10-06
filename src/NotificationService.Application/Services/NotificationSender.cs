@@ -26,7 +26,7 @@ public class NotificationSender : INotificationSender
         _userRoutePreferenceRepository = userRoutePreferenceRepository;
     }
 
-    public async Task SendAsync(Notification notification)
+    public async Task SendAsync(Notification? notification)
     {
         ArgumentNullException.ThrowIfNull(notification);
         ArgumentNullException.ThrowIfNull(notification.Recipient);
@@ -66,7 +66,7 @@ public class NotificationSender : INotificationSender
         }
     }
 
-    private async Task<bool> SendEmailAsync(Notification notification)
+    private async Task<bool> SendEmailAsync(Notification? notification)
     {
         if (_emailProvider is null)
         {
@@ -84,7 +84,7 @@ public class NotificationSender : INotificationSender
         return await _emailProvider.SendEmailAsync(notification.Recipient.Email, subject, body);
     }
 
-    private async Task<bool> SendSmsAsync(Notification notification)
+    private async Task<bool> SendSmsAsync(Notification? notification)
     {
         if (_smsProvider is null)
         {
@@ -100,7 +100,7 @@ public class NotificationSender : INotificationSender
         return await _smsProvider.SendSmsAsync(notification.Recipient.PhoneNumber, message);
     }
 
-    private async Task<bool> SendPushAsync(Notification notification)
+    private async Task<bool> SendPushAsync(Notification? notification)
     {
         if (_pushNotificationProvider is null)
         {
@@ -118,7 +118,7 @@ public class NotificationSender : INotificationSender
         return await _pushNotificationProvider.SendPushNotificationAsync(notification.Recipient.DeviceToken!, title, body);
     }
 
-    private static string ResolveContent(Notification notification)
+    private static string ResolveContent(Notification? notification)
     {
         if (!string.IsNullOrWhiteSpace(notification.Message))
         {

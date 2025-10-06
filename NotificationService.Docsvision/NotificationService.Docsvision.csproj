@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DocsvisionApiClient\DocsvisionWebClientApi.Lib\DocsvisionWebClientApi.Lib.csproj" />
+      <ProjectReference Include="..\src\NotificationService.Domain\NotificationService.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Notifications\TaskCompleted\TaskCompleted.hbs">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Notifications\TaskCreated\TaskCreated.hbs">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Notifications\TaskCreated\template.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Notifications\TaskCompleted\template.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

@@ -29,7 +29,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
-        builder.HasIndex(x => x.Email)
-            .IsUnique();
+        builder.HasIndex(x => x.Email);
     }
 }

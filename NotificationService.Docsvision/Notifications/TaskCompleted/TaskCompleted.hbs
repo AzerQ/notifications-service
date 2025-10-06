@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Новое задание</title>
+    <title>Задание завершено</title>
 </head>
 <body style="margin:0; padding:0; font-family:Arial, sans-serif; background-color:#f4f4f4;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;">
@@ -11,8 +11,8 @@
             <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
                 <!-- Заголовок -->
                 <tr>
-                    <td style="background-color:#2196F3; padding:20px; text-align:center;">
-                        <h1 style="margin:0; color:#ffffff; font-size:24px;">Электронный документооборот: Новое задание</h1>
+                    <td style="background-color:#4CAF50; padding:20px; text-align:center;">
+                        <h1 style="margin:0; color:#ffffff; font-size:24px;">Электронный документооборот: Задание завершено</h1>
                     </td>
                 </tr>
                 <!-- Содержимое -->
@@ -20,8 +20,8 @@
                     <td style="padding:30px;">
                         <table width="100%" cellpadding="5" cellspacing="0" border="0">
                             <tr>
-                                <td style="color:#666666; font-size:14px; padding:8px 0; width:200px;"><strong>Автор:</strong></td>
-                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{AuthorName}}</td>
+                                <td style="color:#666666; font-size:14px; padding:8px 0; width:200px;"><strong>Исполнитель:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{ExecutorName}}</td>
                             </tr>
                             <tr>
                                 <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Тема:</strong></td>
@@ -36,12 +36,12 @@
                                 <td style="color:#333333; font-size:14px; padding:8px 0;">{{TaskType}}</td>
                             </tr>
                             <tr>
-                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Плановый срок:</strong></td>
-                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{DueDate}}</td>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Фактическая дата завершения:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{formatDate CompletionDate "dd.MM.yyyy hh:mm"}}</td>
                             </tr>
                             <tr>
                                 <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Дата создания:</strong></td>
-                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{CreatedDate}}</td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{formatDate CreatedDate "dd.MM.yyyy hh:mm"}}</td>
                             </tr>
                         </table>
                     </td>

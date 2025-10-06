@@ -1,23 +1,72 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using NotificationService.Domain.Interfaces;
+using NotificationService.Domain.Models;
 
 namespace NotificationService.Infrastructure.Templates;
 
-public interface ITemplateProvider
+public interface ITemplateLoader
 {
-    Task<string?> GetTemplateContentAsync(string name, string extension = ".hbs", CancellationToken ct = default);
+    Task LoadTemplatesAsync();
 }
 
-public class FileSystemTemplateProvider : ITemplateProvider
+public class FileSystemTemplateLoader : ITemplateLoader
 {
     private readonly string _rootPath;
-    private readonly ILogger<FileSystemTemplateProvider> _logger;
+    private readonly ILogger<FileSystemTemplateLoader> _logger;
+    private readonly ITemplateRepository _templateRepository;
 
-    public FileSystemTemplateProvider(TemplateOptions options, ILogger<FileSystemTemplateProvider> logger)
+    public FileSystemTemplateLoader(TemplateOptions options, ILogger<FileSystemTemplateLoader> logger, ITemplateRepository templateRepository)
     {
-        _rootPath = string.IsNullOrWhiteSpace(options.RootPath) ? "templates" : options.RootPath;
+        ArgumentNullException.ThrowIfNull(templateRepository, nameof(templateRepository));
+        _templateRepository = templateRepository;
+        _rootPath = string.IsNullOrWhiteSpace(options.RootPath) ? "Notifications" : options.RootPath;
         _logger = logger;
     }
 
+    NotificationTemplate? LoadFromFolder(string folderPath)
+    {
+        string templateConfigFilePath = Path.Combine(folderPath, "template.json");
+        var notificationTemplate = JsonSerializer.Deserialize<NotificationTemplate>(File.ReadAllText(templateConfigFilePath));
+        
+        if (notificationTemplate == null)
+            return null;
+        
+        string templateContentPath = Path.Combine(folderPath, notificationTemplate.FilePath);
+        
+        notificationTemplate.Content = File.ReadAllText(templateContentPath);
+        
+        return notificationTemplate;
+    }
+    public IEnumerable<NotificationTemplate> LoadTemplatesFromFileSystem(string rootPath)
+    {
+        return Directory
+            .GetDirectories(rootPath)
+            .Select(LoadFromFolder)
+            .Where(f => f != null)!;
+        
+    }
+
+    public async Task LoadTemplatesAsync()
+    {
+        var templates = LoadTemplatesFromFileSystem(_rootPath);
+        foreach (var template in templates)
+        {
+            bool isTemplateAlreadyExists = await _templateRepository.IsTemplateExistsAsync(template.Name);
+            if (!isTemplateAlreadyExists)
+            {
+                template.CreatedAt = DateTime.Now;
+                template.UpdatedAt = template.CreatedAt;
+                await _templateRepository.CreateTemplateAsync(template);
+            }
+            else
+            {
+                template.UpdatedAt = DateTime.Now;
+                await _templateRepository.UpdateTemplateAsync(template);
+            }
+        }
+    }
+    
     public async Task<string?> GetTemplateContentAsync(string name, string extension = ".hbs", CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(name)) return null;

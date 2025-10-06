@@ -2,7 +2,7 @@ namespace NotificationService.Domain.Models;
 
 public static class NotificationValidator
 {
-    public static ValidationResult Validate(Notification notification)
+    public static ValidationResult Validate(Notification? notification)
     {
         var result = new ValidationResult();
 

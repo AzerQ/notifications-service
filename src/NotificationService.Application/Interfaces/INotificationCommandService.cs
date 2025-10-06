@@ -1,9 +1,9 @@
 using NotificationService.Application.DTOs;
+using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Interfaces;
 
 public interface INotificationCommandService
 {
-    Task<NotificationResponseDto> CreateNotificationAsync(NotificationRequestDto request);
-    Task SendNotificationAsync(Guid notificationId);
+    Task<NotificationResponseDto> ProcessNotificationRequestAsync(NotificationRequest request);
 }

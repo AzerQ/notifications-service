@@ -8,20 +8,17 @@ namespace NotificationService.Infrastructure.Repositories;
 public class TemplateRepository : ITemplateRepository
 {
     private readonly NotificationDbContext _context;
-
+    
     public TemplateRepository(NotificationDbContext context)
     {
         _context = context;
     }
+    
+    public async Task<bool> IsTemplateExistsAsync(string name) => await _context.Templates.AnyAsync(x => x.Name == name);
 
     public async Task<NotificationTemplate?> GetTemplateByNameAsync(string name)
     {
         return await _context.Templates.FirstOrDefaultAsync(t => t.Name == name);
-    }
-
-    public async Task<NotificationTemplate?> GetTemplateByIdAsync(Guid id)
-    {
-        return await _context.Templates.FindAsync(id);
     }
 
     public async Task<IEnumerable<NotificationTemplate>> GetTemplatesByChannelAsync(NotificationChannel channel)
