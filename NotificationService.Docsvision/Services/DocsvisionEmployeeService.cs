@@ -38,21 +38,22 @@ public class DocsvisionEmployeeService(IEmployeeExtendedDataService extendedData
     
     public async Task<IEnumerable<EmployeeWithDeputies>> GetEmployeesWithDeputiesAsync(params Guid[] ids)
     {
-        var allEmployees = await extendedDataService.GetAllEmployees();
+        var allEmployees = (await extendedDataService.GetAllEmployees()).ToList();
         
         var employees = allEmployees
             .Where(emp => ids.Contains(emp.Id ?? Guid.Empty))
             .ToList();
 
-        var employeeWithDeputies = (await 
-            Task.WhenAll(employees.Select(emp => extendedDataService.GetAllEmployeeDeputiesAsync(emp.Id ?? Guid.Empty))))
-            .Select(depList =>
+        var employeeDeputies = await 
+            Task.WhenAll(employees.Select(emp => extendedDataService.GetAllEmployeeDeputiesAsync(emp.Id ?? Guid.Empty)));
+        
+        var employeeWithDeputies  =   employeeDeputies.Select(depList =>
             {
                 var deputyIds = depList.Select(dep => dep.DeputyId).ToList();
                 return new EmployeeWithDeputies(
                     Employee: employees
                         .FirstOrDefault(emp => emp.Id == depList.FirstOrDefault()?.ReplacedEmployeeId)!,
-                    Deputies: employees.Where(emp => deputyIds.Contains(emp.Id ?? Guid.Empty))
+                    Deputies: allEmployees.Where(emp => deputyIds.Contains(emp.Id ?? Guid.Empty))
                 );
             });
 
