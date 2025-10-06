@@ -19,7 +19,9 @@ public class TaskTaskCompletedNotificationDataResolver (DocsvisionEmployeeServic
     public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
     {
         var task = await GetDocsvisionTask(notificationRequest);
-        return await _docsvisionEmployeeService.GetDocsvisionUserWithDeputiesAsync(task.AuthorId);
+        return [DocsvisionEmployeeService.MapEmployeeToUser(await _docsvisionEmployeeService
+            .GetEmployeeByIdAsync(task.AuthorId))];
+        //.GetDocsvisionUserWithDeputiesAsync(task.AuthorId);
     }
     
     public new async Task<object> ResolveNotificationTemplateData(NotificationRequest notificationRequest)

@@ -21,7 +21,9 @@ public class TaskCreatedNotificationDataResolver(
     public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
     {
         var task = await GetDocsvisionTask(notificationRequest);
-        return await _docsvisionEmployeeService.GetDocsvisionUserWithDeputiesAsync(task.CurrentPerformerId);
+        return [DocsvisionEmployeeService.MapEmployeeToUser(await _docsvisionEmployeeService
+            .GetEmployeeByIdAsync(task.CurrentPerformerId))];
+        //return await _docsvisionEmployeeService.GetDocsvisionUserWithDeputiesAsync(task.CurrentPerformerId);
     }
     
     public new async Task<object> ResolveNotificationTemplateData(NotificationRequest notificationRequest)
