@@ -11,8 +11,8 @@ using NotificationService.Infrastructure.Data;
 namespace NotificationService.Infrastructure.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20251002100926_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251006061721_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,11 +41,16 @@ namespace NotificationService.Infrastructure.Migrations
                     b.Property<Guid>("RecipientId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Route")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("TemplateId")
+                    b.Property<string>("TemplateId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
@@ -64,8 +69,8 @@ namespace NotificationService.Infrastructure.Migrations
 
             modelBuilder.Entity("NotificationService.Domain.Models.NotificationTemplate", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("Name")
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Channel")
@@ -80,9 +85,8 @@ namespace NotificationService.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("FilePath")
                         .IsRequired()
-                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Subject")
@@ -93,7 +97,7 @@ namespace NotificationService.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("Name");
 
                     b.HasIndex("Name", "Channel")
                         .IsUnique();
@@ -130,10 +134,34 @@ namespace NotificationService.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
+                    b.HasIndex("Email");
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.UserRoutePreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Route")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Route")
+                        .IsUnique();
+
+                    b.ToTable("UserRoutePreferences", (string)null);
                 });
 
             modelBuilder.Entity("NotificationService.Domain.Models.Notification", b =>

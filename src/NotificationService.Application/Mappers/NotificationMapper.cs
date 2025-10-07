@@ -1,12 +1,18 @@
 using NotificationService.Application.DTOs;
+using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Mappers;
 
-public class NotificationMapper : INotificationMapper
+public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificationMapper
 {
-    public NotificationResponseDto MapToResponse(Notification notification)
+    public NotificationResponseDto MapToResponse(IEnumerable<Notification> notifications)
     {
+        var notificationsList = notifications.ToList();
+        var notification = notificationsList.FirstOrDefault();
+        var recipients = notificationsList.Select(n => n.Recipient);
+        
         ArgumentNullException.ThrowIfNull(notification);
 
         return new NotificationResponseDto
@@ -16,29 +22,40 @@ public class NotificationMapper : INotificationMapper
             Message = notification.Message,
             Route = notification.Route,
             CreatedAt = notification.CreatedAt,
-            Recipient = MapToUserDto(notification.Recipient),
+            Recipients = recipients.Select(MapToUserDto),
+            CreatedNotificationIds = notificationsList.Select(n => n.Id),
             Channel = notification.Channel,
             Status = notification.Status
         };
     }
 
-    public Notification MapFromRequest(NotificationRequestDto request, User recipient, NotificationTemplate? template = null)
+    public async Task<IEnumerable<Notification>> MapFromRequest(NotificationRequest request, INotificationDataResolver notificationDataResolver, NotificationTemplate template)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(recipient);
+        ArgumentNullException.ThrowIfNull(template);
+        ArgumentNullException.ThrowIfNull(notificationDataResolver);
 
-        return new Notification
+        var notificationData = await notificationDataResolver.ResolveNotificationTemplateData(request);
+        
+        var renderedContent = templateRenderer.Render(template.Content, notificationData);
+        var renderedSubject = string.IsNullOrWhiteSpace(template.Subject)
+            ? request.Title ?? "Тема отсутсвует"
+            : templateRenderer.Render(template.Subject, notificationData);
+        
+        var notification = new Notification
         {
-            Id = Guid.NewGuid(),
-            Title = request.Title,
-            Message = request.Message,
+            Title = renderedSubject,
+            Message = renderedContent,
             Route = request.Route,
-            Recipient = recipient,
             Channel = request.Channel,
             Template = template,
             CreatedAt = DateTime.UtcNow,
             Status = NotificationStatus.Pending
         };
+        
+        var recipients = await notificationDataResolver.ResolveNotificationRecipients(request);
+        return recipients.Select(recipient => notification with { Id = Guid.NewGuid(), Recipient = recipient });
+
     }
 
     public UserDto MapToUserDto(User user)

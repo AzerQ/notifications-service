@@ -10,7 +10,7 @@ public class NotificationTemplateConfiguration : IEntityTypeConfiguration<Notifi
     {
         builder.ToTable("Templates");
 
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.Name);
 
         builder.Property(x => x.Name)
             .IsRequired()

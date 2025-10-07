@@ -1,8 +1,14 @@
+using DocsvisionWebClientApi.Base.Extensions;
+using DocsvisionWebClientApi.DI.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NotificationService.Api;
+using NotificationService.Application.Extensions;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
 using NotificationService.Application.Services;
+using NotificationService.Docsvision.Notifications;
+using NotificationService.Docsvision.Services;
 using NotificationService.Domain.Interfaces;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Templates;
@@ -26,9 +32,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var configuration = builder.Configuration;
-
+builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<NotificationDbContext>(options =>
-    options.UseSqlite(configuration.GetConnectionString("Notifications")));
+    options.UseSqlite(configuration.GetConnectionString("Notifications")
+       // , b =>  b.MigrationsAssembly("NotificationService.Api")
+        )
+    );
 
 builder.Services.Configure<EmailProviderOptions>(configuration.GetSection("Email"));
 builder.Services.Configure<TemplateOptions>(configuration.GetSection("Templates"));
@@ -48,13 +57,22 @@ builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
 
 // Templates and rendering
 builder.Services.AddSingleton(sp => sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<TemplateOptions>>().Value);
-builder.Services.AddScoped<ITemplateProvider, FileSystemTemplateProvider>();
+builder.Services.AddScoped<ITemplateLoader, FileSystemTemplateLoader>();
 builder.Services.AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
+
+
+builder.Services
+    .AddDocsvisionApiClientConfiguration(configuration)  
+    .AddDocsvisionApiClientServices(configuration);
+
+builder.Services.AddSingleton<DocsvisionEmployeeService>();
+builder.Services.AddNotificationDataResolversContext(typeof( NotificationService.Docsvision.Notifications.AssemblyMarker).Assembly);
 
 var app = builder.Build();
 
+bool enableSwaggerUI = builder.Configuration.GetValue<bool>("EnableSwaggerUI");
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (enableSwaggerUI)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -69,6 +87,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Apply migrations and seed initial data
 await DbInitializer.InitializeAsync(app.Services);

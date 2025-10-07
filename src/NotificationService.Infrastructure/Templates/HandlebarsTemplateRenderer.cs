@@ -6,30 +6,43 @@ using NotificationService.Application.Interfaces;
 
 namespace NotificationService.Infrastructure.Templates;
 
-public class HandlebarsTemplateRenderer : ITemplateRenderer
+public class HandlebarsTemplateRenderer(ILogger<HandlebarsTemplateRenderer> logger) : ITemplateRenderer
 {
-    private readonly ILogger<HandlebarsTemplateRenderer> _logger;
-
-    public HandlebarsTemplateRenderer(ILogger<HandlebarsTemplateRenderer> logger)
+    private static IHandlebars WithHelpers(IHandlebars handlebars)
     {
-        _logger = logger;
+        return RegisterFormatDataHelper(handlebars);
     }
+    
+    private static IHandlebars RegisterFormatDataHelper(IHandlebars handlebars)
+    {
+        handlebars.RegisterHelper("formatDate", (output, context, arguments) =>
+        {
+            if (arguments.Length < 2 ||
+                arguments[0] is not DateTime date ||
+                arguments[1] is not string formatString)
+            {
+                output.WriteSafeString(string.Empty); // Or handle error appropriately
+                return;
+            }
 
-    public string Render(string template, JsonElement data)
+            output.WriteSafeString(date.ToString(formatString));
+        });
+        return handlebars;
+    }
+    
+    public string Render(string template, object data)
     {
         if (string.IsNullOrWhiteSpace(template)) return string.Empty;
 
         try
         {
-            var handlebars = Handlebars.Create();
-            handlebars.Configuration.UseJson();
-
+            var handlebars = WithHelpers(Handlebars.Create());
             var compiledTemplate = handlebars.Compile(template);
             return compiledTemplate(data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Template rendering failed");
+            logger.LogError(ex, "Template rendering failed");
             throw new InvalidOperationException("Template rendering failed", ex);
         }
     }

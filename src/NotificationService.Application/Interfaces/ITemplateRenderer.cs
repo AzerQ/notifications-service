@@ -10,5 +10,5 @@ public interface ITemplateRenderer
     /// <param name="template">Шаблон (строка Handlebars).</param>
     /// <param name="data">Данные для подстановки.</param>
     /// <returns>Результат рендеринга.</returns>
-    string Render(string template, JsonElement data);
+    string Render(string template, object data);
 }

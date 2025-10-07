@@ -9,9 +9,14 @@ public class SmtpClientFactory : ISmtpClientFactory
     {
         var smtpClient = new SmtpClient(options.SmtpHost, options.SmtpPort)
         {
-            EnableSsl = options.EnableSsl,
-            Credentials = new NetworkCredential(options.UserName, options.Password)
+            EnableSsl = options.EnableSsl
         };
+
+        if (options.UseDefaultCredentials)
+            smtpClient.UseDefaultCredentials = true;
+
+        else
+            smtpClient.Credentials = new NetworkCredential(options.UserName, options.Password);
 
         return new SmtpClientWrapper(smtpClient);
     }

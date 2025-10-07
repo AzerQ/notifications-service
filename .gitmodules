@@ -1,0 +1,3 @@
+[submodule "DocsvisionApiClient"]
+	path = DocsvisionApiClient
+	url = https://serv-gitlab.constr.kbp/docsvision/integration-services/docsvisionrestapiclient

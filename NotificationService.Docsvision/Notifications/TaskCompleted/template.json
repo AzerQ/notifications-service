@@ -1,0 +1,6 @@
+﻿{
+  "Name": "TaskCompleted",
+  "FilePath": "TaskCompleted.hbs",
+  "Subject":  "Завершено задание в СЭД Docsvision",
+  "Channel": "Email"
+}

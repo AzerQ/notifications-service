@@ -14,11 +14,18 @@ public class NotificationRepository : INotificationRepository
         _context = context;
     }
 
-    public async Task SaveNotificationAsync(Notification notification)
+    public async Task SaveNotificationsAsync(params Notification[] notifications)
     {
-        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(notifications);
 
-        await _context.Notifications.AddAsync(notification);
+        foreach (var notification in notifications)
+        {
+            User? existedUser = await _context.Users.FindAsync(notification.Recipient.Id);
+            if (existedUser != null)
+                notification.Recipient = existedUser;
+        }
+        
+        await _context.Notifications.AddRangeAsync(notifications);
         await _context.SaveChangesAsync();
     }
 

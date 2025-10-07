@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Models;
 
 namespace NotificationService.Api.Controllers;
 
@@ -27,23 +28,10 @@ public class NotificationController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(NotificationResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<NotificationResponseDto>> CreateAsync([FromBody] NotificationRequestDto request)
+    public async Task<ActionResult<NotificationResponseDto>> SendAsync([FromBody] NotificationRequest request)
     {
-        var result = await _commandService.CreateNotificationAsync(request);
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Id }, result);
-    }
-
-    /// <summary>
-    /// Отправляет ранее созданное уведомление.
-    /// </summary>
-    /// <param name="id">Идентификатор уведомления.</param>
-    [HttpPost("{id:guid}/send")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SendAsync(Guid id)
-    {
-        await _commandService.SendNotificationAsync(id);
-        return NoContent();
+        var result = await _commandService.ProcessNotificationRequestAsync(request);
+        return Created(nameof(NotificationResponseDto), result);
     }
 
     /// <summary>

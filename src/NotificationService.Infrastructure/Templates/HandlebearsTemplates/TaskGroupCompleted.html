@@ -3,80 +3,64 @@
 <head>
     <meta charset="utf-8">
     <title>Завершена группа заданий</title>
-    <style>
-        .edo-header {
-            background: linear-gradient(90deg, #c0392b 0%, #e74c3c 100%);
-            color: #fff;
-            padding: 24px 0 12px 0;
-            border-radius: 8px 8px 0 0;
-        }
-        .edo-logo {
-            width: 40px; height: 40px; vertical-align: middle; margin-right: 12px;
-        }
-        .edo-title {
-            font-size: 24px; font-weight: bold; display: inline-block; vertical-align: middle;
-        }
-        .edo-table {
-            background: #fff; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px #e0e7ef;
-        }
-        .edo-row td {
-            padding: 8px 0; font-size: 15px;
-        }
-        .edo-label { color: #c0392b; font-weight: bold; }
-        .edo-value { color: #222; }
-        .edo-btn {
-            display: inline-block; margin-top: 18px; padding: 10px 28px; background: #c0392b; color: #fff; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 16px;
-        }
-        .edo-footer {
-            color: #7f8c8d; font-size: 12px; padding: 18px 0 0 0; text-align: center;
-        }
-        .edo-list {
-            margin: 0; padding: 0 0 0 18px; color: #222; font-size: 15px;
-        }
-    </style>
 </head>
-<body style="font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f6fb;">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f6fb;">
-        <tr>
-            <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" border="0" class="edo-table">
-                    <tr>
-                        <td class="edo-header">
-                            <span class="edo-logo" style="display:inline-block; vertical-align:middle;">
-                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect x="6" y="6" width="28" height="32" rx="4" fill="#c0392b"/>
-                                    <rect x="10" y="10" width="20" height="24" rx="2" fill="#fff"/>
-                                    <path d="M15 24l5 5l7-9" stroke="#c0392b" stroke-width="2.5" fill="none"/>
-                                </svg>
-                            </span>
-                            <span class="edo-title">ЭДО: Завершена группа заданий</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:24px 32px 12px 32px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                                <tr class="edo-row"><td class="edo-label">Автор:</td><td class="edo-value">{{AuthorName}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Тема:</td><td class="edo-value">{{GroupSubject}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Описание:</td><td class="edo-value">{{GroupDescription}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Тип:</td><td class="edo-value">{{GroupType}}</td></tr>
-                                <tr class="edo-row"><td class="edo-label">Исполнители:</td><td class="edo-value"><ul class="edo-list">{{#each Executors}}<li>{{this}}</li>{{/each}}</ul></td></tr>
-                            </table>
-                            <a href="#" class="edo-btn">Открыть группу в ЭДО</a>
-                        </td>
-                    </tr>
-                </table>
-                <div class="edo-footer">
-                    <span style="vertical-align:middle; margin-right:6px; display:inline-block;">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="2" y="4" width="16" height="12" rx="2" fill="#c0392b"/>
-                            <rect x="4" y="6" width="12" height="8" rx="1" fill="#fff"/>
-                            <path d="M4 6l6 5l6-5" stroke="#c0392b" stroke-width="1.5" fill="none"/>
-                        </svg>
-                    </span>
-                    Это уведомление создано автоматически системой электронного документооборота Docsvision.
-                </div>
-            </td>
-        </tr>
-    </table>
+<body style="margin:0; padding:0; font-family:Arial, sans-serif; background-color:#f4f4f4;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;">
+    <tr>
+        <td align="center" style="padding:20px 0;">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+                <!-- Заголовок -->
+                <tr>
+                    <td style="background-color:#4CAF50; padding:20px; text-align:center;">
+                        <h1 style="margin:0; color:#ffffff; font-size:24px;">ЭДО: Завершена группа заданий</h1>
+                    </td>
+                </tr>
+                <!-- Содержимое -->
+                <tr>
+                    <td style="padding:30px;">
+                        <table width="100%" cellpadding="5" cellspacing="0" border="0">
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0; width:200px;"><strong>Автор:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{AuthorName}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Тема:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{GroupSubject}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Описание:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{GroupDescription}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0;"><strong>Тип:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">{{GroupType}}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#666666; font-size:14px; padding:8px 0; vertical-align:top;"><strong>Исполнители:</strong></td>
+                                <td style="color:#333333; font-size:14px; padding:8px 0;">
+                                    {{#each Executors}}
+                                    <div style="padding:2px 0;">{{this}}</div>
+                                    {{/each}}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <!-- Футер -->
+                <tr>
+                    <td style="background-color:#f9f9f9; padding:15px; text-align:center; border-top:1px solid #dddddd;">
+                        <p style="margin:0; color:#999999; font-size:12px;">Это уведомление создано автоматически системой электронного документооборота Docsvision.</p>
+                    </td>
+                </tr>
+                <!-- Плашка с названием сервера внизу -->
+                <tr>
+                    <td style="background-color:#0D47A1; padding:5px 15px; text-align:left;">
+                        <p style="margin:0; color:#ffffff; font-size:10px; font-weight:bold; letter-spacing:0.5px;">DOCSVISION</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
 </html>

@@ -4,8 +4,8 @@ namespace NotificationService.Domain.Interfaces;
 
 public interface ITemplateRepository
 {
+    Task<bool> IsTemplateExistsAsync(string name);
     Task<NotificationTemplate?> GetTemplateByNameAsync(string name);
-    Task<NotificationTemplate?> GetTemplateByIdAsync(Guid id);
     Task<IEnumerable<NotificationTemplate>> GetTemplatesByChannelAsync(NotificationChannel channel);
     Task<NotificationTemplate> CreateTemplateAsync(NotificationTemplate template);
     Task UpdateTemplateAsync(NotificationTemplate template);
