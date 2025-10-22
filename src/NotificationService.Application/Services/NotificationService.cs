@@ -8,7 +8,7 @@ using NotificationService.Domain.Models;
 namespace NotificationService.Application.Services;
 
 public class NotificationCommandService 
-    (NotificationDataResolversContext notificationDataResolversContext,
+    (NotificationRoutesContext notificationRoutesContext,
     INotificationRepository notificationRepository,
     ITemplateRepository templateRepository,
     INotificationSender notificationSender,
@@ -19,10 +19,12 @@ public class NotificationCommandService
     {
         ArgumentNullException.ThrowIfNull(request);
         
-        INotificationDataResolver notificationDataResolver = notificationDataResolversContext.GetForRoute(request.Route);
+        INotificationDataResolver notificationDataResolver = notificationRoutesContext.GetDataResolverForRoute(request.Route);
         
-        NotificationTemplate template = await templateRepository.GetTemplateByNameAsync(notificationDataResolver.TemplateName)
-                       ?? throw new ArgumentException($"Template '{notificationDataResolver.TemplateName}' not found.");
+        INotificationRouteConfiguration notificationRouteConfiguration = notificationRoutesContext.GetNotificationRouteConfiguration(request.Route);
+        
+        NotificationTemplate template = await templateRepository.GetTemplateByNameAsync(notificationRouteConfiguration.TemplateName)
+                       ?? throw new ArgumentException($"Template '{notificationRouteConfiguration.TemplateName}' not found.");
         
         
         var preparedNotifications = (await notificationMapper.MapFromRequest(request, notificationDataResolver, template))

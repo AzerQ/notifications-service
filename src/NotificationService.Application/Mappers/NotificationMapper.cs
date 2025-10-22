@@ -35,7 +35,7 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(notificationDataResolver);
 
-        var notificationData = await notificationDataResolver.ResolveNotificationTemplateData(request);
+        var notificationData = await notificationDataResolver.ResolveNotificationFullData(request);
         
         var renderedContent = templateRenderer.Render(template.Content, notificationData);
         var renderedSubject = string.IsNullOrWhiteSpace(template.Subject)

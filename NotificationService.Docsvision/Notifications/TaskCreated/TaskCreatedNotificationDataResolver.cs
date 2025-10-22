@@ -26,8 +26,8 @@ public class TaskCreatedNotificationDataResolver(
         //return await _docsvisionEmployeeService.GetDocsvisionUserWithDeputiesAsync(task.CurrentPerformerId);
     }
     
-    public new async Task<object> ResolveNotificationTemplateData(NotificationRequest notificationRequest)
+    public new async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
-       return await base.ResolveNotificationTemplateData(notificationRequest);
+       return await base.ResolveNotificationFullData(notificationRequest);
     }
 }

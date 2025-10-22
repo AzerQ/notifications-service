@@ -12,9 +12,7 @@ public class TaskTaskCompletedNotificationDataResolver (DocsvisionEmployeeServic
 {
     private readonly DocsvisionEmployeeService _docsvisionEmployeeService = docsvisionEmployeeService;
 
-    public override string Route => "TaskCompleted";
-    
-    public string TemplateName => "TaskCompleted";
+    public override string Route => TaskCompletedRouteConfig.TaskCompleted;
     
     public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
     {
@@ -24,8 +22,8 @@ public class TaskTaskCompletedNotificationDataResolver (DocsvisionEmployeeServic
         //.GetDocsvisionUserWithDeputiesAsync(task.AuthorId);
     }
     
-    public new async Task<object> ResolveNotificationTemplateData(NotificationRequest notificationRequest)
+    public new async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
-       return await base.ResolveNotificationTemplateData(notificationRequest);
+       return await base.ResolveNotificationFullData(notificationRequest);
     }
 }

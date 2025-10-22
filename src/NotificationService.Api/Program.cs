@@ -3,6 +3,7 @@ using DocsvisionWebClientApi.DI.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NotificationService.Api;
+using NotificationService.Api.SwaggerExtensions;
 using NotificationService.Application.Extensions;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
@@ -21,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen((options) =>
 {
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -29,6 +30,8 @@ builder.Services.AddSwaggerGen(options =>
     {
         options.IncludeXmlComments(xmlPath);
     }
+    
+    options.DocumentFilter<NotificationDocumentFilter>();
 });
 
 var configuration = builder.Configuration;

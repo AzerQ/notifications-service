@@ -30,7 +30,7 @@ public abstract class TaskCommonNotificationDataResolver(ITaskService taskServic
     protected async Task<DocvisionTask> GetDocsvisionTask(NotificationRequest notificationRequest) =>
         await taskService.GetTaskByIdAsync(ExtractCommonNotificationRequestData(notificationRequest).TaskId);
     
-    public async Task<object> ResolveNotificationTemplateData(NotificationRequest notificationRequest)
+    public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
         var task = await GetDocsvisionTask(notificationRequest);
         TaskCommonTemplateModel templateModel = new

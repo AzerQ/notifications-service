@@ -12,15 +12,22 @@ public static class NotificationDataResolversContextServiceCollection
         return serviceCollection.Scan(scan =>
             scan
                 .FromAssemblies(notificationAssemblies)
+                
                 .AddClasses(classes => classes.AssignableTo(typeof(INotificationDataResolver)))
                 .AsSelf()
-                .WithTransientLifetime())
+                .WithTransientLifetime()
+                
+                .AddClasses(classes => classes.AssignableTo<INotificationRouteConfiguration>())
+                .AsSelf()
+                .WithSingletonLifetime()
+            )
+            
             .AddSingleton(serviceProvider =>
             {
-                var notificationDataResolversContext = new NotificationDataResolversContext(serviceProvider);
+                var notificationDataResolversContext = new NotificationRoutesContext(serviceProvider);
                 foreach (var notificationAssembly in notificationAssemblies)
                 {
-                    notificationDataResolversContext.AddResolversFromAssembly(notificationAssembly);
+                    notificationDataResolversContext.AddNotificationServicesFromAssembly(notificationAssembly);
                 }
                 return notificationDataResolversContext;
             });

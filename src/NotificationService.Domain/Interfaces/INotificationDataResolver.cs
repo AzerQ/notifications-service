@@ -8,14 +8,9 @@ namespace NotificationService.Domain.Interfaces;
 public interface INotificationDataResolver
 {
     /// <summary>
-    /// Маршрут уведомления для которого может применятся данный сервис
+    /// Наименование маршрута
     /// </summary>
     public string Route { get; }
-    
-    /// <summary>
-    /// Наименование шаблона
-    /// </summary>
-    public string TemplateName { get; }
     
     /// <summary>
     /// Определить получателей уведомления
@@ -25,9 +20,9 @@ public interface INotificationDataResolver
     Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest);
     
     /// <summary>
-    /// Определить данные шаблона уведомления
+    /// Определить полные данные уведомления (Которые затем будут использованны в шаблонах)
     /// </summary>
     /// <param name="notificationRequest">Запрос на форирование уведомления</param>
-    /// <returns>Данные шаблона</returns>
-    Task<object> ResolveNotificationTemplateData(NotificationRequest notificationRequest);
+    /// <returns>Полные данные по уведомлению</returns>
+    Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest);
 }
