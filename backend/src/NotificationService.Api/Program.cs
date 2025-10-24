@@ -12,6 +12,7 @@ using NotificationService.Infrastructure.Templates;
 using NotificationService.Infrastructure.Providers.Email;
 using NotificationService.Infrastructure.Repositories;
 using NotificationService.Infrastructure.Data.Init;
+using NotificationService.TestHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,9 @@ builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
 builder.Services.AddSingleton(sp => sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<TemplateOptions>>().Value);
 builder.Services.AddScoped<ITemplateLoader, FileSystemTemplateLoader>();
 builder.Services.AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
+
+// Register test notification handlers
+builder.Services.AddNotificationDataResolversContext(typeof(AssemblyMarker).Assembly);
 
 var app = builder.Build();
 

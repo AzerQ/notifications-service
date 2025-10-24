@@ -1,0 +1,6 @@
+{
+  "Name": "TaskAssigned",
+  "FilePath": "TaskAssigned.hbs",
+  "Subject": "New Task Assigned to You",
+  "Channel": "Email"
+}
