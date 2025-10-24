@@ -1,103 +1,110 @@
-# Сервис уведомлений для Docsvision
+# Generic Notification Service
+
+A universal, extensible REST API notification service for sending notifications via multiple channels (Email, Database storage, and InApp with SignalR).
 
 ## Quick Start
 
-- Требования: .NET 8 SDK, SQLite доступен из коробки.
-- Сборка решения и запуск API:
+- Requirements: .NET 8 SDK, SQLite (available out of the box)
+- Build and run the API:
   
   ```bash
-  git clone https://github.com/your-repo/docsvision-notifications.git
-  cd docsvision-notifications
+  git clone https://github.com/AzerQ/notifications-service.git
+  cd notifications-service/backend
   dotnet build
-  dotnet run
+  dotnet run --project src/NotificationService.Api
   ```
 
-- Инициализация БД:
-  - При первом старте API автоматически применяются миграции и добавляются базовые данные (шаблоны, тестовый пользователь).
+- Database Initialization:
+  - On first start, the API automatically applies migrations and adds basic data (templates, test users)
 
-## Конфигурация
-- См. `docs/reference/Configuration.md`
-- Основные параметры: `ConnectionStrings:Notifications` (SQLite), секция `Email` (SMTP)
+## Configuration
+- See `docs/reference/Configuration.md`
+- Main parameters: `ConnectionStrings:Notifications` (SQLite), `Email` section (SMTP)
 
-## Документация
-- Архитектура: `docs/reference/Architecture.md`
-- Конфигурация: `docs/reference/Configuration.md`
-- База данных и миграции: `docs/reference/Database.md`
-- Шаблоны уведомлений: `docs/reference/Templates.md`
-- API справочник: `docs/reference/API.md`
-- Руководство разработчика: `docs/guides/DeveloperGuide.md`
+## Documentation
+- Architecture: `docs/reference/Architecture.md`
+- Configuration: `docs/reference/Configuration.md`
+- Database and migrations: `docs/reference/Database.md`
+- Notification templates: `docs/reference/Templates.md`
+- API reference: `docs/reference/API.md`
+- Developer guide: `docs/guides/DeveloperGuide.md`
 
-## Примеры запросов
+## Example Requests
 
-Создать уведомление:
+Create a notification:
 
 ```
 POST /api/notification
 Content-Type: application/json
 
 {
-  "title": "Новое задание",
-  "message": "<h1>Новое задание</h1>",
+  "title": "New Task",
+  "message": "<h1>New Task</h1>",
   "recipientId": "00000000-0000-0000-0000-000000000001",
   "channel": "Email",
   "templateName": "TaskCreated",
   "parameters": {
-    "TaskSubject": "Согласование договора"
+    "TaskSubject": "Contract Approval"
   }
 }
 ```
 
-Отправить уведомление:
+Get notifications by user:
 ```
-POST /api/notification/{id}/send
+GET /api/notification/by-user/{userId}
 ```
 
-## Постановка задачи
+## Project Goals
 
-### Цель проекта
-Разработка универсального расширяемого REST API сервиса уведомлений для системы документооборота Docsvision.
+### Objectives
+Development of a universal, extensible REST API notification service with multiple delivery channels.
 
-### Основные требования
+### Key Features
 
-#### Типы уведомлений
-1. **О создании задания исполнителю**
-   - Автор задания
-   - Тема задания
-   - Описание задания
-   - Тип задания
-   - Плановый срок исполнения
-   - Дата создания задания
+#### Notification Types
+The service supports flexible notification types through templating:
+1. **Task Created Notifications**
+   - Task author
+   - Task subject
+   - Task description
+   - Task type
+   - Planned completion date
+   - Creation date
 
-2. **О завершении задания автору**
-   - Исполнитель задания
-   - Тема задания
-   - Описание задания
-   - Тип задания
-   - Фактическая дата завершения
-   - Дата создания задания
+2. **Task Completed Notifications**
+   - Task executor
+   - Task subject
+   - Task description
+   - Task type
+   - Actual completion date
+   - Creation date
 
-#### Структура уведомления
-- Дата создания уведомления
-- Тема уведомления
-- Категория уведомления
-- Краткое описание
-- Флаг прочтения
-- Полезная нагрузка (payload) для каждого типа
+3. **Custom Notifications**
+   - Easily add new types via templates
 
-#### Каналы доставки
-- Приоритетный: электронная почта
-- Дополнительный: хранение в БД SQLite
-- Возможность получения уведомлений по запросу пользователя
+#### Notification Structure
+- Creation date
+- Subject/Title
+- Category
+- Brief description
+- Read flag
+- Payload for each type
 
-#### Функциональные требования
-- Гибкое добавление новых типов уведомлений
-- Настройка шаблонов для email
-- Получение данных пользователей из различных источников
-- Расширяемая архитектура
+#### Delivery Channels
+- Primary: Email
+- Secondary: SQLite database storage
+- Real-time: SignalR for InApp notifications
+- Query notifications by user request
 
-## Архитектура сервиса
+#### Functional Requirements
+- Flexible addition of new notification types
+- Customizable email templates
+- User data from various sources
+- Extensible architecture
 
-### Общая схема
+## Architecture
+
+### General Schema
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   REST API      │────│   Notification   │────│   Data Access   │
@@ -108,124 +115,129 @@ POST /api/notification/{id}/send
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │  Email Service  │    │ Template Engine  │    │   SQLite DB     │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │
-         │                       │
-┌─────────────────┐    ┌──────────────────┐
-│  SMTP Server    │    │ User Providers   │
-└─────────────────┘    └──────────────────┘
+         │                       │                       │
+         │                       │                       │
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  SMTP Server    │    │  SignalR Hubs    │    │  User Providers │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-### Основные компоненты
+### Main Components
 
-#### 1. Модели данных
-- `Notification` - базовая модель уведомления
-- `TaskCreatedNotification` - уведомление о создании задания
-- `TaskCompletedNotification` - уведомление о завершении задания
-- `User` - модель пользователя
-- `NotificationTemplate` - шаблоны уведомлений
+#### 1. Data Models
+- `Notification` - base notification model
+- `User` - user model
+- `NotificationTemplate` - notification templates
 
-#### 2. Сервисы
-- `INotificationService` - основной сервис уведомлений
-- `IEmailService` - сервис отправки email
-- `ITemplateService` - сервис работы с шаблонами
-- `IUserProvider` - провайдер данных пользователей
+#### 2. Services
+- `INotificationService` - main notification service
+- `IEmailService` - email sending service
+- `ITemplateService` - template management service
+- `IUserProvider` - user data provider
 
-#### 3. Контроллеры
-- `NotificationsController` - управление уведомлениями
-- `TemplatesController` - управление шаблонами
-- `UsersController` - получение данных пользователей
+#### 3. Controllers
+- `NotificationsController` - notification management
+- `UsersController` - user data access
 
-#### 4. Провайдеры данных
-- Внутренняя база данных
-- Внешние источники (API Docsvision)
+#### 4. Data Providers
+- Internal database
+- External sources (APIs)
 
-### Технологический стек
+### Technology Stack
 - .NET 8
 - ASP.NET Core Web API
 - Entity Framework Core
 - SQLite
-- System.Net.Mail (для email)
-- xUnit (для тестирования)
+- System.Net.Mail (for email)
+- SignalR (for real-time notifications)
+- xUnit (for testing)
 
-## Примеры HTML-шаблонов
+## Frontend Component
 
-### Уведомление о создании задания
+The project includes a React-based InApp notification component with SignalR support:
+- Location: `frontend/sed-notifications-frontend`
+- Technology: React, TypeScript, MobX, SignalR
+- Features: Real-time notifications, notification center, toast alerts
+
+## Example HTML Templates
+
+### Task Created Notification
 ```html
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Новое задание</title>
+    <title>New Task</title>
 </head>
 <body>
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #2c3e50;">Новое задание</h2>
+        <h2 style="color: #2c3e50;">New Task</h2>
         <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
-            <p><strong>Автор:</strong> {{AuthorName}}</p>
-            <p><strong>Тема:</strong> {{TaskSubject}}</p>
-            <p><strong>Описание:</strong> {{TaskDescription}}</p>
-            <p><strong>Тип задания:</strong> {{TaskType}}</p>
-            <p><strong>Плановый срок:</strong> {{DueDate}}</p>
-            <p><strong>Дата создания:</strong> {{CreatedDate}}</p>
+            <p><strong>Author:</strong> {{AuthorName}}</p>
+            <p><strong>Subject:</strong> {{TaskSubject}}</p>
+            <p><strong>Description:</strong> {{TaskDescription}}</p>
+            <p><strong>Task Type:</strong> {{TaskType}}</p>
+            <p><strong>Due Date:</strong> {{DueDate}}</p>
+            <p><strong>Created:</strong> {{CreatedDate}}</p>
         </div>
         <p style="color: #7f8c8d; font-size: 12px;">
-            Это уведомление было отправлено автоматически.
+            This notification was sent automatically.
         </p>
     </div>
 </body>
 </html>
 ```
 
-### Уведомление о завершении задания
+### Task Completed Notification
 ```html
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Задание завершено</title>
+    <title>Task Completed</title>
 </head>
 <body>
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #27ae60;">Задание завершено</h2>
+        <h2 style="color: #27ae60;">Task Completed</h2>
         <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
-            <p><strong>Исполнитель:</strong> {{ExecutorName}}</p>
-            <p><strong>Тема:</strong> {{TaskSubject}}</p>
-            <p><strong>Описание:</strong> {{TaskDescription}}</p>
-            <p><strong>Тип задания:</strong> {{TaskType}}</p>
-            <p><strong>Фактическая дата завершения:</strong> {{CompletionDate}}</p>
-            <p><strong>Дата создания:</strong> {{CreatedDate}}</p>
+            <p><strong>Executor:</strong> {{ExecutorName}}</p>
+            <p><strong>Subject:</strong> {{TaskSubject}}</p>
+            <p><strong>Description:</strong> {{TaskDescription}}</p>
+            <p><strong>Task Type:</strong> {{TaskType}}</p>
+            <p><strong>Completion Date:</strong> {{CompletionDate}}</p>
+            <p><strong>Created:</strong> {{CreatedDate}}</p>
         </div>
         <p style="color: #7f8c8d; font-size: 12px;">
-            Это уведомление было отправлено автоматически.
+            This notification was sent automatically.
         </p>
     </div>
 </body>
 </html>
 ```
 
-## Принципы разработки
+## Development Principles
 
-### SOLID принципы
-- **S** - каждый компонент имеет одну ответственность
-- **O** - система открыта для расширения, закрыта для модификации
-- **L** - наследники могут использоваться вместо родителей
-- **I** - интерфейсы разделены по функциональности
-- **D** - зависимости от абстракций, а не от реализаций
+### SOLID Principles
+- **S** - Each component has a single responsibility
+- **O** - Open for extension, closed for modification
+- **L** - Substitutability of derived classes
+- **I** - Interface segregation by functionality
+- **D** - Depend on abstractions, not implementations
 
-### DRY и KISS
-- Повторяющийся код вынесен в общие компоненты
-- Простые и понятные решения
-- Минимальное количество зависимостей
+### DRY and KISS
+- Repeated code extracted into common components
+- Simple and clear solutions
+- Minimal dependencies
 
-### Модульность
-- Каждый компонент в отдельном файле
-- Четкое разделение ответственности
-- Легкость тестирования и замены компонентов
+### Modularity
+- Each component in a separate file
+- Clear separation of concerns
+- Easy to test and replace components
 
-## Следующие шаги
-1. Создание структуры проекта и моделей данных
-2. Реализация базового API
-3. Разработка сервисов уведомлений
-4. Интеграция с email
-5. Создание шаблонов
-6. Тестирование
+## Next Steps
+1. Add SignalR hub for real-time notifications
+2. Create generic test notification handlers
+3. Build sample test application
+4. Integrate InApp notification component
+5. Add comprehensive testing
+6. Update documentation

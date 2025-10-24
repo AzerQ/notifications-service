@@ -20,8 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DocsvisionApiClient\DocsvisionWebClientApi.DI\DocsvisionWebClientApi.DI.csproj" />
-    <ProjectReference Include="..\..\NotificationService.Docsvision\NotificationService.Docsvision.csproj" />
     <ProjectReference Include="..\NotificationService.Application\NotificationService.Application.csproj" />
     <ProjectReference Include="..\NotificationService.Infrastructure\NotificationService.Infrastructure.csproj" />
   </ItemGroup>
