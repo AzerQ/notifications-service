@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NotificationService.Api;
+using NotificationService.Api.Hubs;
 using NotificationService.Api.SwaggerExtensions;
 using NotificationService.Application.Extensions;
 using NotificationService.Application.Interfaces;
@@ -29,6 +30,21 @@ builder.Services.AddSwaggerGen((options) =>
     }
     
     options.DocumentFilter<NotificationDocumentFilter>();
+});
+
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:8080")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 var configuration = builder.Configuration;
@@ -79,9 +95,12 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
+
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 

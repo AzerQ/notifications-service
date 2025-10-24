@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using NotificationService.Api.Hubs;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Models;
@@ -11,13 +13,16 @@ public class NotificationController : ControllerBase
 {
     private readonly INotificationCommandService _commandService;
     private readonly INotificationQueryService _queryService;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
     public NotificationController(
         INotificationCommandService commandService,
-        INotificationQueryService queryService)
+        INotificationQueryService queryService,
+        IHubContext<NotificationHub> hubContext)
     {
         _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
     }
 
     /// <summary>
@@ -31,6 +36,17 @@ public class NotificationController : ControllerBase
     public async Task<ActionResult<NotificationResponseDto>> SendAsync([FromBody] NotificationRequest request)
     {
         var result = await _commandService.ProcessNotificationRequestAsync(request);
+        
+        // Broadcast notification via SignalR
+        await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+        {
+            id = result.Id,
+            title = result.Title,
+            message = result.Message,
+            route = result.Route,
+            createdAt = result.CreatedAt
+        });
+        
         return Created(nameof(NotificationResponseDto), result);
     }
 
@@ -76,4 +92,30 @@ public class NotificationController : ControllerBase
         var result = await _queryService.GetByStatusAsync(status);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Test endpoint to broadcast a notification via SignalR
+    /// </summary>
+    [HttpPost("broadcast")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> BroadcastTestNotification([FromBody] BroadcastTestRequest request)
+    {
+        await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+        {
+            id = Guid.NewGuid(),
+            title = request.Title ?? "Test Notification",
+            message = request.Message ?? "This is a test notification",
+            route = request.Route ?? "Test",
+            createdAt = DateTime.Now
+        });
+        
+        return Ok(new { message = "Notification broadcast successfully" });
+    }
+}
+
+public class BroadcastTestRequest
+{
+    public string? Title { get; set; }
+    public string? Message { get; set; }
+    public string? Route { get; set; }
 }
