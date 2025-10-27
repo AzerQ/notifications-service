@@ -401,3 +401,11 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# SQLLite
+
+*.db
+
+*.db-shm
+
+*.db-wal
