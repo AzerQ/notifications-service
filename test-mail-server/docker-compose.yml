@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP сервер
+      - "8025:8025"  # Web UI
+    environment:
+      MH_STORAGE: memory  # Хранение в памяти (можно изменить на 'maildir')
+      MH_SMTP_BIND_ADDR: 0.0.0.0:1025
+      MH_API_BIND_ADDR: 0.0.0.0:8025
+      MH_UI_BIND_ADDR: 0.0.0.0:8025
+    networks:
+      - mailhog-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  mailhog-network:
+    driver: bridge
