@@ -1,26 +1,38 @@
 version: '3.8'
 
 services:
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: mailhog
+  smtp4dev:
+    image: rnwood/smtp4dev:latest
+    container_name: smtp4dev
     restart: unless-stopped
     ports:
-      - "1025:1025"  # SMTP сервер
-      - "8025:8025"  # Web UI
+      - "8025:80"    # Web UI
+      - "2525:2525"    # SMTP сервер
+      - "143:143"    # IMAP сервер
+    volumes:
+      - smtp4dev-data:/smtp4dev
     environment:
-      MH_STORAGE: memory  # Хранение в памяти (можно изменить на 'maildir')
-      MH_SMTP_BIND_ADDR: 0.0.0.0:1025
-      MH_API_BIND_ADDR: 0.0.0.0:8025
-      MH_UI_BIND_ADDR: 0.0.0.0:8025
-    networks:
-      - mailhog-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      # Базовые настройки
+      - ServerOptions__HostName=localhost
+      - ServerOptions__Port=2525
+      - ServerOptions__AllowRemoteConnections=true
+      - ServerOptions__Database=/smtp4dev/database.db
+      - ServerOptions__NumberOfMessagesToKeep=100
+      - ServerOptions__NumberOfSessionsToKeep=100
+      
+      # IMAP настройки
+      - ServerOptions__ImapPort=143
+      
+      # Настройки безопасности (опционально)
+      # - ServerOptions__AuthenticationRequired=true
+      # - ServerOptions__SmtpUser=testuser
+      # - ServerOptions__SmtpPassword=testpass
+      
+      # TLS настройки (опционально)
+      # - ServerOptions__TlsMode=StartTls
+      # - ServerOptions__TlsCertificate=/certs/cert.pfx
+      # - ServerOptions__TlsCertificatePassword=password
 
-networks:
-  mailhog-network:
-    driver: bridge
+volumes:
+  smtp4dev-data:
+    driver: local
