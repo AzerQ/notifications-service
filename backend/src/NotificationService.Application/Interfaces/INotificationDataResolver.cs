@@ -1,6 +1,7 @@
-﻿using NotificationService.Domain.Models;
+﻿using NotificationService.Application.DTOs;
+using NotificationService.Domain.Models;
 
-namespace NotificationService.Domain.Interfaces;
+namespace NotificationService.Application.Interfaces;
 
 /// <summary>
 /// Сервис для получения данных по уведомлению

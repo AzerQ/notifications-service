@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using NotificationService.Application.Extensions;
+using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
 
 namespace NotificationService.Application;

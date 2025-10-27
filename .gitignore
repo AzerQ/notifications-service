@@ -409,3 +409,5 @@ FodyWeavers.xsd
 *.db-shm
 
 *.db-wal
+
+/backend/src/NotificationService.Api/Notifications

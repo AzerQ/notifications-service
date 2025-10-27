@@ -14,7 +14,4 @@ public class NotificationResponseDto
     
     public IEnumerable<Guid> CreatedNotificationIds { get; set; } = null!;
     
-    public NotificationChannel Channel { get; set; }
-    public NotificationStatus Status { get; set; }
-    
 }

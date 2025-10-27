@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 using NotificationService.Api.Hubs;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
-using NotificationService.Domain.Models;
 
 namespace NotificationService.Api.Controllers;
 
@@ -30,10 +29,10 @@ public class NotificationController : ControllerBase
     /// </summary>
     /// <param name="request">Данные уведомления.</param>
     /// <returns>Созданное уведомление.</returns>
-    [HttpPost]
+    [HttpPost("{notificationCategory}/{route}")]
     [ProducesResponseType(typeof(NotificationResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<NotificationResponseDto>> SendAsync([FromBody] NotificationRequest request)
+    public async Task<ActionResult<NotificationResponseDto>> SendAsync(NotificationRequest request)
     {
         var result = await _commandService.ProcessNotificationRequestAsync(request);
         

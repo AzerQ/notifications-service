@@ -23,9 +23,7 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             Route = notification.Route,
             CreatedAt = notification.CreatedAt,
             Recipients = recipients.Select(MapToUserDto),
-            CreatedNotificationIds = notificationsList.Select(n => n.Id),
-            Channel = notification.Channel,
-            Status = notification.Status
+            CreatedNotificationIds = notificationsList.Select(n => n.Id)
         };
     }
 
@@ -47,11 +45,15 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             Title = renderedSubject,
             Message = renderedContent,
             Route = request.Route,
-            Channel = request.Channel,
             Template = template,
-            CreatedAt = DateTime.UtcNow,
-            Status = NotificationStatus.Pending
+            CreatedAt = DateTime.UtcNow
         };
+
+        if (request.Channels is not null 
+            && request.Channels.Length != 0)
+        {
+            notification.DeliveryChannelsState = Notification.ChannelsDefaultState(request.Channels);
+        }
         
         var recipients = await notificationDataResolver.ResolveNotificationRecipients(request);
         return recipients.Select(recipient => notification with { Id = Guid.NewGuid(), Recipient = recipient });

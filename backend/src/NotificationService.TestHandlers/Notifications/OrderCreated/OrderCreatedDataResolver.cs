@@ -1,4 +1,6 @@
 using System.Text.Json;
+using NotificationService.Application.DTOs;
+using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 

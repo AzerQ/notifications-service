@@ -11,8 +11,8 @@ using NotificationService.Infrastructure.Data;
 namespace NotificationService.Infrastructure.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20251006061721_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20251027192733_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,10 +24,6 @@ namespace NotificationService.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Channel")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -46,10 +42,6 @@ namespace NotificationService.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("TemplateId")
                         .HasColumnType("TEXT");
 
@@ -65,6 +57,55 @@ namespace NotificationService.Infrastructure.Migrations
                     b.HasIndex("TemplateId");
 
                     b.ToTable("Notifications", (string)null);
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.NotificationChannelDeliveryStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DeliveryStatus")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("NotificationChannel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId");
+
+                    b.ToTable("NotificationChannelDeliveryStatus");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.NotificationMetadataField", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId");
+
+                    b.ToTable("NotificationMetadataField");
                 });
 
             modelBuilder.Entity("NotificationService.Domain.Models.NotificationTemplate", b =>
@@ -139,6 +180,30 @@ namespace NotificationService.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("NotificationService.Domain.Models.UserAttribute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserAttribute");
+                });
+
             modelBuilder.Entity("NotificationService.Domain.Models.UserRoutePreference", b =>
                 {
                     b.Property<Guid>("Id")
@@ -179,6 +244,51 @@ namespace NotificationService.Infrastructure.Migrations
                     b.Navigation("Recipient");
 
                     b.Navigation("Template");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.NotificationChannelDeliveryStatus", b =>
+                {
+                    b.HasOne("NotificationService.Domain.Models.Notification", "Notification")
+                        .WithMany("DeliveryChannelsState")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Notification");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.NotificationMetadataField", b =>
+                {
+                    b.HasOne("NotificationService.Domain.Models.Notification", "Notification")
+                        .WithMany("Metadata")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Notification");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.UserAttribute", b =>
+                {
+                    b.HasOne("NotificationService.Domain.Models.User", "User")
+                        .WithMany("Attributes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.Notification", b =>
+                {
+                    b.Navigation("DeliveryChannelsState");
+
+                    b.Navigation("Metadata");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.User", b =>
+                {
+                    b.Navigation("Attributes");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,4 +8,18 @@ public class User
     public string? PhoneNumber { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public string? DeviceToken { get; set; }
+
+    public ICollection<UserAttribute> Attributes { get; set; } = new List<UserAttribute>();
+}
+
+public record UserAttribute
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public Guid UserId { get; set; }
+
+    public User User { get; set; } = null!;
+
+    public required string Key { get; set; }
+    public required string Value { get; set; }
 }

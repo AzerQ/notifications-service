@@ -53,13 +53,13 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseSqlite(configuration.GetConnectionString("Notifications")
        // , b =>  b.MigrationsAssembly("NotificationService.Api")
         )
-    );
+    , ServiceLifetime.Transient);
 
 builder.Services.Configure<EmailProviderOptions>(configuration.GetSection("Email"));
 builder.Services.Configure<TemplateOptions>(configuration.GetSection("Templates"));
 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IUserRoutePreferenceRepository, UserRoutePreferenceRepository>();
 
@@ -77,7 +77,8 @@ builder.Services.AddScoped<ITemplateLoader, FileSystemTemplateLoader>();
 builder.Services.AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
 
 // Register test notification handlers
-builder.Services.AddNotificationDataResolversContext(typeof(AssemblyMarker).Assembly);
+builder.Services.AddNotificationsServiceModule(builder.Configuration, 
+    typeof(NotificationService.TestHandlers.NotificationServicesRegistrator).Assembly);
 
 var app = builder.Build();
 
@@ -105,6 +106,6 @@ app.MapHub<NotificationHub>("/notificationHub");
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Apply migrations and seed initial data
-await DbInitializer.InitializeAsync(app.Services);
+await DbInitializer.InitializeAsync(app.Services, app.Configuration, app.Environment.IsProduction());
 
 app.Run();

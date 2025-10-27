@@ -23,7 +23,8 @@ public static class NotificationValidator
         }
         else
         {
-            switch (notification.Channel)
+            foreach (var channel in notification.DeliveryChannelsState.Select(s => s.NotificationChannel))
+            switch (channel)
             {
                 case NotificationChannel.Email when string.IsNullOrWhiteSpace(notification.Recipient.Email):
                     result.AddError("Recipient email is required for email notifications.");

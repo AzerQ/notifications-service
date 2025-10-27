@@ -46,24 +46,19 @@ public class NotificationRepository : INotificationRepository
             .FirstOrDefaultAsync(n => n.Id == id);
     }
 
-    public async Task UpdateNotificationStatusAsync(Guid id, NotificationStatus status)
-    {
-        var notification = await _context.Notifications.FindAsync(id);
-        if (notification is null)
-        {
-            return;
-        }
-
-        notification.Status = status;
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<IEnumerable<Notification>> GetNotificationsByStatusAsync(NotificationStatus status)
+    public async Task<IEnumerable<Notification>> GetNotificationsByStatusAsync(NotificationDeliveryStatus status)
     {
         return await _context.Notifications
             .Include(n => n.Recipient)
             .Include(n => n.Template)
-            .Where(n => n.Status == status)
+            .Include(n => n.DeliveryChannelsState)
+            .Where(n => n.DeliveryChannelsState.Any(channel => channel.DeliveryStatus == status))
             .ToListAsync();
+    }
+
+    public async Task UpdateNotificationsAsync(params Notification[] notifications)
+    {
+         _context.UpdateRange(notifications);
+        await _context.SaveChangesAsync();
     }
 }

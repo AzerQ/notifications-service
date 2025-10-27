@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace NotificationService.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,9 +68,7 @@ namespace NotificationService.Infrastructure.Migrations
                     Route = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RecipientId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TemplateId = table.Column<string>(type: "TEXT", nullable: true),
-                    Channel = table.Column<string>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", nullable: false)
+                    TemplateId = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -87,6 +85,77 @@ namespace NotificationService.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "UserAttribute",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Key = table.Column<string>(type: "TEXT", nullable: false),
+                    Value = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAttribute", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserAttribute_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NotificationChannelDeliveryStatus",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    NotificationChannel = table.Column<int>(type: "INTEGER", nullable: false),
+                    DeliveryStatus = table.Column<int>(type: "INTEGER", nullable: false),
+                    NotificationId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationChannelDeliveryStatus", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NotificationChannelDeliveryStatus_Notifications_NotificationId",
+                        column: x => x.NotificationId,
+                        principalTable: "Notifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NotificationMetadataField",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Key = table.Column<string>(type: "TEXT", nullable: false),
+                    Value = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    NotificationId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationMetadataField", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NotificationMetadataField_Notifications_NotificationId",
+                        column: x => x.NotificationId,
+                        principalTable: "Notifications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationChannelDeliveryStatus_NotificationId",
+                table: "NotificationChannelDeliveryStatus",
+                column: "NotificationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationMetadataField_NotificationId",
+                table: "NotificationMetadataField",
+                column: "NotificationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_RecipientId",
@@ -105,6 +174,11 @@ namespace NotificationService.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserAttribute_UserId",
+                table: "UserAttribute",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRoutePreferences_UserId_Route",
                 table: "UserRoutePreferences",
                 columns: new[] { "UserId", "Route" },
@@ -120,10 +194,19 @@ namespace NotificationService.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Notifications");
+                name: "NotificationChannelDeliveryStatus");
+
+            migrationBuilder.DropTable(
+                name: "NotificationMetadataField");
+
+            migrationBuilder.DropTable(
+                name: "UserAttribute");
 
             migrationBuilder.DropTable(
                 name: "UserRoutePreferences");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Templates");

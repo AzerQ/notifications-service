@@ -66,7 +66,7 @@ public class NotificationQueryService : INotificationQueryService
 
     public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByStatusAsync(string status)
     {
-        if (!Enum.TryParse<NotificationStatus>(status, true, out var parsedStatus))
+        if (!Enum.TryParse<NotificationDeliveryStatus>(status, true, out var parsedStatus))
         {
             throw new ArgumentException($"Unknown notification status '{status}'.", nameof(status));
         }
