@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notification Service Test Application</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/9.0.0/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@9.0.6/dist/browser/signalr.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -266,8 +266,8 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:5000/api';
-        const HUB_URL = 'http://localhost:5000/notificationHub';
+        const API_BASE = 'https://code.azerqtech.pw/proxy/5093/api';
+        const HUB_URL = 'https://code.azerqtech.pw/proxy/5093/notificationHub';
         let connection = null;
         let notifications = [];
 
