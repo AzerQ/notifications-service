@@ -401,3 +401,15 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# SQLLite
+
+*.db
+
+*.db-shm
+
+*.db-wal
+
+/backend/src/NotificationService.Api/Notifications
+
+/backend/src/NotificationService.Api/core

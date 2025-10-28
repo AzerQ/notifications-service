@@ -26,14 +26,6 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
-        builder.Property(x => x.Channel)
-            .HasConversion<string>()
-            .IsRequired();
-
-        builder.Property(x => x.Status)
-            .HasConversion<string>()
-            .IsRequired();
-
         builder.HasOne(x => x.Recipient)
             .WithMany()
             .HasForeignKey("RecipientId")

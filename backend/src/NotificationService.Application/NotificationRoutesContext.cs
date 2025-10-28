@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using NotificationService.Application.Extensions;
+using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
 
 namespace NotificationService.Application;
@@ -25,7 +27,7 @@ public class NotificationRoutesContext(IServiceProvider serviceProvider)
 
     public NotificationRoutesContext AddFromType(Type impType)
     {
-        var serviceObj = serviceProvider.GetService(impType);
+        var serviceObj = serviceProvider.GetRequiredService(impType);
 
         return serviceObj switch
         {

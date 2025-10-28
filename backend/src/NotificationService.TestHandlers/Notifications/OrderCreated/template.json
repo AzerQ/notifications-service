@@ -1,0 +1,6 @@
+{
+  "Name": "OrderCreated",
+  "FilePath": "OrderCreated.hbs",
+  "Subject": "Your Order Has Been Placed Successfully!",
+  "Channel": "Email"
+}

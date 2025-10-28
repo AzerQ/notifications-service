@@ -43,30 +43,38 @@ public class NotificationSender : INotificationSender
             var allowed = await _userRoutePreferenceRepository.IsRouteEnabledAsync(notification.Recipient.Id, notification.Route);
             if (!allowed)
             {
-                notification.Status = NotificationStatus.Failed;
-                await _notificationRepository.UpdateNotificationStatusAsync(notification.Id, notification.Status);
+                foreach (var channelState in notification.DeliveryChannelsState)
+                    channelState.DeliveryStatus = NotificationDeliveryStatus.Skipped;
+
+                await _notificationRepository.UpdateNotificationsAsync(notification);
                 return; // тихо выходим без отправки
             }
         }
 
-        var wasSent = notification.Channel switch
+        var channelsSendTasks = notification.DeliveryChannelsState.Select(channel => SendToChannelAsync(notification, channel.NotificationChannel));
+
+        await Task.WhenAll(channelsSendTasks);
+
+        await _notificationRepository.UpdateNotificationsAsync(notification);
+
+    }
+
+    private async Task SendToChannelAsync(Notification notification, NotificationChannel channel)
+    {
+        var wasSent = channel switch
         {
             NotificationChannel.Email => await SendEmailAsync(notification),
             NotificationChannel.Sms => await SendSmsAsync(notification),
             NotificationChannel.Push => await SendPushAsync(notification),
-            _ => throw new NotSupportedException($"Канал {notification.Channel} не поддерживается.")
+            _ => throw new NotSupportedException($"Канал {channel} не поддерживается.")
         };
 
-        notification.Status = wasSent ? NotificationStatus.Sent : NotificationStatus.Failed;
-        await _notificationRepository.UpdateNotificationStatusAsync(notification.Id, notification.Status);
-
-        if (!wasSent)
-        {
-            throw new InvalidOperationException($"Не удалось отправить уведомление через канал {notification.Channel}.");
-        }
+       notification.DeliveryChannelsState
+            .FirstOrDefault(c => c.NotificationChannel == channel)!
+            .DeliveryStatus = wasSent ? NotificationDeliveryStatus.Sent : NotificationDeliveryStatus.Failed;
     }
 
-    private async Task<bool> SendEmailAsync(Notification? notification)
+    private async Task<bool> SendEmailAsync(Notification notification)
     {
         if (_emailProvider is null)
         {
@@ -84,7 +92,7 @@ public class NotificationSender : INotificationSender
         return await _emailProvider.SendEmailAsync(notification.Recipient.Email, subject, body);
     }
 
-    private async Task<bool> SendSmsAsync(Notification? notification)
+    private async Task<bool> SendSmsAsync(Notification notification)
     {
         if (_smsProvider is null)
         {
@@ -100,7 +108,7 @@ public class NotificationSender : INotificationSender
         return await _smsProvider.SendSmsAsync(notification.Recipient.PhoneNumber, message);
     }
 
-    private async Task<bool> SendPushAsync(Notification? notification)
+    private async Task<bool> SendPushAsync(Notification notification)
     {
         if (_pushNotificationProvider is null)
         {
@@ -118,7 +126,7 @@ public class NotificationSender : INotificationSender
         return await _pushNotificationProvider.SendPushNotificationAsync(notification.Recipient.DeviceToken!, title, body);
     }
 
-    private static string ResolveContent(Notification? notification)
+    private static string ResolveContent(Notification notification)
     {
         if (!string.IsNullOrWhiteSpace(notification.Message))
         {

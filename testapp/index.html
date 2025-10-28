@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Service Test Application</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@9.0.6/dist/browser/signalr.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .connection-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .connection-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .panel {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-order {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-task {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-broadcast {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .notifications {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification-item h3 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .notification-item p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .info-box p {
+            color: #1976D2;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Notification Service Test Application</h1>
+            <p>Test generic notification handlers with real-time SignalR updates</p>
+            <div id="connectionStatus" class="connection-status disconnected">
+                ⚠️ Disconnected
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="panel">
+                <h2>📤 Send Test Notifications</h2>
+                <div class="info-box">
+                    <p><strong>Note:</strong> These buttons send notifications through the API. Make sure the backend is running on http://localhost:5000</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="testUserId">Test User ID:</label>
+                    <input type="text" id="testUserId" value="00000000-0000-0000-0000-000000000001" placeholder="User GUID">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-user" onclick="sendUserRegistered()">
+                        <span>👤</span> Send User Registered
+                    </button>
+                    <button class="btn-order" onclick="sendOrderCreated()">
+                        <span>🛒</span> Send Order Created
+                    </button>
+                    <button class="btn-task" onclick="sendTaskAssigned()">
+                        <span>📋</span> Send Task Assigned
+                    </button>
+                    <button class="btn-broadcast" onclick="sendBroadcast()">
+                        <span>📡</span> Send Broadcast Test
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📨 Received Notifications</h2>
+                <div class="info-box">
+                    <p><strong>Real-time:</strong> Notifications received via SignalR will appear here automatically.</p>
+                </div>
+                <div id="notifications" class="notifications">
+                    <p style="color: #999; text-align: center; padding: 20px;">No notifications yet...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://code.azerqtech.pw/proxy/5093/api';
+        const HUB_URL = 'https://code.azerqtech.pw/proxy/5093/notificationHub';
+        let connection = null;
+        let notifications = [];
+
+        // Initialize SignalR connection
+        async function initSignalR() {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl(HUB_URL)
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("ReceiveNotification", (notification) => {
+                console.log("Received notification:", notification);
+                addNotification(notification);
+            });
+
+            connection.onclose(() => {
+                updateConnectionStatus(false);
+            });
+
+            connection.onreconnecting(() => {
+                updateConnectionStatus(false);
+            });
+
+            connection.onreconnected(() => {
+                updateConnectionStatus(true);
+            });
+
+            try {
+                await connection.start();
+                updateConnectionStatus(true);
+                console.log("SignalR connected");
+            } catch (err) {
+                console.error("SignalR connection error:", err);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.textContent = '✅ Connected';
+                statusEl.className = 'connection-status connected';
+            } else {
+                statusEl.textContent = '⚠️ Disconnected';
+                statusEl.className = 'connection-status disconnected';
+            }
+        }
+
+        function addNotification(notification) {
+            notifications.unshift(notification);
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notifications');
+            if (notifications.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No notifications yet...</p>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(n => `
+                <div class="notification-item">
+                    <h3>${n.title || 'Notification'}</h3>
+                    <p>${n.message || ''}</p>
+                    <p><strong>Route:</strong> ${n.route || 'N/A'}</p>
+                    <p class="time">${new Date(n.createdAt || Date.now()).toLocaleString()}</p>
+                </div>
+            `).join('');
+        }
+
+        async function sendNotification(route, parameters) {
+            const userId = document.getElementById('testUserId').value;
+            const payload = {
+                route: route,
+                channel: "Email",
+                parameters: parameters
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/notification`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log(`${route} notification sent successfully`);
+                } else {
+                    console.error(`Failed to send ${route} notification:`, await response.text());
+                    alert(`Failed to send notification. Make sure the backend is running.`);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('Network error. Make sure the backend is running on http://localhost:5000');
+            }
+        }
+
+        function sendUserRegistered() {
+            const userId = document.getElementById('testUserId').value;
+            sendNotification('UserRegistered', {
+                UserId: userId,
+                WelcomeMessage: "Welcome to our awesome notification service!"
+            });
+        }
+
+        function sendOrderCreated() {
+            const userId = document.getElementById('testUserId').value;
+            sendNotification('OrderCreated', {
+                CustomerId: userId,
+                OrderNumber: `ORD-${Date.now()}`,
+                OrderTotal: 299.99,
+                ItemCount: 3
+            });
+        }
+
+        function sendTaskAssigned() {
+            const userId = document.getElementById('testUserId').value;
+            sendNotification('TaskAssigned', {
+                AssigneeId: userId,
+                AssignerId: userId,
+                TaskTitle: "Complete MVP Test Application",
+                TaskDescription: "Create a test application that demonstrates the notification service with SignalR",
+                Priority: "High",
+                DueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            });
+        }
+
+        async function sendBroadcast() {
+            try {
+                const response = await fetch(`${API_BASE}/notification/broadcast`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: "Broadcast Test",
+                        message: "This is a broadcast test notification sent to all connected clients!",
+                        route: "Broadcast"
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Broadcast sent successfully');
+                } else {
+                    console.error('Failed to send broadcast:', await response.text());
+                    alert('Failed to send broadcast. Make sure the backend is running.');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('Network error. Make sure the backend is running on http://localhost:5000');
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            initSignalR();
+        });
+    </script>
+</body>
+</html>

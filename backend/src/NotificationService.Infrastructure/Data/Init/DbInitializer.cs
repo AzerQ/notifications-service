@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotificationService.Domain.Models;
@@ -8,7 +9,14 @@ namespace NotificationService.Infrastructure.Data.Init;
 
 public static class DbInitializer
 {
-    public static async Task InitializeAsync(IServiceProvider services)
+
+    private static void SeedTestUsers(IConfiguration configuration, NotificationDbContext notificationDbContext)
+    {
+       var users =  configuration.GetSection("SeedUsers").Get<List<User>>() ?? [];
+       notificationDbContext.Users.AddRange(users);
+    }
+
+    public static async Task InitializeAsync(IServiceProvider services, IConfiguration configutation, bool isProduction = true)
     {
         using var scope = services.CreateScope();
         var scopedProvider = scope.ServiceProvider;
@@ -22,16 +30,9 @@ public static class DbInitializer
             ITemplateLoader templateLoader = scopedProvider.GetRequiredService<ITemplateLoader>();
             await templateLoader.LoadTemplatesAsync();
             
-            if (!await context.Users.AnyAsync())
+            if (!isProduction && !await context.Users.AnyAsync())
             {
-                var user = new User
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Test User",
-                    Email = "test@example.com",
-                    CreatedAt = DateTime.UtcNow
-                };
-                await context.Users.AddAsync(user);
+               SeedTestUsers(configutation, context);
             }
 
             await context.SaveChangesAsync();

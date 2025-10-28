@@ -38,6 +38,12 @@ public class UserRepository : IUserRepository
         return user;
     }
 
+    public async Task CreateUsersAync(IEnumerable<User> users)
+    {
+        await _context.Users.AddRangeAsync(users);
+        await  _context.SaveChangesAsync();
+    }
+
     public async Task UpdateUserAsync(User user)
     {
         ArgumentNullException.ThrowIfNull(user);

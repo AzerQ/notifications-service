@@ -1,0 +1,6 @@
+{
+  "Name": "UserRegistered",
+  "FilePath": "UserRegistered.hbs",
+  "Subject": "Welcome to the Notification Service!",
+  "Channel": "Email"
+}

@@ -5,6 +5,7 @@ namespace NotificationService.Domain.Interfaces;
 public interface IUserRepository: IUserReadOnlyRepository
 {
     Task<User> CreateUserAsync(User user);
+    Task CreateUsersAync(IEnumerable<User> users);
     Task UpdateUserAsync(User user);
     Task DeleteUserAsync(Guid id);
 }

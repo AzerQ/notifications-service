@@ -1,6 +1,5 @@
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
-using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Mappers;
@@ -10,22 +9,20 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
     public NotificationResponseDto MapToResponse(IEnumerable<Notification> notifications)
     {
         var notificationsList = notifications.ToList();
-        var notification = notificationsList.FirstOrDefault();
-        var recipients = notificationsList.Select(n => n.Recipient);
-        
-        ArgumentNullException.ThrowIfNull(notification);
+        var firstNotification = notificationsList.FirstOrDefault();
+        var recipients = notificationsList.Select(n => n.Recipient).ToList();
+        string statusMessage = recipients.Count < 0 ?
+         "Notification not sended (Not found recipients)"
+         : "Notification sended successfully";
 
         return new NotificationResponseDto
         {
-            Id = notification.Id,
-            Title = notification.Title,
-            Message = notification.Message,
-            Route = notification.Route,
-            CreatedAt = notification.CreatedAt,
+            Title = firstNotification?.Title,
+            Route = firstNotification?.Route ?? "",
+            CreatedAt = firstNotification?.CreatedAt ?? DateTime.MinValue,
             Recipients = recipients.Select(MapToUserDto),
             CreatedNotificationIds = notificationsList.Select(n => n.Id),
-            Channel = notification.Channel,
-            Status = notification.Status
+            StatusMessage = statusMessage
         };
     }
 
@@ -47,11 +44,15 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             Title = renderedSubject,
             Message = renderedContent,
             Route = request.Route,
-            Channel = request.Channel,
             Template = template,
-            CreatedAt = DateTime.UtcNow,
-            Status = NotificationStatus.Pending
+            CreatedAt = DateTime.UtcNow
         };
+
+        if (request.Channels is not null 
+            && request.Channels.Length != 0)
+        {
+            notification.DeliveryChannelsState = Notification.ChannelsDefaultState(request.Channels);
+        }
         
         var recipients = await notificationDataResolver.ResolveNotificationRecipients(request);
         return recipients.Select(recipient => notification with { Id = Guid.NewGuid(), Recipient = recipient });
