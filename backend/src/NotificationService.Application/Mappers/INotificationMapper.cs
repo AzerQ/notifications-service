@@ -1,6 +1,5 @@
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
-using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Mappers;

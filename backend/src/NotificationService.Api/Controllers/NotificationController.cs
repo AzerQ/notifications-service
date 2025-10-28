@@ -29,7 +29,7 @@ public class NotificationController : ControllerBase
     /// </summary>
     /// <param name="request">Данные уведомления.</param>
     /// <returns>Созданное уведомление.</returns>
-    [HttpPost("{notificationCategory}/{route}")]
+    [HttpPost("{notificationCategory?}/{route}")]
     [ProducesResponseType(typeof(NotificationResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<NotificationResponseDto>> SendAsync(NotificationRequest request)

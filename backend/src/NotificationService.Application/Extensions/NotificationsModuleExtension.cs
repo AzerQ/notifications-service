@@ -13,9 +13,9 @@ public static class NotificationsModuleExtension
         params Assembly[] notificationAssemblies)
     {
 
-        IEnumerable<INotificationServicesRegistrator> customServiceRegistrars = notificationAssemblies
-            .SelectMany(assembly => assembly.GetImplementingTypes(typeof(INotificationServicesRegistrator)))
-            .Select(type => (INotificationServicesRegistrator)Activator.CreateInstance(type)!);
+        IEnumerable<INotificationServicesRegister> customServiceRegistrars = notificationAssemblies
+            .SelectMany(assembly => assembly.GetImplementingTypes(typeof(INotificationServicesRegister)))
+            .Select(type => (INotificationServicesRegister)Activator.CreateInstance(type)!);
 
             foreach (var registrar in customServiceRegistrars)
             {
@@ -28,7 +28,7 @@ public static class NotificationsModuleExtension
                 
                 .AddClasses(classes => classes.AssignableTo(typeof(INotificationDataResolver)))
                 .AsSelf()
-                .WithTransientLifetime()
+                .WithSingletonLifetime()
                 
                 .AddClasses(classes => classes.AssignableTo<INotificationRouteConfiguration>())
                 .AsSelf()

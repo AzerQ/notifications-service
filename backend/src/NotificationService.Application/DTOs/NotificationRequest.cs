@@ -20,4 +20,10 @@ public class NotificationRequest
 
     [FromBody]
     public required JsonElement Parameters { get; set; }
+
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new () {
+                PropertyNameCaseInsensitive = true
+    };
+
+    public T? GetData<T>() => Parameters.Deserialize<T>(JsonSerializerOptions);
 }

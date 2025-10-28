@@ -19,7 +19,7 @@ public class UserRegisteredDataResolver : INotificationDataResolver
 
     public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
     {
-        var parameters = JsonSerializer.Deserialize<UserRegisteredRequestData>(notificationRequest.Parameters);
+        var parameters = notificationRequest.GetData<UserRegisteredRequestData>();
         
         if (parameters?.UserId == null)
         {
@@ -32,8 +32,7 @@ public class UserRegisteredDataResolver : INotificationDataResolver
 
     public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
-        var parameters = JsonSerializer.Deserialize<UserRegisteredRequestData>(notificationRequest.Parameters);
-        
+        var parameters = notificationRequest.GetData<UserRegisteredRequestData>();
         if (parameters?.UserId == null)
         {
             throw new ArgumentException("UserId is required");

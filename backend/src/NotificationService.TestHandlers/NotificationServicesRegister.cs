@@ -5,7 +5,7 @@ using NotificationService.Application.Interfaces;
 namespace NotificationService.TestHandlers;
 
 
-public class NotificationServicesRegistrator : INotificationServicesRegistrator
+public class NotificationServicesRegister : INotificationServicesRegister
 {
     public IServiceCollection RegisterServices(IServiceCollection serviceCollection, IConfiguration configuration) =>
         serviceCollection;
