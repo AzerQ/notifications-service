@@ -32,7 +32,7 @@ public class NotificationRoutesContext(IServiceProvider serviceProvider)
     /// </summary>
     /// <param name="notificationRouteConfiguration">Конфигурация маршрута</param>
     /// <returns>Текущий экземпляр контекста для цепочки вызовов</returns>
-    public NotificationRoutesContext AddNotificationRoteConfig(INotificationRouteConfiguration notificationRouteConfiguration)
+    public NotificationRoutesContext AddNotificationRouteConfig(INotificationRouteConfiguration notificationRouteConfiguration)
     {
         _notificationRoutes.Add(notificationRouteConfiguration.Name, notificationRouteConfiguration);
         return this;
@@ -52,7 +52,7 @@ public class NotificationRoutesContext(IServiceProvider serviceProvider)
         return serviceObj switch
         {
             INotificationDataResolver notificationDataResolver => AddNotificationDataResolver(notificationDataResolver),
-            INotificationRouteConfiguration notificationRouteConfiguration => AddNotificationRoteConfig(
+            INotificationRouteConfiguration notificationRouteConfiguration => AddNotificationRouteConfig(
                 notificationRouteConfiguration),
             _ => throw new Exception($"Cannot resolve service {impType.FullName} from DI")
         };
