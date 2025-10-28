@@ -9,20 +9,20 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
     public NotificationResponseDto MapToResponse(IEnumerable<Notification> notifications)
     {
         var notificationsList = notifications.ToList();
-        var notification = notificationsList.FirstOrDefault();
-        var recipients = notificationsList.Select(n => n.Recipient);
-        
-        ArgumentNullException.ThrowIfNull(notification);
+        var firstNotification = notificationsList.FirstOrDefault();
+        var recipients = notificationsList.Select(n => n.Recipient).ToList();
+        string statusMessage = recipients.Count < 0 ?
+         "Notification not sended (Not found recipients)"
+         : "Notification sended successfully";
 
         return new NotificationResponseDto
         {
-            Id = notification.Id,
-            Title = notification.Title,
-            Message = notification.Message,
-            Route = notification.Route,
-            CreatedAt = notification.CreatedAt,
+            Title = firstNotification?.Title,
+            Route = firstNotification?.Route ?? "",
+            CreatedAt = firstNotification?.CreatedAt ?? DateTime.MinValue,
             Recipients = recipients.Select(MapToUserDto),
-            CreatedNotificationIds = notificationsList.Select(n => n.Id)
+            CreatedNotificationIds = notificationsList.Select(n => n.Id),
+            StatusMessage = statusMessage
         };
     }
 

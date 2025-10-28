@@ -39,9 +39,7 @@ public class NotificationController : ControllerBase
         // Broadcast notification via SignalR
         await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
         {
-            id = result.Id,
             title = result.Title,
-            message = result.Message,
             route = result.Route,
             createdAt = result.CreatedAt
         });

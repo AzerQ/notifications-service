@@ -19,7 +19,7 @@ public class TaskAssignedDataResolver : INotificationDataResolver
 
     public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
     {
-        var parameters = JsonSerializer.Deserialize<TaskAssignedRequestData>(notificationRequest.Parameters);
+        var parameters = notificationRequest.GetData<TaskAssignedRequestData>();
         
         if (parameters?.AssigneeId == null)
         {
@@ -32,7 +32,7 @@ public class TaskAssignedDataResolver : INotificationDataResolver
 
     public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
-        var parameters = JsonSerializer.Deserialize<TaskAssignedRequestData>(notificationRequest.Parameters);
+        var parameters = notificationRequest.GetData<TaskAssignedRequestData>();
         
         if (parameters?.AssigneeId == null || parameters?.AssignerId == null)
         {

@@ -19,7 +19,7 @@ public class OrderCreatedDataResolver : INotificationDataResolver
 
     public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
     {
-        var parameters = JsonSerializer.Deserialize<OrderCreatedRequestData>(notificationRequest.Parameters);
+        var parameters = notificationRequest.GetData<OrderCreatedRequestData>();
         
         if (parameters?.CustomerId == null)
         {
@@ -32,7 +32,7 @@ public class OrderCreatedDataResolver : INotificationDataResolver
 
     public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
-        var parameters = JsonSerializer.Deserialize<OrderCreatedRequestData>(notificationRequest.Parameters);
+        var parameters = notificationRequest.GetData<OrderCreatedRequestData>();
         
         if (parameters?.CustomerId == null)
         {
