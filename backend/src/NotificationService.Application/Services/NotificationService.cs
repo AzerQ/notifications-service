@@ -6,6 +6,10 @@ using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Services;
 
+/// <summary>
+/// Сервис для выполнения команд создания и отправки уведомлений.
+/// Координирует весь процесс от получения запроса до отправки уведомления.
+/// </summary>
 public class NotificationCommandService 
     (NotificationRoutesContext notificationRoutesContext,
     INotificationRepository notificationRepository,
@@ -14,6 +18,14 @@ public class NotificationCommandService
     INotificationMapper notificationMapper) : INotificationCommandService
 {
     
+    /// <summary>
+    /// Обрабатывает запрос на создание и отправку уведомления.
+    /// Выполняет резолвинг данных, создание уведомления, сохранение в БД и отправку по каналам.
+    /// </summary>
+    /// <param name="request">Запрос на создание уведомления</param>
+    /// <returns>DTO ответа с информацией о созданном уведомлении</returns>
+    /// <exception cref="ArgumentNullException">Выбрасывается, если запрос null</exception>
+    /// <exception cref="ArgumentException">Выбрасывается, если шаблон не найден</exception>
     public async Task<NotificationResponseDto> ProcessNotificationRequestAsync(NotificationRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -38,6 +50,10 @@ public class NotificationCommandService
     }
 }
 
+/// <summary>
+/// Сервис для выполнения запросов на чтение уведомлений.
+/// Предоставляет методы для получения уведомлений по различным критериям.
+/// </summary>
 public class NotificationQueryService : INotificationQueryService
 {
     private readonly INotificationRepository _notificationRepository;
@@ -51,18 +67,34 @@ public class NotificationQueryService : INotificationQueryService
         _notificationMapper = notificationMapper;
     }
 
+    /// <summary>
+    /// Получает уведомление по его идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор уведомления</param>
+    /// <returns>DTO уведомления или null, если не найдено</returns>
     public async Task<NotificationResponseDto?> GetByIdAsync(Guid id)
     {
         var notification = await _notificationRepository.GetNotificationByIdAsync(id);
         return notification is null ? null : _notificationMapper.MapToResponse([notification]);
     }
 
+    /// <summary>
+    /// Получает все уведомления для указанного пользователя.
+    /// </summary>
+    /// <param name="userId">Идентификатор пользователя</param>
+    /// <returns>Коллекция DTO уведомлений пользователя</returns>
     public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByUserAsync(Guid userId)
     {
         var notifications = await _notificationRepository.GetNotificationsForUserAsync(userId);
         return notifications.Select(n => _notificationMapper.MapToResponse([n])).ToArray();
     }
 
+    /// <summary>
+    /// Получает уведомления по статусу доставки.
+    /// </summary>
+    /// <param name="status">Статус доставки (строка)</param>
+    /// <returns>Коллекция DTO уведомлений с указанным статусом</returns>
+    /// <exception cref="ArgumentException">Выбрасывается, если статус неизвестен</exception>
     public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByStatusAsync(string status)
     {
         if (!Enum.TryParse<NotificationDeliveryStatus>(status, true, out var parsedStatus))

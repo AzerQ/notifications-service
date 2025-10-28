@@ -85,6 +85,19 @@ await connection.start();
 - Main parameters: `ConnectionStrings:Notifications` (SQLite), `Email` section (SMTP)
 
 ## Documentation
+
+Полная документация проекта доступна в разделе [docs/](./docs/README.md):
+
+1. [**Обзор и цели системы**](./docs/01-Overview.md) — назначение, возможности, технологический стек
+2. [**Архитектура системы**](./docs/02-Architecture.md) — структура, слои, компоненты, диаграммы
+3. [**Ключевые компоненты**](./docs/03-Components.md) — детальное описание всех компонентов
+4. [**Справочник API**](./docs/04-API.md) — полная документация REST API и SignalR Hub
+5. [**Frontend компоненты**](./docs/05-Frontend.md) — документация React компонентов
+6. [**Руководство разработчика**](./docs/06-Development-Guide.md) — добавление новых обработчиков и каналов
+7. [**Руководство по интеграции**](./docs/07-Integration-Guide.md) — встраивание в существующие приложения
+
+### Дополнительные ресурсы
+
 - Architecture: `docs/reference/Architecture.md`
 - Configuration: `docs/reference/Configuration.md`
 - Database and migrations: `docs/reference/Database.md`
