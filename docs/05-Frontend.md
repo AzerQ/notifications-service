@@ -318,24 +318,6 @@ function App() {
 
 Toast-уведомления для отображения временных всплывающих сообщений.
 
-#### ToastProvider
-
-Provider для управления toast-уведомлениями.
-
-**Файл:** `src/NotificationsBar/Toast/ToastProvider.tsx`
-
-```typescript
-import { ToastProvider } from './NotificationsBar/Toast';
-
-function App() {
-  return (
-    <ToastProvider>
-      <YourApp />
-    </ToastProvider>
-  );
-}
-```
-
 #### ToastNotification
 
 Компонент отдельного toast-уведомления.
@@ -524,34 +506,6 @@ export function countUnread(notifications: BaseNotification[]): number {
 
 ## Примеры использования
 
-### Простое использование
-
-```typescript
-import React from 'react';
-import { NotificationCenterWithStore, ToastProvider } from 'sed-notifications-frontend';
-
-function App() {
-  return (
-    <ToastProvider>
-      <div className="app">
-        <header>
-          <h1>My App</h1>
-          <NotificationCenterWithStore 
-            userId="user-123"
-            signalRUrl="http://localhost:5000/notificationHub"
-          />
-        </header>
-        <main>
-          {/* Your app content */}
-        </main>
-      </div>
-    </ToastProvider>
-  );
-}
-
-export default App;
-```
-
 ### Продвинутое использование с фильтрацией
 
 ```typescript
@@ -607,66 +561,6 @@ function NotificationsPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-```
-
-### Использование с SignalR
-
-```typescript
-import React, { useState, useEffect } from 'react';
-import * as signalR from "@microsoft/signalr";
-import { BaseNotification } from 'sed-notifications-frontend';
-
-function RealTimeNotifications() {
-  const [notifications, setNotifications] = useState<BaseNotification[]>([]);
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
-
-  useEffect(() => {
-    // Создание подключения
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:5000/notificationHub")
-      .withAutomaticReconnect()
-      .build();
-
-    setConnection(newConnection);
-  }, []);
-
-  useEffect(() => {
-    if (connection) {
-      connection.start()
-        .then(() => {
-          console.log('Connected to SignalR');
-          
-          // Подписка на уведомления
-          connection.on("ReceiveNotification", (notification: BaseNotification) => {
-            setNotifications(prev => [notification, ...prev]);
-            
-            // Показать toast
-            showToast({
-              title: notification.title,
-              message: notification.content,
-              type: 'info',
-            });
-          });
-        })
-        .catch(err => console.error('Connection error:', err));
-    }
-
-    return () => {
-      connection?.stop();
-    };
-  }, [connection]);
-
-  return (
-    <div>
-      <h2>Real-time Notifications ({notifications.length})</h2>
-      <ul>
-        {notifications.map(n => (
-          <li key={n.id}>{n.title}</li>
-        ))}
-      </ul>
     </div>
   );
 }

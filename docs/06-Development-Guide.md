@@ -690,41 +690,6 @@ public class NotificationSenderTests
 }
 ```
 
-### Integration тесты
-
-```csharp
-public class NotificationIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
-{
-    private readonly HttpClient _client;
-
-    public NotificationIntegrationTests(WebApplicationFactory<Program> factory)
-    {
-        _client = factory.CreateClient();
-    }
-
-    [Fact]
-    public async Task SendNotification_ReturnsSuccess()
-    {
-        // Arrange
-        var request = new
-        {
-            route = "UserRegistered",
-            channel = "Email",
-            parameters = new
-            {
-                UserId = "00000000-0000-0000-0000-000000000001"
-            }
-        };
-
-        // Act
-        var response = await _client.PostAsJsonAsync("/api/notification", request);
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-    }
-}
-```
-
 ---
 
 ## Лучшие практики

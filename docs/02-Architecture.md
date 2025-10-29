@@ -6,55 +6,16 @@
 
 ### Диаграмма высокого уровня
 
-```plantuml
-@startuml
-!define LAYER_COLOR #E1F5FE
-!define COMPONENT_COLOR #F3E5F5
+![Overall Architecture](./diagrams/OVERALL_ARCHITECTURE.puml)
 
-rectangle "Presentation Layer" #E1F5FE {
-    component "REST API\nControllers" as REST
-    component "SignalR Hub\nReal-time notifications" as SIGNALR
-}
+Система состоит из 4 основных слоев:
 
-rectangle "Application Layer" #F3E5F5 {
-    component "Command/Query Services\nDTOs & Mappers\nRoute Context" as APP_SERVICES
-    component "Notification Sender\nData Resolvers\nTemplate Renderer" as APP_SUPPORT
-}
-
-rectangle "Domain Layer" #E8F5E9 {
-    component "Models: Notification, User, Template\nInterfaces: Repositories, Providers, Services\nEnums: Channel, Status\nValidators" as DOMAIN
-}
-
-rectangle "Infrastructure Layer" #FFF3E0 {
-    component "EF Core\nDbContext\nRepositories" as EF_CORE
-    component "Email SMTP\nProvider\nSMS/Push" as EMAIL_PROVIDER
-    component "Template\nRenderer\n(Handlebars)" as TEMPLATE_RENDERER
-}
-
-rectangle "External Dependencies" #F1F8E9 {
-    component "SQLite DB" as DB
-    component "SMTP Server" as SMTP
-    component "External APIs" as EXTERNAL_API
-}
-
-REST --> APP_SERVICES
-SIGNALR --> APP_SERVICES
-APP_SERVICES --> APP_SUPPORT
-APP_SERVICES --> DOMAIN
-APP_SUPPORT --> DOMAIN
-DOMAIN --> EF_CORE
-DOMAIN --> EMAIL_PROVIDER
-DOMAIN --> TEMPLATE_RENDERER
-EF_CORE --> DB
-EMAIL_PROVIDER --> SMTP
-TEMPLATE_RENDERER --> EXTERNAL_API
-
-@enduml
-```
+1. **Presentation Layer** — REST API контроллеры и SignalR Hub
+2. **Application Layer** — бизнес-логика и оркестрация
+3. **Domain Layer** — доменные модели и интерфейсы
+4. **Infrastructure Layer** — реализация доступа к данным и внешним сервисам
 
 ## Многослойная структура
-
-Проект разделен на следующие проекты/слои:
 
 ### 1. NotificationService.Domain (Доменный слой)
 
@@ -62,13 +23,14 @@ TEMPLATE_RENDERER --> EXTERNAL_API
 
 **Не зависит от других слоев** (кроме BCL).
 
-**Содержит:**
-- Доменные модели (`Notification`, `User`, `NotificationTemplate`, `UserRoutePreference`)
-- Перечисления (`NotificationChannel`, `NotificationDeliveryStatus`)
-- Интерфейсы репозиториев (`INotificationRepository`, `IUserRepository`, `ITemplateRepository`)
-- Интерфейсы провайдеров (`IEmailProvider`, `ISmsProvider`, `IPushNotificationProvider`)
-- Валидаторы (`NotificationValidator`)
-- Конфигурационные интерфейсы (`INotificationRouteConfiguration`)
+**Основные компоненты:**
+- **Модели:** `Notification`, `User`, `NotificationTemplate`, `UserRoutePreference`
+- **Перечисления:** `NotificationChannel`, `NotificationDeliveryStatus`
+- **Интерфейсы репозиториев:** `INotificationRepository`, `IUserRepository`, `ITemplateRepository`
+- **Интерфейсы провайдеров:** `IEmailProvider`, `ISmsProvider`, `IPushNotificationProvider`
+- **Конфигурационные интерфейсы:** `INotificationRouteConfiguration`
+
+[Подробная диаграмма Domain слоя](./diagrams/DOMAIN_LAYER.puml)
 
 ### 2. NotificationService.Application (Прикладной слой)
 
@@ -76,15 +38,14 @@ TEMPLATE_RENDERER --> EXTERNAL_API
 
 **Зависит от:** Domain
 
-**Содержит:**
-- DTO (Data Transfer Objects) для API (`NotificationRequest`, `NotificationResponseDto`, `UserDto`)
-- Интерфейсы сервисов (`INotificationCommandService`, `INotificationQueryService`, `INotificationSender`)
-- Реализации сервисов (`NotificationCommandService`, `NotificationQueryService`, `NotificationSender`)
-- Мапперы (`INotificationMapper`, `NotificationMapper`)
-- Интерфейсы для разрешения данных (`INotificationDataResolver`)
-- Интерфейсы рендеринга шаблонов (`ITemplateRenderer`)
-- Контекст маршрутов (`NotificationRoutesContext`)
-- Extension-методы для регистрации в DI
+**Основные компоненты:**
+- **Сервисы:** `NotificationCommandService`, `NotificationQueryService`, `NotificationSender`
+- **Маршруты:** `NotificationRoutesContext` — реестр обработчиков уведомлений
+- **Резолверы данных:** `INotificationDataResolver` — получение данных для уведомлений
+- **Маппинг:** `NotificationMapper` — преобразование между моделями и DTO
+- **DTO:** `NotificationRequest`, `NotificationResponseDto`, `UserDto`
+
+[Подробная диаграмма Application слоя](./diagrams/APPLICATION_LAYER.puml)
 
 ### 3. NotificationService.Infrastructure (Инфраструктурный слой)
 
@@ -92,15 +53,14 @@ TEMPLATE_RENDERER --> EXTERNAL_API
 
 **Зависит от:** Domain, Application (частично)
 
-**Содержит:**
-- EF Core контекст базы данных (`NotificationDbContext`)
-- Конфигурации сущностей (Fluent API)
-- Реализации репозиториев (`NotificationRepository`, `UserRepository`, `TemplateRepository`)
-- Реализации провайдеров отправки (`SmtpEmailProvider`)
-- Обвязка для SMTP (`SmtpClientFactory`, `SmtpClientWrapper`)
-- Рендеринг шаблонов (`HandlebarsTemplateRenderer`, `FileSystemTemplateProvider`)
-- Инициализация БД и миграции (`DbInitializer`)
-- Опции конфигурации (`EmailProviderOptions`, `TemplateOptions`)
+**Основные компоненты:**
+- **EF Core:** `NotificationDbContext`, конфигурации сущностей
+- **Репозитории:** `NotificationRepository`, `UserRepository`, `TemplateRepository`
+- **Email провайдер:** `SmtpEmailProvider`, `SmtpClientFactory`
+- **Рендеринг шаблонов:** `HandlebarsTemplateRenderer`, `FileSystemTemplateProvider`
+- **Инициализация БД:** `DbInitializer`, миграции
+
+[Подробная диаграмма Infrastructure слоя](./diagrams/INFRASTRUCTURE_LAYER.puml)
 
 ### 4. NotificationService.Api (API слой)
 
@@ -108,13 +68,13 @@ TEMPLATE_RENDERER --> EXTERNAL_API
 
 **Зависит от:** Application, Infrastructure
 
-**Содержит:**
-- Контроллеры REST API (`NotificationController`, `UsersController`, `UserRoutePreferencesController`)
-- SignalR Hubs (`NotificationHub`)
-- Middleware (`ErrorHandlingMiddleware`)
-- DI конфигурация (`NotificationServiceDiConfigurationExtensions`)
-- Swagger расширения (`NotificationDocumentFilter`)
-- Точка входа приложения (`Program.cs`)
+**Основные компоненты:**
+- **Контроллеры:** `NotificationController`, `UsersController`, `UserRoutePreferencesController`
+- **SignalR Hub:** `NotificationHub` для real-time уведомлений
+- **Middleware:** `ErrorHandlingMiddleware` для обработки ошибок
+- **DI конфигурация:** регистрация всех сервисов
+
+[Подробная диаграмма API слоя](./diagrams/API_LAYER.puml)
 
 ### 5. NotificationService.TestHandlers (Тестовые обработчики)
 
@@ -122,14 +82,19 @@ TEMPLATE_RENDERER --> EXTERNAL_API
 
 **Зависит от:** Domain, Application
 
-**Содержит:**
-- Реализации обработчиков для различных типов уведомлений:
-  - `UserRegistered` — регистрация пользователя
-  - `OrderCreated` — создание заказа
-  - `TaskAssigned` — назначение задачи
-- HTML шаблоны (`.hbs` файлы)
-- Конфигурации шаблонов (`template.json`)
-- Регистрацию обработчиков (`NotificationServicesRegister`)
+**Структура обработчика:**
+```
+MyNotification/
+├── MyNotificationDataResolver.cs      # Резолвер данных
+├── MyNotificationRouteConfig.cs       # Конфигурация маршрута
+├── MyNotification.hbs                 # HTML шаблон
+└── template.json                      # Метаданные шаблона
+```
+
+**Примеры обработчиков:**
+- `UserRegistered` — регистрация пользователя
+- `OrderCreated` — создание заказа
+- `TaskAssigned` — назначение задачи
 
 ## Взаимодействие слоев
 
@@ -143,72 +108,22 @@ TEMPLATE_RENDERER --> EXTERNAL_API
 
 ### Поток данных (вертикальный срез)
 
-#### Создание и отправка уведомления
+[Диаграмма потока данных при обработке уведомления](./diagrams/DATA_FLOW.puml)
 
-```mermaid
-sequenceDiagram
-    participant Client as HTTP Client
-    participant Controller as NotificationController
-    participant CommandService as NotificationCommandService
-    participant RoutesContext as NotificationRoutesContext
-    participant Repository as NotificationRepository
-    participant Sender as NotificationSender
-    participant EmailProvider as EmailProvider
-
-    Client->>Controller: 1. POST /notifications (request)
-    Controller->>CommandService: 2. ProcessNotificationRequestAsync(request)
-    CommandService->>RoutesContext: 3. GetDataResolverForRoute(route)
-    RoutesContext-->>CommandService: DataResolver
-    CommandService->>Repository: 4. SaveNotificationsAsync(notifications)
-    Repository-->>CommandService: Saved
-    CommandService->>Sender: 5. SendAsync(notification)
-    Sender->>EmailProvider: 6. SendEmailAsync(...) [Infrastructure]
-    EmailProvider-->>Sender: Sent
-    Sender->>Repository: 7. UpdateNotificationsAsync(notification)
-    Repository-->>Sender: Updated
-    Sender-->>CommandService: Completed
-    CommandService-->>Controller: Result
-    Controller-->>Client: 8. Return NotificationResponseDto
-```
-
-#### Получение уведомлений пользователя
-
-```mermaid
-sequenceDiagram
-    participant Client as HTTP Client
-    participant Controller as NotificationController
-    participant QueryService as NotificationQueryService
-    participant Repository as NotificationRepository
-    participant Mapper as NotificationMapper
-
-    Client->>Controller: 1. GET /notifications/{userId}
-    Controller->>QueryService: 2. GetByUserAsync(userId)
-    QueryService->>Repository: 3. GetNotificationsForUserAsync(userId)
-    Repository-->>QueryService: notifications[]
-    QueryService->>Mapper: 4. MapToResponse(notifications)
-    Mapper-->>QueryService: NotificationResponseDto[]
-    QueryService-->>Controller: Result
-    Controller-->>Client: 5. Return List<NotificationResponseDto>
-```
+**Основные этапы:**
+1. HTTP запрос поступает в контроллер
+2. Контроллер передает запрос в CommandService
+3. CommandService получает резолвер данных из NotificationRoutesContext
+4. Резолвер определяет получателей и подготавливает данные
+5. Mapper создает объекты Notification с рендеринговым шаблоном
+6. Уведомления сохраняются в БД
+7. NotificationSender отправляет по всем активным каналам
+8. Статусы доставки обновляются в БД
+9. Ответ возвращается клиенту
 
 ## Ключевые компоненты системы
 
-### 1. Notification (Доменная модель)
-
-Центральная сущность системы, представляющая уведомление.
-
-**Свойства:**
-- `Id` — уникальный идентификатор
-- `Title` — заголовок уведомления
-- `Message` — содержимое уведомления
-- `Route` — тип/маршрут уведомления
-- `CreatedAt` — время создания
-- `Recipient` — получатель (User)
-- `Template` — шаблон для форматирования
-- `Metadata` — метаданные (ключ-значение-описание)
-- `DeliveryChannelsState` — статусы доставки по каналам
-
-### 2. NotificationRoutesContext
+### NotificationRoutesContext
 
 Центральный реестр маршрутов уведомлений и их обработчиков.
 
@@ -217,7 +132,7 @@ sequenceDiagram
 - Получение резолвера данных по маршруту
 - Получение конфигурации маршрута
 
-### 3. NotificationSender
+### NotificationSender
 
 Сервис оркестрации отправки уведомлений по различным каналам.
 
@@ -227,22 +142,22 @@ sequenceDiagram
 - Отправка по всем активным каналам
 - Обновление статусов доставки
 
-### 4. INotificationDataResolver
+### INotificationDataResolver
 
 Интерфейс для резолверов данных уведомлений.
 
 **Ответственность:**
 - Получение данных получателей по параметрам запроса
-- Обогащение уведомления данными
+- Обогащение уведомления данными для шаблона
 
-### 5. Провайдеры каналов доставки
+### Провайдеры каналов доставки
 
 Реализации для различных каналов:
 - `IEmailProvider` / `SmtpEmailProvider` — Email через SMTP
 - `ISmsProvider` — SMS (интерфейс для расширения)
 - `IPushNotificationProvider` — Push-уведомления (интерфейс для расширения)
 
-### 6. Template System
+### Template System
 
 Система шаблонов для форматирования уведомлений.
 
@@ -316,7 +231,7 @@ Entity Framework Core используется для создания и при
 ## Безопасность
 
 ### Валидация
-- Валидация данных на уровне Domain (`NotificationValidator`)
+- Валидация данных на уровне Domain
 - Проверка входных данных в контроллерах
 
 ### Обработка ошибок

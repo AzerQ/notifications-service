@@ -1,55 +1,29 @@
 # Ключевые компоненты системы
 
-Этот документ содержит подробное описание всех ключевых компонентов сервиса уведомлений.
+Этот документ содержит описание основных компонентов сервиса уведомлений с акцентом на концепции и интерфейсы.
 
 ## Доменный слой (Domain Layer)
 
-### Notification
+### Notification (Доменная модель)
 
-Центральная доменная модель, представляющая уведомление.
+Центральная сущность системы, представляющая уведомление.
 
-**Файл:** `backend/src/NotificationService.Domain/Models/Notification.cs`
-
-```csharp
-public record Notification
-{
-    public Guid Id { get; set; }
-    public required string Title { get; set; }
-    public required string Message { get; set; }
-    public required string Route { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public User Recipient { get; set; }
-    public NotificationTemplate? Template { get; set; }
-    public ICollection<NotificationMetadataField> Metadata { get; set; }
-    public ICollection<NotificationChannelDeliveryStatus> DeliveryChannelsState { get; set; }
-}
-```
-
-**Свойства:**
+**Ключевые свойства:**
 - `Id` — уникальный идентификатор уведомления
 - `Title` — заголовок уведомления
 - `Message` — основное содержимое/текст уведомления
 - `Route` — тип/маршрут уведомления (например, "UserRegistered")
 - `CreatedAt` — дата и время создания
-- `Recipient` — получатель уведомления
+- `Recipient` — получатель уведомления (User)
 - `Template` — связанный шаблон для форматирования
 - `Metadata` — дополнительные метаданные в формате ключ-значение
 - `DeliveryChannelsState` — статусы доставки по каналам
 
+**Особенность:** Использует метод `ChannelsDefaultState()` для инициализации каналов доставки по умолчанию (Email и Push).
+
 ### NotificationChannelDeliveryStatus
 
 Статус доставки уведомления по конкретному каналу.
-
-```csharp
-public record NotificationChannelDeliveryStatus
-{
-    public NotificationChannel NotificationChannel { get; init; }
-    public NotificationDeliveryStatus DeliveryStatus { get; set; }
-    public Guid NotificationId { get; set; }
-    public Notification Notification { get; set; }
-    public Guid Id { get; init; }
-}
-```
 
 **Свойства:**
 - `NotificationChannel` — канал доставки (Email, SMS, Push)
@@ -59,36 +33,13 @@ public record NotificationChannelDeliveryStatus
 
 Метаданные уведомления в формате ключ-значение-описание.
 
-```csharp
-public record NotificationMetadataField
-{
-    public Guid Id { get; set; }
-    public required string Key { get; set; }
-    public required string Value { get; set; }
-    public string? Description { get; set; }
-    public Guid NotificationId { get; set; }
-    public Notification Notification { get; set; }
-}
-```
+**Использование:** Хранит дополнительные параметры, которые могут быть использованы в шаблонах или для аналитики.
 
 ### User
 
 Модель пользователя-получателя уведомлений.
 
-**Файл:** `backend/src/NotificationService.Domain/Models/User.cs`
-
-```csharp
-public class User
-{
-    public Guid Id { get; set; }
-    public string Username { get; set; }
-    public string Email { get; set; }
-    public string? PhoneNumber { get; set; }
-    public string? DeviceToken { get; set; }
-}
-```
-
-**Свойства:**
+**Ключевые свойства:**
 - `Id` — уникальный идентификатор пользователя
 - `Username` — имя пользователя
 - `Email` — email адрес для доставки
@@ -99,16 +50,6 @@ public class User
 
 Шаблон для форматирования уведомлений.
 
-```csharp
-public class NotificationTemplate
-{
-    public Guid Id { get; set; }
-    public required string Name { get; set; }
-    public required string Subject { get; set; }
-    public required string Content { get; set; }
-}
-```
-
 **Свойства:**
 - `Name` — уникальное имя шаблона
 - `Subject` — тема/заголовок
@@ -118,20 +59,9 @@ public class NotificationTemplate
 
 Предпочтения пользователя по маршрутам уведомлений.
 
-```csharp
-public class UserRoutePreference
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public User User { get; set; }
-    public required string Route { get; set; }
-    public bool IsEnabled { get; set; }
-}
-```
+**Использование:** Позволяет пользователям включать/отключать определенные типы уведомлений.
 
 ### Перечисления (Enums)
-
-**Файл:** `backend/src/NotificationService.Domain/Models/Enums.cs`
 
 ```csharp
 // Каналы доставки уведомлений
@@ -152,97 +82,70 @@ public enum NotificationDeliveryStatus
 }
 ```
 
-### NotificationValidator
-
-Валидатор для проверки корректности уведомлений перед отправкой.
-
-**Файл:** `backend/src/NotificationService.Domain/Models/NotificationValidator.cs`
-
-```csharp
-public static class NotificationValidator
-{
-    public static ValidationResult Validate(Notification notification)
-    {
-        var errors = new List<string>();
-        
-        if (string.IsNullOrWhiteSpace(notification.Title))
-            errors.Add("Title is required");
-            
-        if (notification.Recipient == null)
-            errors.Add("Recipient is required");
-            
-        // ... дополнительные проверки
-        
-        return new ValidationResult(errors);
-    }
-}
-```
-
 ### Интерфейсы репозиториев
 
 #### INotificationRepository
 
-```csharp
-public interface INotificationRepository
-{
-    Task<Notification?> GetNotificationByIdAsync(Guid id);
-    Task<IReadOnlyCollection<Notification>> GetNotificationsForUserAsync(Guid userId);
-    Task<IReadOnlyCollection<Notification>> GetNotificationsByStatusAsync(
-        NotificationDeliveryStatus status);
-    Task SaveNotificationsAsync(params Notification[] notifications);
-    Task UpdateNotificationsAsync(params Notification[] notifications);
-}
-```
+Интерфейс для работы с уведомлениями в БД.
+
+**Основные методы:**
+- `GetNotificationByIdAsync(id)` — получить уведомление по ID
+- `GetNotificationsForUserAsync(userId)` — получить все уведомления пользователя
+- `GetNotificationsByStatusAsync(status)` — получить уведомления по статусу
+- `SaveNotificationsAsync(notifications)` — сохранить новые уведомления
+- `UpdateNotificationsAsync(notifications)` — обновить существующие уведомления
 
 #### IUserRepository
 
-```csharp
-public interface IUserRepository
-{
-    Task<User?> GetUserByIdAsync(Guid id);
-    Task<IReadOnlyCollection<User>> GetAllUsersAsync();
-    Task SaveUsersAsync(params User[] users);
-}
-```
+Интерфейс для работы с пользователями.
+
+**Основные методы:**
+- `GetUserByIdAsync(id)` — получить пользователя по ID
+- `GetAllUsersAsync()` — получить всех пользователей
+- `SaveUsersAsync(users)` — сохранить пользователей
 
 #### ITemplateRepository
 
-```csharp
-public interface ITemplateRepository
-{
-    Task<NotificationTemplate?> GetTemplateByNameAsync(string name);
-    Task<IReadOnlyCollection<NotificationTemplate>> GetAllTemplatesAsync();
-}
-```
+Интерфейс для работы с шаблонами.
+
+**Основные методы:**
+- `GetTemplateByNameAsync(name)` — получить шаблон по имени
+- `GetAllTemplatesAsync()` — получить все шаблоны
 
 ### Интерфейсы провайдеров
 
 #### IEmailProvider
 
+Интерфейс для отправки email уведомлений.
+
 ```csharp
-public interface IEmailProvider
-{
-    Task<bool> SendEmailAsync(string to, string subject, string body);
-}
+Task<bool> SendEmailAsync(string to, string subject, string body);
 ```
 
 #### ISmsProvider
 
+Интерфейс для отправки SMS уведомлений (для расширения).
+
 ```csharp
-public interface ISmsProvider
-{
-    Task<bool> SendSmsAsync(string phoneNumber, string message);
-}
+Task<bool> SendSmsAsync(string phoneNumber, string message);
 ```
 
 #### IPushNotificationProvider
 
+Интерфейс для отправки Push-уведомлений (для расширения).
+
 ```csharp
-public interface IPushNotificationProvider
-{
-    Task<bool> SendPushNotificationAsync(string deviceToken, string title, string body);
-}
+Task<bool> SendPushNotificationAsync(string deviceToken, string title, string body);
 ```
+
+### INotificationRouteConfiguration
+
+Интерфейс конфигурации маршрута уведомления.
+
+**Свойства:**
+- `RouteName` — имя маршрута (например, "UserRegistered")
+- `TemplateName` — имя шаблона для этого маршрута
+- `DefaultChannels` — каналы доставки по умолчанию
 
 ## Прикладной слой (Application Layer)
 
@@ -250,221 +153,75 @@ public interface IPushNotificationProvider
 
 Сервис для выполнения команд (создание и отправка уведомлений).
 
-**Файл:** `backend/src/NotificationService.Application/Services/NotificationService.cs`
+**Основной метод:**
+- `ProcessNotificationRequestAsync(request)` — создание и отправка уведомления
 
-```csharp
-public class NotificationCommandService : INotificationCommandService
-{
-    public async Task<NotificationResponseDto> ProcessNotificationRequestAsync(
-        NotificationRequest request)
-    {
-        // 1. Получить резолвер данных для маршрута
-        var dataResolver = notificationRoutesContext.GetDataResolverForRoute(request.Route);
-        
-        // 2. Получить конфигурацию маршрута
-        var routeConfig = notificationRoutesContext.GetNotificationRouteConfiguration(request.Route);
-        
-        // 3. Получить шаблон
-        var template = await templateRepository.GetTemplateByNameAsync(routeConfig.TemplateName);
-        
-        // 4. Маппинг и создание уведомлений
-        var notifications = await notificationMapper.MapFromRequest(request, dataResolver, template);
-        
-        // 5. Сохранение в БД
-        await notificationRepository.SaveNotificationsAsync(notifications);
-        
-        // 6. Отправка по каналам
-        await Task.WhenAll(notifications.Select(notificationSender.SendAsync));
-        
-        // 7. Возврат ответа
-        return notificationMapper.MapToResponse(notifications);
-    }
-}
-```
-
-**Основные методы:**
-- `ProcessNotificationRequestAsync` — создание и отправка уведомления
+**Процесс:**
+1. Получить резолвер данных для маршрута
+2. Получить конфигурацию маршрута
+3. Получить шаблон
+4. Маппинг и создание уведомлений
+5. Сохранение в БД
+6. Отправка по каналам
+7. Возврат ответа
 
 ### NotificationQueryService
 
 Сервис для выполнения запросов (чтение уведомлений).
 
-```csharp
-public class NotificationQueryService : INotificationQueryService
-{
-    public async Task<NotificationResponseDto?> GetByIdAsync(Guid id);
-    public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByUserAsync(Guid userId);
-    public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByStatusAsync(string status);
-}
-```
+**Основные методы:**
+- `GetByIdAsync(id)` — получить уведомление по ID
+- `GetByUserAsync(userId)` — получить уведомления пользователя
+- `GetByStatusAsync(status)` — получить уведомления по статусу
 
 ### NotificationSender
 
 Сервис оркестрации отправки уведомлений по различным каналам.
 
-**Файл:** `backend/src/NotificationService.Application/Services/NotificationSender.cs`
+**Основной метод:**
+- `SendAsync(notification)` — отправить уведомление
 
-```csharp
-public class NotificationSender : INotificationSender
-{
-    public async Task SendAsync(Notification notification)
-    {
-        // 1. Валидация уведомления
-        var validationResult = NotificationValidator.Validate(notification);
-        if (!validationResult.IsValid)
-            throw new ArgumentException(string.Join("; ", validationResult.Errors));
-        
-        // 2. Проверка пользовательских предпочтений
-        var allowed = await userRoutePreferenceRepository
-            .IsRouteEnabledAsync(notification.Recipient.Id, notification.Route);
-        
-        if (!allowed)
-        {
-            // Пропустить отправку
-            MarkAsSkipped(notification);
-            return;
-        }
-        
-        // 3. Отправка по всем активным каналам
-        await Task.WhenAll(notification.DeliveryChannelsState
-            .Select(channel => SendToChannelAsync(notification, channel.NotificationChannel)));
-        
-        // 4. Обновление статусов в БД
-        await notificationRepository.UpdateNotificationsAsync(notification);
-    }
-    
-    private async Task SendToChannelAsync(Notification notification, NotificationChannel channel)
-    {
-        var wasSent = channel switch
-        {
-            NotificationChannel.Email => await SendEmailAsync(notification),
-            NotificationChannel.Sms => await SendSmsAsync(notification),
-            NotificationChannel.Push => await SendPushAsync(notification),
-            _ => throw new NotSupportedException($"Channel {channel} not supported")
-        };
-        
-        UpdateChannelStatus(notification, channel, 
-            wasSent ? NotificationDeliveryStatus.Sent : NotificationDeliveryStatus.Failed);
-    }
-}
-```
-
-**Ключевые особенности:**
-- Валидация перед отправкой
-- Проверка пользовательских предпочтений
-- Параллельная отправка по каналам
-- Обработка ошибок и обновление статусов
+**Процесс:**
+1. Валидация уведомления
+2. Проверка пользовательских предпочтений
+3. Отправка по всем активным каналам (параллельно)
+4. Обновление статусов в БД
 
 ### NotificationRoutesContext
 
 Реестр маршрутов уведомлений и их обработчиков.
 
-**Файл:** `backend/src/NotificationService.Application/NotificationRoutesContext.cs`
+**Функции:**
+- `RegisterRoute(route, dataResolver, routeConfig)` — регистрация нового маршрута
+- `GetDataResolverForRoute(route)` — получить резолвер для маршрута
+- `GetNotificationRouteConfiguration(route)` — получить конфигурацию маршрута
 
-```csharp
-public class NotificationRoutesContext
-{
-    private readonly Dictionary<string, INotificationDataResolver> _dataResolvers;
-    private readonly Dictionary<string, INotificationRouteConfiguration> _routeConfigurations;
-    
-    public void RegisterRoute(string route, 
-        INotificationDataResolver dataResolver,
-        INotificationRouteConfiguration routeConfig)
-    {
-        _dataResolvers[route] = dataResolver;
-        _routeConfigurations[route] = routeConfig;
-    }
-    
-    public INotificationDataResolver GetDataResolverForRoute(string route)
-    {
-        if (!_dataResolvers.TryGetValue(route, out var resolver))
-            throw new ArgumentException($"Route '{route}' not registered");
-        return resolver;
-    }
-    
-    public INotificationRouteConfiguration GetNotificationRouteConfiguration(string route)
-    {
-        if (!_routeConfigurations.TryGetValue(route, out var config))
-            throw new ArgumentException($"Route '{route}' not registered");
-        return config;
-    }
-}
-```
+**Использование:** Автоматически регистрирует все обработчики из сборки при запуске приложения.
 
 ### INotificationDataResolver
 
 Интерфейс для резолверов данных уведомлений.
 
-```csharp
-public interface INotificationDataResolver
-{
-    Task<IReadOnlyCollection<User>> ResolveRecipientsAsync(
-        Dictionary<string, object> parameters);
-    
-    Task<Dictionary<string, object>> ResolveTemplateDataAsync(
-        User recipient, 
-        Dictionary<string, object> parameters);
-}
-```
+**Методы:**
+- `ResolveRecipientsAsync(parameters)` — получить список получателей
+- `ResolveTemplateDataAsync(recipient, parameters)` — подготовить данные для шаблона
 
-**Ответственность:**
-- Получение списка получателей на основе параметров запроса
-- Подготовка данных для рендеринга шаблона
+**Концепция:** Каждый тип уведомления имеет свой резолвер, который знает, как получить данные из различных источников.
 
 ### NotificationMapper
 
-Мапперы для преобразования между доменными моделями и DTO.
+Маппер для преобразования между доменными моделями и DTO.
 
-**Файл:** `backend/src/NotificationService.Application/Mappers/NotificationMapper.cs`
+**Основные методы:**
+- `MapFromRequest(request, resolver, template)` — создать Notification из запроса
+- `MapToResponse(notifications)` — преобразовать в DTO для API ответа
 
-```csharp
-public class NotificationMapper : INotificationMapper
-{
-    public async Task<IReadOnlyCollection<Notification>> MapFromRequest(
-        NotificationRequest request,
-        INotificationDataResolver dataResolver,
-        NotificationTemplate template)
-    {
-        // Получить получателей
-        var recipients = await dataResolver.ResolveRecipientsAsync(request.Parameters);
-        
-        var notifications = new List<Notification>();
-        
-        foreach (var recipient in recipients)
-        {
-            // Получить данные для шаблона
-            var templateData = await dataResolver.ResolveTemplateDataAsync(
-                recipient, request.Parameters);
-            
-            // Рендеринг шаблона
-            var renderedContent = await templateRenderer.RenderAsync(
-                template.Content, templateData);
-            
-            // Создание уведомления
-            var notification = new Notification
-            {
-                Id = Guid.NewGuid(),
-                Title = template.Subject,
-                Message = renderedContent,
-                Route = request.Route,
-                Recipient = recipient,
-                Template = template,
-                Metadata = CreateMetadata(templateData),
-                DeliveryChannelsState = DetermineChannels(request.Channel)
-            };
-            
-            notifications.Add(notification);
-        }
-        
-        return notifications;
-    }
-    
-    public NotificationResponseDto MapToResponse(IReadOnlyCollection<Notification> notifications)
-    {
-        // Преобразование в DTO для API ответа
-    }
-}
-```
+**Процесс маппинга:**
+1. Получить получателей через резолвер
+2. Для каждого получателя получить данные для шаблона
+3. Рендеринг шаблона с данными
+4. Создание объекта Notification
+5. Определение каналов доставки
 
 ### DTO (Data Transfer Objects)
 
@@ -472,31 +229,23 @@ public class NotificationMapper : INotificationMapper
 
 Входящий запрос на создание уведомления.
 
-```csharp
-public record NotificationRequest
-{
-    public required string Route { get; init; }
-    public string? Channel { get; init; }
-    public required Dictionary<string, object> Parameters { get; init; }
-}
-```
+**Свойства:**
+- `Route` — тип уведомления (обязательно)
+- `Channel` — каналы доставки (опционально, по умолчанию все)
+- `Parameters` — параметры для резолвера и шаблона
 
 #### NotificationResponseDto
 
 Ответ API с информацией об уведомлении.
 
-```csharp
-public record NotificationResponseDto
-{
-    public Guid Id { get; init; }
-    public string Title { get; init; }
-    public string Message { get; init; }
-    public string Route { get; init; }
-    public DateTime CreatedAt { get; init; }
-    public UserDto Recipient { get; init; }
-    public List<ChannelStatusDto> ChannelStatuses { get; init; }
-}
-```
+**Свойства:**
+- `Id` — идентификатор уведомления
+- `Title` — заголовок
+- `Message` — содержимое
+- `Route` — тип уведомления
+- `CreatedAt` — дата создания
+- `Recipient` — информация о получателе
+- `ChannelStatuses` — статусы доставки по каналам
 
 ## Инфраструктурный слой (Infrastructure Layer)
 
@@ -504,81 +253,69 @@ public record NotificationResponseDto
 
 EF Core контекст базы данных.
 
-**Файл:** `backend/src/NotificationService.Infrastructure/Data/NotificationDbContext.cs`
+**DbSets:**
+- `Notifications` — уведомления
+- `Users` — пользователи
+- `NotificationTemplates` — шаблоны
+- `NotificationMetadataFields` — метаданные
+- `NotificationChannelDeliveryStatuses` — статусы доставки
+- `UserRoutePreferences` — предпочтения пользователей
 
-```csharp
-public class NotificationDbContext : DbContext
-{
-    public DbSet<Notification> Notifications { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
-    public DbSet<NotificationMetadataField> NotificationMetadataFields { get; set; }
-    public DbSet<NotificationChannelDeliveryStatus> NotificationChannelDeliveryStatuses { get; set; }
-    public DbSet<UserRoutePreference> UserRoutePreferences { get; set; }
-    
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Fluent API конфигурации
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(NotificationDbContext).Assembly);
-    }
-}
-```
+**Конфигурация:** Использует Fluent API для настройки отношений и ограничений.
+
+### Репозитории
+
+Реализации интерфейсов репозиториев из Domain слоя:
+- `NotificationRepository` — работа с уведомлениями
+- `UserRepository` — работа с пользователями
+- `TemplateRepository` — работа с шаблонами
+- `UserRoutePreferenceRepository` — работа с предпочтениями
 
 ### SmtpEmailProvider
 
 Реализация отправки email через SMTP.
 
-**Файл:** `backend/src/NotificationService.Infrastructure/Providers/Email/SmtpEmailProvider.cs`
+**Концепция:** Использует фабрику `SmtpClientFactory` для создания SMTP клиентов, что позволяет легко переключаться между реальным SMTP и mock реализациями для тестирования.
 
-```csharp
-public class SmtpEmailProvider : IEmailProvider
-{
-    private readonly ISmtpClientFactory _smtpClientFactory;
-    private readonly EmailProviderOptions _options;
-    
-    public async Task<bool> SendEmailAsync(string to, string subject, string body)
-    {
-        try
-        {
-            using var smtpClient = _smtpClientFactory.CreateClient();
-            
-            var message = new MailMessage
-            {
-                From = new MailAddress(_options.FromAddress, _options.FromName),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-            message.To.Add(to);
-            
-            await smtpClient.SendMailAsync(message);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            // Логирование ошибки
-            return false;
-        }
-    }
-}
-```
+**Конфигурация:**
+- `SmtpHost` — адрес SMTP сервера
+- `SmtpPort` — порт SMTP
+- `EnableSsl` — использовать SSL
+- `UserName` — имя пользователя
+- `Password` — пароль
+- `FromAddress` — адрес отправителя
+- `FromName` — имя отправителя
 
 ### HandlebarsTemplateRenderer
 
-Рендеринг шаблонов с использованием Handlebars.
+Рендеринг шаблонов с использованием Handlebars.NET.
 
-**Файл:** `backend/src/NotificationService.Infrastructure/Templates/HandlebarsTemplateRenderer.cs`
+**Особенности:**
+- Поддержка условных блоков (`{{#if}}...{{/if}}`)
+- Поддержка итерации (`{{#each}}...{{/each}}`)
+- Регистрация кастомных helpers для форматирования
 
-```csharp
-public class HandlebarsTemplateRenderer : ITemplateRenderer
-{
-    public Task<string> RenderAsync(string template, Dictionary<string, object> data)
-    {
-        var compiledTemplate = Handlebars.Compile(template);
-        var result = compiledTemplate(data);
-        return Task.FromResult(result);
-    }
-}
+**Примеры helpers:**
+- `formatDate` — форматирование даты
+- `uppercase` — преобразование в верхний регистр
+- `ifEquals` — условное отображение
+
+### FileSystemTemplateProvider
+
+Загрузка шаблонов из файловой системы.
+
+**Структура:**
+```
+Templates/
+├── UserRegistered/
+│   ├── UserRegistered.hbs
+│   └── template.json
+├── OrderCreated/
+│   ├── OrderCreated.hbs
+│   └── template.json
+└── TaskAssigned/
+    ├── TaskAssigned.hbs
+    └── template.json
 ```
 
 ## API слой (API Layer)
@@ -587,56 +324,23 @@ public class HandlebarsTemplateRenderer : ITemplateRenderer
 
 Контроллер REST API для работы с уведомлениями.
 
-**Файл:** `backend/src/NotificationService.Api/Controllers/NotificationController.cs`
-
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class NotificationController : ControllerBase
-{
-    [HttpPost]
-    public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
-    {
-        var response = await _commandService.ProcessNotificationRequestAsync(request);
-        return Ok(response);
-    }
-    
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetNotification(Guid id)
-    {
-        var notification = await _queryService.GetByIdAsync(id);
-        return notification is null ? NotFound() : Ok(notification);
-    }
-    
-    [HttpGet("by-user/{userId}")]
-    public async Task<IActionResult> GetNotificationsByUser(Guid userId)
-    {
-        var notifications = await _queryService.GetByUserAsync(userId);
-        return Ok(notifications);
-    }
-}
-```
+**Основные endpoints:**
+- `POST /api/notification` — создать и отправить уведомление
+- `GET /api/notification/{id}` — получить уведомление по ID
+- `GET /api/notification/by-user/{userId}` — получить уведомления пользователя
+- `GET /api/notification/by-status/{status}` — получить уведомления по статусу
+- `POST /api/notification/broadcast` — транслировать уведомление через SignalR
 
 ### NotificationHub
 
 SignalR Hub для real-time уведомлений.
 
-**Файл:** `backend/src/NotificationService.Api/Hubs/NotificationHub.cs`
+**Методы:**
+- `BroadcastNotification(notification)` — отправить всем подключенным клиентам
+- `SendToUser(userId, notification)` — отправить конкретному пользователю
 
-```csharp
-public class NotificationHub : Hub
-{
-    public async Task BroadcastNotification(object notification)
-    {
-        await Clients.All.SendAsync("ReceiveNotification", notification);
-    }
-    
-    public async Task SendToUser(string userId, object notification)
-    {
-        await Clients.User(userId).SendAsync("ReceiveNotification", notification);
-    }
-}
-```
+**События:**
+- `ReceiveNotification` — событие, которое получают клиенты
 
 ## Обработчики уведомлений (Test Handlers)
 
@@ -644,49 +348,41 @@ public class NotificationHub : Hub
 
 Каждый обработчик состоит из:
 
-1. **Data Resolver** — получение данных для уведомления
-2. **Route Configuration** — конфигурация маршрута
+1. **Data Resolver** — реализует `INotificationDataResolver`
+   - Получает данные получателей по параметрам запроса
+   - Подготавливает данные для рендеринга шаблона
+
+2. **Route Configuration** — реализует `INotificationRouteConfiguration`
+   - Определяет имя маршрута
+   - Указывает имя шаблона
+   - Определяет каналы доставки по умолчанию
+
 3. **HTML Template** (`.hbs`) — Handlebars шаблон
+   - Содержит HTML структуру уведомления
+   - Использует переменные из резолвера
+
 4. **Template Config** (`template.json`) — метаданные шаблона
+   - Имя шаблона
+   - Тема письма
+   - Описание
+   - Версия
 
-### Пример: UserRegisteredDataResolver
+### Примеры обработчиков
 
-**Файл:** `backend/src/NotificationService.TestHandlers/Notifications/UserRegistered/UserRegisteredDataResolver.cs`
+**UserRegistered** — приветственное уведомление при регистрации
+- Получает пользователя по UserId
+- Подготавливает данные: имя, email, дату регистрации
+- Использует шаблон с приветственным сообщением
 
-```csharp
-public class UserRegisteredDataResolver : INotificationDataResolver
-{
-    private readonly IUserRepository _userRepository;
-    
-    public async Task<IReadOnlyCollection<User>> ResolveRecipientsAsync(
-        Dictionary<string, object> parameters)
-    {
-        if (!parameters.TryGetValue("UserId", out var userIdObj))
-            throw new ArgumentException("UserId parameter is required");
-        
-        var userId = Guid.Parse(userIdObj.ToString());
-        var user = await _userRepository.GetUserByIdAsync(userId);
-        
-        return user is null ? Array.Empty<User>() : new[] { user };
-    }
-    
-    public Task<Dictionary<string, object>> ResolveTemplateDataAsync(
-        User recipient, 
-        Dictionary<string, object> parameters)
-    {
-        var data = new Dictionary<string, object>
-        {
-            ["UserName"] = recipient.Username,
-            ["Email"] = recipient.Email,
-            ["RegistrationDate"] = DateTime.Now,
-            ["WelcomeMessage"] = parameters.GetValueOrDefault("WelcomeMessage", 
-                "Welcome to our service!")
-        };
-        
-        return Task.FromResult(data);
-    }
-}
-```
+**OrderCreated** — подтверждение заказа
+- Получает информацию о заказе
+- Подготавливает данные: номер заказа, сумму, количество товаров
+- Использует шаблон с деталями заказа
+
+**TaskAssigned** — уведомление о назначении задачи
+- Получает информацию о задаче и исполнителе
+- Подготавливает данные: название, описание, приоритет, дедлайн
+- Использует шаблон с деталями задачи
 
 ## Следующие шаги
 
