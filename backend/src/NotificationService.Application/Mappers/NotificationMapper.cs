@@ -4,8 +4,17 @@ using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Mappers;
 
+/// <summary>
+/// Маппер для преобразования между доменными моделями уведомлений и DTO.
+/// Отвечает за конвертацию запросов в доменные модели и формирование ответов API.
+/// </summary>
 public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificationMapper
 {
+    /// <summary>
+    /// Преобразует коллекцию доменных уведомлений в DTO ответа для API.
+    /// </summary>
+    /// <param name="notifications">Коллекция доменных уведомлений</param>
+    /// <returns>DTO ответа с информацией об уведомлениях</returns>
     public NotificationResponseDto MapToResponse(IEnumerable<Notification> notifications)
     {
         var notificationsList = notifications.ToList();
@@ -26,6 +35,15 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
         };
     }
 
+    /// <summary>
+    /// Создает коллекцию доменных уведомлений из входящего запроса API.
+    /// Выполняет резолвинг данных, рендеринг шаблонов и создание уведомлений для каждого получателя.
+    /// </summary>
+    /// <param name="request">Запрос на создание уведомления</param>
+    /// <param name="notificationDataResolver">Резолвер данных для маршрута</param>
+    /// <param name="template">Шаблон для форматирования</param>
+    /// <returns>Коллекция созданных доменных уведомлений</returns>
+    /// <exception cref="ArgumentNullException">Выбрасывается, если какой-либо параметр null</exception>
     public async Task<IEnumerable<Notification>> MapFromRequest(NotificationRequest request, INotificationDataResolver notificationDataResolver, NotificationTemplate template)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -59,6 +77,12 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
 
     }
 
+    /// <summary>
+    /// Преобразует доменную модель пользователя в DTO.
+    /// </summary>
+    /// <param name="user">Доменная модель пользователя</param>
+    /// <returns>DTO пользователя</returns>
+    /// <exception cref="ArgumentNullException">Выбрасывается, если пользователь null</exception>
     public UserDto MapToUserDto(User user)
     {
         ArgumentNullException.ThrowIfNull(user);

@@ -4,6 +4,10 @@ using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Services;
 
+/// <summary>
+/// Сервис оркестрации отправки уведомлений по различным каналам доставки.
+/// Управляет процессом валидации, проверки предпочтений и отправки по всем активным каналам.
+/// </summary>
 public class NotificationSender : INotificationSender
 {
     private readonly INotificationRepository _notificationRepository;
@@ -26,6 +30,13 @@ public class NotificationSender : INotificationSender
         _userRoutePreferenceRepository = userRoutePreferenceRepository;
     }
 
+    /// <summary>
+    /// Отправляет уведомление по всем активным каналам доставки.
+    /// Выполняет валидацию, проверку пользовательских предпочтений и последовательную отправку по каналам.
+    /// </summary>
+    /// <param name="notification">Уведомление для отправки</param>
+    /// <exception cref="ArgumentNullException">Выбрасывается, если уведомление или получатель null</exception>
+    /// <exception cref="ArgumentException">Выбрасывается, если уведомление не прошло валидацию</exception>
     public async Task SendAsync(Notification? notification)
     {
         ArgumentNullException.ThrowIfNull(notification);
@@ -59,6 +70,12 @@ public class NotificationSender : INotificationSender
 
     }
 
+    /// <summary>
+    /// Отправляет уведомление по указанному каналу доставки.
+    /// </summary>
+    /// <param name="notification">Уведомление для отправки</param>
+    /// <param name="channel">Канал доставки</param>
+    /// <exception cref="NotSupportedException">Выбрасывается, если канал не поддерживается</exception>
     private async Task SendToChannelAsync(Notification notification, NotificationChannel channel)
     {
         var wasSent = channel switch
@@ -74,6 +91,11 @@ public class NotificationSender : INotificationSender
             .DeliveryStatus = wasSent ? NotificationDeliveryStatus.Sent : NotificationDeliveryStatus.Failed;
     }
 
+    /// <summary>
+    /// Отправляет уведомление через Email (SMTP).
+    /// </summary>
+    /// <param name="notification">Уведомление для отправки</param>
+    /// <returns>true если отправка успешна, иначе false</returns>
     private async Task<bool> SendEmailAsync(Notification notification)
     {
         if (_emailProvider is null)
@@ -92,6 +114,11 @@ public class NotificationSender : INotificationSender
         return await _emailProvider.SendEmailAsync(notification.Recipient.Email, subject, body);
     }
 
+    /// <summary>
+    /// Отправляет уведомление через SMS.
+    /// </summary>
+    /// <param name="notification">Уведомление для отправки</param>
+    /// <returns>true если отправка успешна, иначе false</returns>
     private async Task<bool> SendSmsAsync(Notification notification)
     {
         if (_smsProvider is null)
@@ -108,6 +135,11 @@ public class NotificationSender : INotificationSender
         return await _smsProvider.SendSmsAsync(notification.Recipient.PhoneNumber, message);
     }
 
+    /// <summary>
+    /// Отправляет Push-уведомление.
+    /// </summary>
+    /// <param name="notification">Уведомление для отправки</param>
+    /// <returns>true если отправка успешна, иначе false</returns>
     private async Task<bool> SendPushAsync(Notification notification)
     {
         if (_pushNotificationProvider is null)
@@ -126,6 +158,12 @@ public class NotificationSender : INotificationSender
         return await _pushNotificationProvider.SendPushNotificationAsync(notification.Recipient.DeviceToken!, title, body);
     }
 
+    /// <summary>
+    /// Извлекает содержимое уведомления для отправки.
+    /// Приоритет: Message уведомления, затем Content шаблона.
+    /// </summary>
+    /// <param name="notification">Уведомление</param>
+    /// <returns>Содержимое для отправки</returns>
     private static string ResolveContent(Notification notification)
     {
         if (!string.IsNullOrWhiteSpace(notification.Message))
