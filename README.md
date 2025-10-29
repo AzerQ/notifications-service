@@ -25,9 +25,9 @@ This MVP includes:
    ```
 
 3. **Access:**
-   - API: http://localhost:5000/api
-   - Swagger UI: http://localhost:5000/swagger
-   - SignalR Hub: http://localhost:5000/notificationHub
+   - API: http://localhost:5093/api
+   - Swagger UI: http://localhost:5093/swagger
+   - SignalR Hub: http://localhost:5093/notificationHub
 
 ### Test Application
 
@@ -51,7 +51,7 @@ npm install
 npm start
 ```
 
-Access at http://localhost:3000
+Access at http://localhost:5094
 
 ## SignalR Real-Time Notifications
 
@@ -59,12 +59,12 @@ The service includes SignalR support for real-time notification delivery.
 
 ### Connecting to SignalR Hub
 
-**Hub URL:** `http://localhost:5000/notificationHub`
+**Hub URL:** `http://localhost:5093/notificationHub`
 
 **JavaScript Example:**
 ```javascript
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5000/notificationHub")
+    .withUrl("http://localhost:5093/notificationHub")
     .withAutomaticReconnect()
     .build();
 
@@ -96,21 +96,12 @@ await connection.start();
 6. [**Руководство разработчика**](./docs/06-Development-Guide.md) — добавление новых обработчиков и каналов
 7. [**Руководство по интеграции**](./docs/07-Integration-Guide.md) — встраивание в существующие приложения
 
-### Дополнительные ресурсы
-
-- Architecture: `docs/reference/Architecture.md`
-- Configuration: `docs/reference/Configuration.md`
-- Database and migrations: `docs/reference/Database.md`
-- Notification templates: `docs/reference/Templates.md`
-- API reference: `docs/reference/API.md`
-- Developer guide: `docs/guides/DeveloperGuide.md`
-
 ## Example API Requests
 
 ### Create a notification
 
 ```bash
-POST http://localhost:5000/api/notification
+POST http://localhost:5093/api/notification
 Content-Type: application/json
 
 {
@@ -126,7 +117,7 @@ Content-Type: application/json
 ### Broadcast a test notification via SignalR
 
 ```bash
-POST http://localhost:5000/api/notification/broadcast
+POST http://localhost:5093/api/notification/broadcast
 Content-Type: application/json
 
 {
@@ -139,7 +130,7 @@ Content-Type: application/json
 ### Get notifications by user
 
 ```bash
-GET http://localhost:5000/api/notification/by-user/{userId}
+GET http://localhost:5093/api/notification/by-user/{userId}
 ```
 
 ## Available Notification Handlers
@@ -244,6 +235,9 @@ Development of a universal, extensible REST API notification service with multip
 
 #### Notification Handlers
 The service supports flexible notification types through an extensible handler system:
+
+Example handlers:
+
 1. **UserRegistered** - Welcome notifications for new users
 2. **OrderCreated** - Order confirmation notifications
 3. **TaskAssigned** - Task assignment notifications
@@ -275,21 +269,46 @@ The service supports flexible notification types through an extensible handler s
 ## Architecture
 
 ### General Schema
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   REST API      │────│   Notification   │────│   Data Access   │
-│   Controllers   │    │     Services     │    │      Layer      │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  Email Service  │    │ Template Engine  │    │   SQLite DB     │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  SMTP Server    │    │  SignalR Hubs    │    │  User Providers │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+
+```mermaid
+graph TD
+    A["REST API<br/>Controllers"]
+    B["Notification<br/>Services"]
+    C["Data Access<br/>Layer"]
+    
+    D["Email Service"]
+    E["Template Engine"]
+    F["SQLite DB"]
+    
+    G["SMTP Server"]
+    H["SignalR Hubs"]
+    I["User Providers"]
+    Z["Channels Providers"]
+    
+    A --> B
+
+    B --> C
+    C --> F
+    D --> G
+
+    B --> E
+    B --> Z
+
+    Z --> D
+    Z --> H
+    Z --> I
+
+
+
+    style A fill:#e1f5ff
+    style B fill:#f3e5f5
+    style C fill:#e8f5e9
+    style D fill:#fff3e0
+    style E fill:#fce4ec
+    style F fill:#f1f8e9
+    style G fill:#ffe0b2
+    style H fill:#f8bbd0
+    style I fill:#c8e6c9
 ```
 
 ### Main Components
@@ -300,10 +319,10 @@ The service supports flexible notification types through an extensible handler s
 - `NotificationTemplate` - notification templates
 
 #### 2. Services
-- `INotificationService` - main notification service
-- `IEmailService` - email sending service
+- `INotificationCommandService` - main notification service
+- `IEmailProvider` - email sending service
 - `ITemplateService` - template management service
-- `IUserProvider` - user data provider
+- `ITemplateRenderer` - user data provider
 
 #### 3. Controllers
 - `NotificationsController` - notification management
@@ -416,7 +435,7 @@ Use the test application in `testapp/` for manual end-to-end testing.
 
 ### Backend won't start
 - Ensure .NET 8 SDK is installed
-- Check if port 5000 is available
+- Check if port 5093 is available
 - Review logs for database migration issues
 
 ### SignalR connection fails

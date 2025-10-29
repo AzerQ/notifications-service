@@ -5,7 +5,7 @@
 ## Базовый URL
 
 ```
-http://localhost:5000/api
+http://localhost:5093/api
 ```
 
 ## REST API Endpoints
@@ -60,7 +60,7 @@ http://localhost:5000/api
 **Пример запроса (UserRegistered):**
 
 ```bash
-curl -X POST http://localhost:5000/api/notification \
+curl -X POST http://localhost:5093/api/notification \
   -H "Content-Type: application/json" \
   -d '{
     "route": "UserRegistered",
@@ -75,7 +75,7 @@ curl -X POST http://localhost:5000/api/notification \
 **Пример запроса (OrderCreated):**
 
 ```bash
-curl -X POST http://localhost:5000/api/notification \
+curl -X POST http://localhost:5093/api/notification \
   -H "Content-Type: application/json" \
   -d '{
     "route": "OrderCreated",
@@ -92,7 +92,7 @@ curl -X POST http://localhost:5000/api/notification \
 **Пример запроса (TaskAssigned):**
 
 ```bash
-curl -X POST http://localhost:5000/api/notification \
+curl -X POST http://localhost:5093/api/notification \
   -H "Content-Type: application/json" \
   -d '{
     "route": "TaskAssigned",
@@ -151,7 +151,7 @@ curl -X POST http://localhost:5000/api/notification \
 **Пример запроса:**
 
 ```bash
-curl -X GET http://localhost:5000/api/notification/3fa85f64-5717-4562-b3fc-2c963f66afa6
+curl -X GET http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 
 **Коды ответов:**
@@ -215,7 +215,7 @@ curl -X GET http://localhost:5000/api/notification/3fa85f64-5717-4562-b3fc-2c963
 **Пример запроса:**
 
 ```bash
-curl -X GET http://localhost:5000/api/notification/by-user/00000000-0000-0000-0000-000000000001
+curl -X GET http://localhost:5093/api/notification/by-user/00000000-0000-0000-0000-000000000001
 ```
 
 **Коды ответов:**
@@ -260,7 +260,7 @@ curl -X GET http://localhost:5000/api/notification/by-user/00000000-0000-0000-00
 **Пример запроса:**
 
 ```bash
-curl -X GET http://localhost:5000/api/notification/by-status/Sent
+curl -X GET http://localhost:5093/api/notification/by-status/Sent
 ```
 
 **Коды ответов:**
@@ -297,7 +297,7 @@ curl -X GET http://localhost:5000/api/notification/by-status/Sent
 **Пример запроса:**
 
 ```bash
-curl -X POST http://localhost:5000/api/notification/broadcast \
+curl -X POST http://localhost:5093/api/notification/broadcast \
   -H "Content-Type: application/json" \
   -d '{
     "title": "System Notification",
@@ -464,7 +464,7 @@ ws://localhost:5000/notificationHub
 import * as signalR from "@microsoft/signalr";
 
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5000/notificationHub")
+    .withUrl("http://localhost:5093/notificationHub")
     .withAutomaticReconnect()
     .configureLogging(signalR.LogLevel.Information)
     .build();
@@ -501,7 +501,7 @@ start();
 using Microsoft.AspNetCore.SignalR.Client;
 
 var connection = new HubConnectionBuilder()
-    .WithUrl("http://localhost:5000/notificationHub")
+    .WithUrl("http://localhost:5093/notificationHub")
     .WithAutomaticReconnect()
     .Build();
 
@@ -609,7 +609,7 @@ interface ChannelStatusDto {
 Интерактивная документация API доступна по адресу:
 
 ```
-http://localhost:5000/swagger
+http://localhost:5093/swagger
 ```
 
 Swagger UI предоставляет:
@@ -626,7 +626,7 @@ Swagger UI предоставляет:
 
 ```bash
 # 1. Создать пользователя
-curl -X POST http://localhost:5000/api/users \
+curl -X POST http://localhost:5093/api/users \
   -H "Content-Type: application/json" \
   -d '{
     "username": "john_doe",
@@ -641,7 +641,7 @@ curl -X POST http://localhost:5000/api/users \
 # }
 
 # 2. Отправить приветственное уведомление
-curl -X POST http://localhost:5000/api/notification \
+curl -X POST http://localhost:5093/api/notification \
   -H "Content-Type: application/json" \
   -d '{
     "route": "UserRegistered",
@@ -653,7 +653,7 @@ curl -X POST http://localhost:5000/api/notification \
   }'
 
 # 3. Проверить уведомления пользователя
-curl -X GET http://localhost:5000/api/notification/by-user/3fa85f64-5717-4562-b3fc-2c963f66afa6
+curl -X GET http://localhost:5093/api/notification/by-user/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 
 ### Интеграция с JavaScript приложением
@@ -661,7 +661,7 @@ curl -X GET http://localhost:5000/api/notification/by-user/3fa85f64-5717-4562-b3
 ```javascript
 // Создание и отправка уведомления
 async function sendNotification(route, parameters) {
-  const response = await fetch('http://localhost:5000/api/notification', {
+  const response = await fetch('http://localhost:5093/api/notification', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -682,7 +682,7 @@ async function sendNotification(route, parameters) {
 // Получение уведомлений пользователя
 async function getUserNotifications(userId) {
   const response = await fetch(
-    `http://localhost:5000/api/notification/by-user/${userId}`
+    `http://localhost:5093/api/notification/by-user/${userId}`
   );
   
   if (!response.ok) {

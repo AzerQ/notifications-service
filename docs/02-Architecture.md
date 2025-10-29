@@ -6,49 +6,50 @@
 
 ### Диаграмма высокого уровня
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Presentation Layer                      │
-│  ┌────────────────┐          ┌──────────────────────────┐  │
-│  │  REST API      │          │  SignalR Hub             │  │
-│  │  Controllers   │          │  Real-time notifications │  │
-│  └────────────────┘          └──────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                     Application Layer                        │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │  Command/Query Services  │  Notification Sender       │ │
-│  │  DTOs & Mappers         │  Data Resolvers            │ │
-│  │  Route Context          │  Template Renderer         │ │
-│  └────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                       Domain Layer                           │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │  Models: Notification, User, Template                  │ │
-│  │  Interfaces: Repositories, Providers, Services         │ │
-│  │  Enums: Channel, Status                                │ │
-│  │  Validators                                            │ │
-│  └────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   Infrastructure Layer                       │
-│  ┌──────────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  EF Core         │  │  Email SMTP  │  │  Template    │ │
-│  │  DbContext       │  │  Provider    │  │  Renderer    │ │
-│  │  Repositories    │  │  SMS/Push    │  │  (Handlebars)│ │
-│  └──────────────────┘  └──────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    External Dependencies                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐ │
-│  │  SQLite DB   │  │  SMTP Server │  │  External APIs   │ │
-│  └──────────────┘  └──────────────┘  └──────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+```plantuml
+@startuml
+!define LAYER_COLOR #E1F5FE
+!define COMPONENT_COLOR #F3E5F5
+
+rectangle "Presentation Layer" #E1F5FE {
+    component "REST API\nControllers" as REST
+    component "SignalR Hub\nReal-time notifications" as SIGNALR
+}
+
+rectangle "Application Layer" #F3E5F5 {
+    component "Command/Query Services\nDTOs & Mappers\nRoute Context" as APP_SERVICES
+    component "Notification Sender\nData Resolvers\nTemplate Renderer" as APP_SUPPORT
+}
+
+rectangle "Domain Layer" #E8F5E9 {
+    component "Models: Notification, User, Template\nInterfaces: Repositories, Providers, Services\nEnums: Channel, Status\nValidators" as DOMAIN
+}
+
+rectangle "Infrastructure Layer" #FFF3E0 {
+    component "EF Core\nDbContext\nRepositories" as EF_CORE
+    component "Email SMTP\nProvider\nSMS/Push" as EMAIL_PROVIDER
+    component "Template\nRenderer\n(Handlebars)" as TEMPLATE_RENDERER
+}
+
+rectangle "External Dependencies" #F1F8E9 {
+    component "SQLite DB" as DB
+    component "SMTP Server" as SMTP
+    component "External APIs" as EXTERNAL_API
+}
+
+REST --> APP_SERVICES
+SIGNALR --> APP_SERVICES
+APP_SERVICES --> APP_SUPPORT
+APP_SERVICES --> DOMAIN
+APP_SUPPORT --> DOMAIN
+DOMAIN --> EF_CORE
+DOMAIN --> EMAIL_PROVIDER
+DOMAIN --> TEMPLATE_RENDERER
+EF_CORE --> DB
+EMAIL_PROVIDER --> SMTP
+TEMPLATE_RENDERER --> EXTERNAL_API
+
+@enduml
 ```
 
 ## Многослойная структура
@@ -144,36 +145,50 @@
 
 #### Создание и отправка уведомления
 
-```
-1. HTTP POST → NotificationController.SendNotification(request)
-                      ↓
-2. Controller → NotificationCommandService.ProcessNotificationRequestAsync(request)
-                      ↓
-3. Service → NotificationRoutesContext.GetDataResolverForRoute(route)
-                      ↓
-4. Service → NotificationRepository.SaveNotificationsAsync(notifications)
-                      ↓
-5. Service → NotificationSender.SendAsync(notification)
-                      ↓
-6. Sender → EmailProvider.SendEmailAsync(...) [Infrastructure]
-                      ↓
-7. Sender → NotificationRepository.UpdateNotificationsAsync(notification)
-                      ↓
-8. Controller → Return NotificationResponseDto
+```mermaid
+sequenceDiagram
+    participant Client as HTTP Client
+    participant Controller as NotificationController
+    participant CommandService as NotificationCommandService
+    participant RoutesContext as NotificationRoutesContext
+    participant Repository as NotificationRepository
+    participant Sender as NotificationSender
+    participant EmailProvider as EmailProvider
+
+    Client->>Controller: 1. POST /notifications (request)
+    Controller->>CommandService: 2. ProcessNotificationRequestAsync(request)
+    CommandService->>RoutesContext: 3. GetDataResolverForRoute(route)
+    RoutesContext-->>CommandService: DataResolver
+    CommandService->>Repository: 4. SaveNotificationsAsync(notifications)
+    Repository-->>CommandService: Saved
+    CommandService->>Sender: 5. SendAsync(notification)
+    Sender->>EmailProvider: 6. SendEmailAsync(...) [Infrastructure]
+    EmailProvider-->>Sender: Sent
+    Sender->>Repository: 7. UpdateNotificationsAsync(notification)
+    Repository-->>Sender: Updated
+    Sender-->>CommandService: Completed
+    CommandService-->>Controller: Result
+    Controller-->>Client: 8. Return NotificationResponseDto
 ```
 
 #### Получение уведомлений пользователя
 
-```
-1. HTTP GET → NotificationController.GetNotificationsByUser(userId)
-                      ↓
-2. Controller → NotificationQueryService.GetByUserAsync(userId)
-                      ↓
-3. Service → NotificationRepository.GetNotificationsForUserAsync(userId)
-                      ↓
-4. Service → NotificationMapper.MapToResponse(notifications)
-                      ↓
-5. Controller → Return List<NotificationResponseDto>
+```mermaid
+sequenceDiagram
+    participant Client as HTTP Client
+    participant Controller as NotificationController
+    participant QueryService as NotificationQueryService
+    participant Repository as NotificationRepository
+    participant Mapper as NotificationMapper
+
+    Client->>Controller: 1. GET /notifications/{userId}
+    Controller->>QueryService: 2. GetByUserAsync(userId)
+    QueryService->>Repository: 3. GetNotificationsForUserAsync(userId)
+    Repository-->>QueryService: notifications[]
+    QueryService->>Mapper: 4. MapToResponse(notifications)
+    Mapper-->>QueryService: NotificationResponseDto[]
+    QueryService-->>Controller: Result
+    Controller-->>Client: 5. Return List<NotificationResponseDto>
 ```
 
 ## Ключевые компоненты системы
