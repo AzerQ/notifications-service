@@ -36,13 +36,34 @@ public class NotificationController : ControllerBase
     {
         var result = await _commandService.ProcessNotificationRequestAsync(request);
         
-        // Broadcast notification via SignalR
-        await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+        // Send targeted notifications via SignalR to specific users
+        if (result.Recipients != null && result.Recipients.Any())
         {
-            title = result.Title,
-            route = result.Route,
-            createdAt = result.CreatedAt
-        });
+            foreach (var recipient in result.Recipients)
+            {
+                await _hubContext.Clients.User(recipient.Id.ToString()).SendAsync("ReceiveNotification", new
+                {
+                    id = result.CreatedNotificationIds?.FirstOrDefault() ?? Guid.NewGuid(),
+                    title = result.Title,
+                    message = result.StatusMessage,
+                    route = result.Route,
+                    createdAt = result.CreatedAt,
+                    userId = recipient.Id
+                });
+            }
+        }
+        else
+        {
+            // Fallback to broadcast if no specific users
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+            {
+                id = result.CreatedNotificationIds?.FirstOrDefault() ?? Guid.NewGuid(),
+                title = result.Title,
+                message = result.StatusMessage,
+                route = result.Route,
+                createdAt = result.CreatedAt
+            });
+        }
         
         return Created(nameof(NotificationResponseDto), result);
     }

@@ -8,6 +8,8 @@ public class User
     public string? PhoneNumber { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public string? DeviceToken { get; set; }
+    public string? PasswordHash { get; set; }
+    public string? Role { get; set; } = "User";
 
     public ICollection<UserAttribute> Attributes { get; set; } = new List<UserAttribute>();
 }
