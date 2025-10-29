@@ -7,9 +7,42 @@ A universal, extensible REST API notification service with real-time SignalR sup
 This MVP includes:
 - ✅ **Generic Notification Handlers** - UserRegistered, OrderCreated, TaskAssigned
 - ✅ **SignalR Integration** - Real-time notifications to connected clients
+- ✅ **JWT Authentication** - Secure user authentication and authorization
+- ✅ **Targeted Notifications** - SignalR notifications delivered only to specific users
+- ✅ **Showcase Application** - Full-featured demo with React + TypeScript + MobX + Tailwind
 - ✅ **Test Application** - Ready-to-use demo application
 - ✅ **InApp Frontend Component** - React/TypeScript notification UI
 - ✅ **Removed Docsvision Dependencies** - Now completely generic
+
+## 🚀 Showcase Application (NEW!)
+
+**Complete demonstration application with authentication and real-time targeted notifications!**
+
+### Quick Start - Showcase App
+
+The fastest way to see all features in action:
+
+```bash
+cd showcase
+./start.sh    # Linux/Mac
+start.bat     # Windows
+```
+
+Then open http://localhost:3000 in your browser.
+
+**Features:**
+- 🔐 User registration and login with JWT authentication
+- 📊 Beautiful dashboard with Tailwind CSS
+- 🔔 Real-time notification panel
+- 📤 Send test notifications (UserRegistered, OrderCreated, TaskAssigned)
+- 🎯 **Targeted delivery** - Notifications reach only specific users via SignalR
+- 📱 Responsive design for mobile and desktop
+
+**Technology Stack:**
+- Backend: .NET 8, JWT, SignalR, SQLite
+- Frontend: React 18, TypeScript, MobX, Tailwind CSS, Vite
+
+See [showcase/README.md](./showcase/README.md) for detailed documentation.
 
 ## Quick Start
 
@@ -55,11 +88,34 @@ Access at http://localhost:5094
 
 ## SignalR Real-Time Notifications
 
-The service includes SignalR support for real-time notification delivery.
+The service includes SignalR support for real-time notification delivery with **targeted delivery to specific users**.
 
-### Connecting to SignalR Hub
+### Targeted Notifications (NEW!)
 
-**Hub URL:** `http://localhost:5093/notificationHub`
+Notifications are now delivered only to specific users via SignalR using JWT authentication:
+
+**TypeScript Example with JWT:**
+```typescript
+import * as signalR from '@microsoft/signalr';
+
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:5093/notificationHub", {
+        accessTokenFactory: () => yourJwtToken  // JWT token for authentication
+    })
+    .withAutomaticReconnect()
+    .build();
+
+connection.on("ReceiveNotification", (notification) => {
+    console.log("Received targeted notification:", notification);
+    // Handle notification in your UI - this will only fire for notifications sent to YOUR user
+});
+
+await connection.start();
+```
+
+### Broadcast Notifications (Legacy)
+
+For backward compatibility, broadcast to all connected clients is still supported:
 
 **JavaScript Example:**
 ```javascript
@@ -78,11 +134,20 @@ await connection.start();
 
 ### Events
 
-- `ReceiveNotification` - Fired when a new notification is broadcast
+- `ReceiveNotification` - Fired when a notification is received (targeted or broadcast)
+
+### How Targeted Delivery Works
+
+1. **User Authentication**: Users authenticate via JWT tokens (`/api/auth/login`)
+2. **SignalR Connection**: Frontend connects with JWT token
+3. **User Mapping**: `UserIdProvider` extracts userId from JWT claims
+4. **Targeted Delivery**: Backend sends notifications only to specific users via `Clients.User(userId)`
+
+See the [Showcase Application](./showcase/README.md) for a complete example.
 
 ## Configuration
 - See `docs/reference/Configuration.md`
-- Main parameters: `ConnectionStrings:Notifications` (SQLite), `Email` section (SMTP)
+- Main parameters: `ConnectionStrings:Notifications` (SQLite), `Email` section (SMTP), `JwtSettings` (Authentication)
 
 ## Documentation
 
