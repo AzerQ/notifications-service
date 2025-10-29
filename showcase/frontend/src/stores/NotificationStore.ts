@@ -26,7 +26,7 @@ export class NotificationStore {
     }
   }
 
-  async initializeSignalR(userId: string, token: string) {
+  async initializeSignalR(_userId: string, token: string) {
     const hubUrl = import.meta.env.VITE_SIGNALR_URL || '/notificationHub';
     
     this.connection = new signalR.HubConnectionBuilder()
