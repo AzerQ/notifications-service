@@ -18,6 +18,8 @@ This MVP includes:
 
 **Complete demonstration application with authentication and real-time targeted notifications!**
 
+> **⚡ Quick Start**: See [QUICKSTART.md](./QUICKSTART.md) for a 2-minute setup guide
+
 ### Quick Start - Showcase App
 
 The fastest way to see all features in action:
