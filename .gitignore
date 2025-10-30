@@ -412,4 +412,4 @@ FodyWeavers.xsd
 
 /backend/src/NotificationService.Api/Notifications
 
-/backend/src/NotificationService.Api/core
+core
