@@ -1,4 +1,4 @@
-namespace NotificationService.Api.Services.Authentication.MailVerify;
+namespace NotificationService.Api.Authentication.MailVerify;
 
 /// <summary>
 /// Представляет данные для отправки ответа на задачу аутентификации по электронной почте.

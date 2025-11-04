@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
 
-namespace NotificationService.Api.Services.Authentication;
+namespace NotificationService.Api.Authentication.Services;
 
 /// <summary>
 /// Implements JWT token generation and validation for authentication.

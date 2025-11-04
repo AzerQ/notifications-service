@@ -1,6 +1,6 @@
 using NotificationService.Domain.Models;
 
-namespace NotificationService.Api.Services.Authentication.MailVerify;
+namespace NotificationService.Api.Authentication.MailVerify;
 
 /// <summary>
 /// Определяет интерфейс для сервиса аутентификации по электронной почте.
@@ -49,5 +49,5 @@ public interface IMailChallenger
    /// <item><description>Соответствие введенного кода сохраненному коду</description></item>
    /// </list>
    /// </remarks>
-   Task<()> VerifyMailChallengeAnswer(MailChallengeSubmit mailChallengeSubmit);
+   Task<MailVerifyResponse> VerifyMailChallengeAnswer(MailChallengeSubmit mailChallengeSubmit);
 }

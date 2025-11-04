@@ -1,8 +1,13 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NotificationService.Api.Authentication.MailVerify;
+using NotificationService.Api.Authentication.Services;
+using NotificationService.Domain.Interfaces;
+using NotificationService.Infrastructure.Repositories;
+using NotificationService.Infrastructure.Services;
 
-namespace NotificationService.Api.Services.Authentication;
+namespace NotificationService.Api.Authentication;
 
 public static class AuthConfig
 {
@@ -16,6 +21,11 @@ public static class AuthConfig
         if (string.IsNullOrWhiteSpace(secretKey))
             throw new Exception("JwtSettings:SecretKey must be defined in configuration!");
 
+        // Register authentication services
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IMailChallenger, MailChallenger>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IStringHasher, StringHasher>();
 
         services
             .AddAuthentication(options =>

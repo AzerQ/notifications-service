@@ -16,7 +16,10 @@ public class RefreshTokenRepository(
   public async Task<RefreshToken?> GetRefreshTokenAsync(string refreshTokenValue)
   {
     string refreshTokenHash = stringHasher.GetStringHash(refreshTokenValue);
-    var refresh = await notificationDb.RefreshTokens.FindAsync(refreshTokenHash);
+    var refresh = await notificationDb
+            .RefreshTokens
+            .Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.TokenHash == refreshTokenHash);
     return refresh;
   }
 

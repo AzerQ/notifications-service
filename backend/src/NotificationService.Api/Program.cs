@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.SignalR;
 using NotificationService.Api;
+using NotificationService.Api.Authentication;
 using NotificationService.Api.DI;
 using NotificationService.Api.Hubs;
 using NotificationService.Api.Providers;
-using NotificationService.Api.Services.Authentication;
 using NotificationService.Application.Extensions;
 using NotificationService.Infrastructure.Data.Init;
 
@@ -16,9 +16,6 @@ builder.Services.AddSwaggerWithXmlDocumentation();
 builder.Services.AddNotificationApplicationServices(builder.Configuration);
 
 builder.Services.ConfigureServiceAuthentication(builder.Configuration);
-
-// Register authentication services
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Configure SignalR with custom UserIdProvider for targeted notifications
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();

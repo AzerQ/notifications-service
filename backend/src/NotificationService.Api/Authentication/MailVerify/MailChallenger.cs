@@ -3,7 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 
-namespace NotificationService.Api.Services.Authentication.MailVerify;
+namespace NotificationService.Api.Authentication.MailVerify;
 
 /// <summary>
 /// Реализует сервис аутентификации по электронной почте.
@@ -39,7 +39,7 @@ public class MailChallenger(IMemoryCache memoryCache, IEmailProvider mailProvide
   public string GenerateCode() => RandomNumberGenerator.GetInt32(1000, 1_000_000).ToString("D6");
 
   /// <inheritdoc/>
-  public async Task<(Guid id, string message)> GenerateMailChallenge(string email)
+  public async Task<CreatedMailChallengeResponse> GenerateMailChallenge(string email)
   {
     User? user = await userRepository.GetUserByEmailAsync(email);
 
@@ -49,31 +49,31 @@ public class MailChallenger(IMemoryCache memoryCache, IEmailProvider mailProvide
     MailChallenge mailChallenge = new (id: Guid.NewGuid(), code: GenerateCode(), email: email);
     memoryCache.Set(mailChallenge.Id, mailChallenge, TimeSpan.FromMinutes(ChallengeTtlInMinutes));
     await mailProvider.SendEmailAsync(email, "Verify your identity for notifications system", $"Your code is {mailChallenge.Code}");
-    return (mailChallenge.Id, $"Check your mailbox ({email}) and enter code");
+    return new CreatedMailChallengeResponse(mailChallenge.Id, $"Check your mailbox ({email}) and enter code");
   }
 
   /// <inheritdoc/>
-  public async Task<(bool isValid, string Message, User? user)> VerifyMailChallengeAnswer(MailChallengeSubmit mailChallengeSubmit)
+  public async Task<MailVerifyResponse> VerifyMailChallengeAnswer(MailChallengeSubmit mailChallengeSubmit)
   {
     var mailChallenge = memoryCache.Get<MailChallenge>(mailChallengeSubmit.Id);
       
     if (mailChallenge is null)
-      return (false, $"Can't find mail challenge by id (Maybe {ChallengeTtlInMinutes} minutes timeout expired)", null);
+      return new MailVerifyResponse(false, $"Can't find mail challenge by id (Maybe {ChallengeTtlInMinutes} minutes timeout expired)", null);
 
     if (mailChallenge.TryCounts >= MaxTryCount) {
       memoryCache.Remove(mailChallengeSubmit.Id);
-      return (false, "Try counts reached, please generate new code again!", null);
+      return new MailVerifyResponse(false, "Try counts reached, please generate new code again!", null);
     }
 
     bool isValidCode = mailChallengeSubmit.Code == mailChallenge.Code;
 
     if (!isValidCode) {
       mailChallenge.TryCounts++;
-      return (false, "Incorrect code", null);
+      return new MailVerifyResponse(false, "Incorrect code", null);
     }
 
     User user = (await userRepository.GetUserByEmailAsync(mailChallenge.Email))!;
-    return (true, "User validate successfully", user);
+    return new MailVerifyResponse(true, "User validate successfully", user);
 
   }
 }

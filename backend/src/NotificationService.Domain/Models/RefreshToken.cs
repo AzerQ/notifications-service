@@ -14,12 +14,17 @@ public class RefreshToken
   /// After this time, the token cannot be used to request new access tokens.
   /// </summary>
   public DateTime ExpiresAt {get; set;}
-  
+
   /// <summary>
-  /// Gets or sets the cryptographic token value hash.
-  /// This is the actual token string that clients use in refresh requests.
+  /// Gets a value indicating whether the current object has expired based on its expiration time.
   /// </summary>
-  [Key]
+  public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
+
+    /// <summary>
+    /// Gets or sets the cryptographic token value hash.
+    /// This is the actual token string that clients use in refresh requests.
+    /// </summary>
+    [Key]
   public string TokenHash {get; set;} = null!;
   
   /// <summary>
