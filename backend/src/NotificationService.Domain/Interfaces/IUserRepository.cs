@@ -14,5 +14,8 @@ public interface IUserReadOnlyRepository
 {
     Task<User?> GetUserByIdAsync(Guid id);
     Task<User?> GetUserByEmailAsync(string email);
+
+    Task<User?> GetByAccountNameAsync(string accountName);
+
     Task<IEnumerable<User>> GetAllUsersAsync();
 }

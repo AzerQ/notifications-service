@@ -10,6 +10,8 @@ public class User
     public string? DeviceToken { get; set; }
     public string? Role { get; set; } = UserRoles.User;
 
+    public string? AccountName { get; set; }
+
     public ICollection<UserAttribute> Attributes { get; set; } = new List<UserAttribute>();
 }
 

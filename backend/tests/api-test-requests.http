@@ -1,0 +1,163 @@
+### NotificationService API - Примеры запросов с аутентификацией
+
+@baseUrl = http://localhost:5000
+@email = admin@example.com
+
+### === АУТЕНТИФИКАЦИЯ ===
+
+### === 1. Email Authentication ===
+
+### 1.1. Отправить код на email
+POST {{baseUrl}}/api/auth/email/sendCode?email={{email}}
+
+> {%
+  client.global.set("challengeId", response.body.id);
+  client.log("Challenge ID: " + response.body.id);
+%}
+
+### 1.2. Войти с кодом (замените код на полученный в email)
+POST {{baseUrl}}/api/auth/email
+Content-Type: application/json
+
+{
+  "id": "{{challengeId}}",
+  "code": "123456"
+}
+
+> {%
+  client.global.set("accessToken", response.body.accessToken);
+  client.global.set("refreshToken", response.body.refreshToken);
+  client.log("Access Token: " + response.body.accessToken);
+  client.log("Refresh Token: " + response.body.refreshToken);
+%}
+
+### === 2. Windows Authentication (сквозная авторизация) ===
+
+### 2.1. Войти через Windows (требует настройки IIS или доменной сети)
+# @name windowsAuth
+POST {{baseUrl}}/api/auth/windows
+Content-Type: application/json
+
+# Примечание: Для работы Windows Authentication:
+# 1. Запустите приложение с поддержкой Windows Auth (через IIS или Kestrel с настройками)
+# 2. Убедитесь, что в системе есть пользователь с AccountName = ваше_доменное_имя
+# 3. В REST Client может не работать - используйте PowerShell или Postman
+
+> {%
+  client.global.set("accessToken", response.body.accessToken);
+  client.global.set("refreshToken", response.body.refreshToken);
+  client.log("Windows Auth - Access Token: " + response.body.accessToken);
+%}
+
+### === 3. Обновление токена ===
+
+### 3.1. Обновить access token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshTokenValue": "{{refreshToken}}"
+}
+
+> {%
+  client.global.set("accessToken", response.body.accessToken);
+  client.log("New Access Token: " + response.body.accessToken);
+%}
+
+### === ПОЛЬЗОВАТЕЛИ ===
+
+### Получить всех пользователей (только Admin)
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{accessToken}}
+
+### Получить пользователя по ID
+GET {{baseUrl}}/api/users/{userId}
+Authorization: Bearer {{accessToken}}
+
+### === УВЕДОМЛЕНИЯ ===
+
+### Создать уведомление
+POST {{baseUrl}}/api/notification/UserRegistered
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "route": "UserRegistered",
+  "channel": "Email",
+  "parameters": {
+    "UserId": "b606cd21-7260-45b3-9e6f-6053690add9a"
+  }
+}
+
+### Получить уведомления по пользователю
+GET {{baseUrl}}/api/notification/by-user/b606cd21-7260-45b3-9e6f-6053690add9a
+Authorization: Bearer {{accessToken}}
+
+### Получить уведомления по статусу
+GET {{baseUrl}}/api/notification/by-status/Sent
+Authorization: Bearer {{accessToken}}
+
+### Тестовая отправка (анонимный доступ)
+POST {{baseUrl}}/api/notification/broadcast
+Content-Type: application/json
+
+{
+  "title": "Test Notification",
+  "message": "This is a test message",
+  "route": "TestRoute"
+}
+
+### === НАСТРОЙКИ МАРШРУТОВ ===
+
+### Получить настройки маршрутов пользователя
+GET {{baseUrl}}/api/users/b606cd21-7260-45b3-9e6f-6053690add9a/routes
+Authorization: Bearer {{accessToken}}
+
+### Обновить настройки маршрутов пользователя
+PUT {{baseUrl}}/api/users/b606cd21-7260-45b3-9e6f-6053690add9a/routes
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+[
+  {
+    "route": "UserRegistered",
+    "enabled": true
+  },
+  {
+    "route": "TaskAssigned",
+  "enabled": false
+  }
+]
+
+### === ТЕСТИРОВАНИЕ WINDOWS AUTH С POWERSHELL ===
+# Сохраните этот скрипт в файл test-windows-auth.ps1 и запустите из PowerShell
+
+<# 
+# test-windows-auth.ps1
+$baseUrl = "http://localhost:5000"
+
+# Вход через Windows Authentication
+$response = Invoke-RestMethod `
+    -Uri "$baseUrl/api/auth/windows" `
+    -Method POST `
+    -UseDefaultCredentials `
+    -ContentType "application/json"
+
+Write-Host "Access Token: $($response.accessToken)"
+Write-Host "Refresh Token: $($response.refreshToken)"
+
+# Сохранить токен для последующих запросов
+$accessToken = $response.accessToken
+
+# Получить информацию о текущем пользователе
+$headers = @{
+    "Authorization" = "Bearer $accessToken"
+}
+
+$users = Invoke-RestMethod `
+    -Uri "$baseUrl/api/users" `
+    -Method GET `
+    -Headers $headers
+
+Write-Host "Users count: $($users.Count)"
+#>
