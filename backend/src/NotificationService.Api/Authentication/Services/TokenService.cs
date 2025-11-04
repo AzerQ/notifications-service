@@ -22,6 +22,10 @@ public class TokenService : ITokenService
     public TokenService(IConfiguration configuration)
     {
         _configuration = configuration;
+        
+        // Ќастраиваем использование коротких имен claims вместо полных URI
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
     }
 
     /// <summary>
@@ -29,6 +33,7 @@ public class TokenService : ITokenService
     /// The token is signed using HMAC-SHA256 and configured with issuer, audience, and expiration settings from the application configuration.
     /// </summary>
     /// <param name="claims">Collection of security claims to include in the token payload.</param>
+    /// <param name="expires">Optional expiration time. If not specified, uses AccessTokenExpirationMinutes from configuration.</param>
     /// <returns>A signed JWT access token string.</returns>
     public string GenerateAccessToken(IEnumerable<Claim> claims, DateTime? expires = null)
     {
@@ -36,18 +41,44 @@ public class TokenService : ITokenService
         var secretKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!));
         
-        var signinCredentials = new SigningCredentials(
+   var signinCredentials = new SigningCredentials(
             secretKey, SecurityAlgorithms.HmacSha256);
+
+        // ѕреобразуем claims в стандартные короткие имена
+        var tokenClaims = claims.Select(c => new Claim(
+      GetShortClaimType(c.Type),
+            c.Value
+        )).ToList();
+
+  // ќпредел€ем врем€ истечени€ токена
+        var expirationTime = expires ?? DateTime.UtcNow.AddMinutes(
+            Convert.ToDouble(jwtSettings["AccessTokenExpirationMinutes"]));
 
         var tokeOptions = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
-            audience: jwtSettings["Audience"],
-            claims: claims,
-            expires: expires ?? DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["AccessTokenExpirationMinutes"])),
+       audience: jwtSettings["Audience"],
+          claims: tokenClaims,
+  expires: expirationTime,
             signingCredentials: signinCredentials
         );
 
         return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+    }
+
+    /// <summary>
+ /// ѕреобразует полные URI типов claims в короткие стандартные имена
+    /// </summary>
+    private static string GetShortClaimType(string claimType)
+    {
+        return claimType switch
+        {
+    ClaimTypes.NameIdentifier => "sub",  // Subject (user ID)
+ ClaimTypes.Name => "name",
+            ClaimTypes.Email => "email",
+            ClaimTypes.Role => "role",
+ClaimTypes.MobilePhone => "phone_number",
+  _ => claimType
+        };
     }
 
     /// <summary>
@@ -57,7 +88,7 @@ public class TokenService : ITokenService
     /// <returns>A Base64-encoded random refresh token string.</returns>
     public string GenerateRefreshToken()
     {
-        var randomNumber = new byte[32];
+    var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
         return Convert.ToBase64String(randomNumber);
@@ -72,26 +103,26 @@ public class TokenService : ITokenService
     /// <exception cref="SecurityTokenException">Thrown when the token signature is invalid or the signing algorithm is not HMAC-SHA256.</exception>
     public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
+ var jwtSettings = _configuration.GetSection("JwtSettings");
         var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = true,
+ {
+          ValidateAudience = false,
+ValidateIssuer = false,
+       ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
-            ValidateLifetime = false
+ ValidateLifetime = false
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(
+  var principal = tokenHandler.ValidateToken(
             token, tokenValidationParameters, out SecurityToken securityToken);
-        
+ 
         if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-            !jwtSecurityToken.Header.Alg.Equals(
-                SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            throw new SecurityTokenException("Invalid token");
+    !jwtSecurityToken.Header.Alg.Equals(
+ SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+throw new SecurityTokenException("Invalid token");
 
-        return principal;
+   return principal;
     }
 }

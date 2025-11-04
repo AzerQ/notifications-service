@@ -17,7 +17,7 @@ public record ApplicationUser
         Name = user.Name,
         Email = user.Email,
         PhoneNumber = user.PhoneNumber,
-        Role = user.Role
+        Role = user.Role ?? UserRoles.User // Если роль не указана, используем User по умолчанию
     };
 
     public static ApplicationUser MapFromClaims(IEnumerable<Claim> claims)
@@ -29,7 +29,7 @@ public record ApplicationUser
             Name = claimList.First(c => c.Type == ClaimTypes.Name).Value,
             Email = claimList.First(c => c.Type == ClaimTypes.Email).Value,
             PhoneNumber = claimList.FirstOrDefault(c => c.Type == ClaimTypes.MobilePhone)?.Value,
-            Role = claimList.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+            Role = claimList.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? UserRoles.User
         };
     }
 
@@ -41,14 +41,16 @@ public record ApplicationUser
             new(ClaimTypes.Name, Name),
             new(ClaimTypes.Email, Email)
         };
+
         if (!string.IsNullOrEmpty(PhoneNumber))
         {
             claims.Add(new Claim(ClaimTypes.MobilePhone, PhoneNumber));
         }
-        if (!string.IsNullOrEmpty(Role))
-        {
-            claims.Add(new Claim(ClaimTypes.Role, Role));
-        }
+
+        // ВАЖНО: Всегда добавляем роль (если не указана, используем User по умолчанию)
+        var userRole = !string.IsNullOrWhiteSpace(Role) ? Role : UserRoles.User;
+        claims.Add(new Claim(ClaimTypes.Role, userRole));
+
         return claims;
     }
 }

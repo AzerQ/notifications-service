@@ -11,11 +11,14 @@ public static class ClaimsPrincipalExtensions
     /// <summary>
     /// Получить ID пользователя из claims
     /// </summary>
-  public static Guid? GetUserId(this ClaimsPrincipal principal)
+    public static Guid? GetUserId(this ClaimsPrincipal principal)
     {
-        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // Пробуем сначала короткое имя, потом полное URI
+        var userIdClaim = principal.FindFirst("sub")?.Value
+                ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         if (string.IsNullOrEmpty(userIdClaim))
-     return null;
+            return null;
 
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
     }
@@ -25,15 +28,17 @@ public static class ClaimsPrincipalExtensions
     /// </summary>
     public static string? GetUserEmail(this ClaimsPrincipal principal)
     {
-   return principal.FindFirst(ClaimTypes.Email)?.Value;
+        return principal.FindFirst("email")?.Value
+         ?? principal.FindFirst(ClaimTypes.Email)?.Value;
     }
 
- /// <summary>
+    /// <summary>
     /// Получить имя пользователя из claims
     /// </summary>
     public static string? GetUserName(this ClaimsPrincipal principal)
     {
-return principal.FindFirst(ClaimTypes.Name)?.Value;
+        return principal.FindFirst("name")?.Value
+                ?? principal.FindFirst(ClaimTypes.Name)?.Value;
     }
 
     /// <summary>
@@ -41,14 +46,17 @@ return principal.FindFirst(ClaimTypes.Name)?.Value;
     /// </summary>
     public static string? GetUserRole(this ClaimsPrincipal principal)
     {
-        return principal.FindFirst(ClaimTypes.Role)?.Value;
+        return principal.FindFirst("role")?.Value
+         ?? principal.FindFirst(ClaimTypes.Role)?.Value;
     }
 
     /// <summary>
-    /// Проверить, является ли пользователь администратором
+  /// Проверить, является ли пользователь администратором
     /// </summary>
-    public static bool IsAdmin(this ClaimsPrincipal principal)
-    {
-   return principal.IsInRole(UserRoles.Admin);
+  public static bool IsAdmin(this ClaimsPrincipal principal)
+{
+        var role = GetUserRole(principal);
+        return role?.Equals(UserRoles.Admin, StringComparison.OrdinalIgnoreCase) == true
+            || principal.IsInRole(UserRoles.Admin);
     }
 }
