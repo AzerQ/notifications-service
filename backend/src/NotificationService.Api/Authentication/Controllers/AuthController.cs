@@ -95,7 +95,13 @@ public class AuthController(
     private string MakeAcessTokenForUser(User user)
     {
         var userClaims = ApplicationUser.MapFromUser(user).ToClaims();
-        return tokenService.GenerateAccessToken(userClaims);
+        
+        var externalApiClientsAcessTokenExpirationInDays = configuration.GetValue<int>("JwtSettings:ExternalApiClientsAcessTokenExpirationInDays");
+        DateTime? expires = user.Role == UserRoles.ExternalApiClient ? 
+            DateTime.UtcNow.AddDays(externalApiClientsAcessTokenExpirationInDays) 
+            : null;
+        
+        return tokenService.GenerateAccessToken(userClaims, expires);
     }
 
 

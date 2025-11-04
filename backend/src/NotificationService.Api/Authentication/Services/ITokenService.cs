@@ -13,7 +13,7 @@ public interface ITokenService
   /// </summary>
   /// <param name="claims">Collection of claims to include in the token.</param>
   /// <returns>A JWT access token string.</returns>
-  string GenerateAccessToken(IEnumerable<Claim> claims);
+  string GenerateAccessToken(IEnumerable<Claim> claims, DateTime? expires = null);
     
   /// <summary>
   /// Generates a cryptographically secure refresh token.

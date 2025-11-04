@@ -30,7 +30,7 @@ public class TokenService : ITokenService
     /// </summary>
     /// <param name="claims">Collection of security claims to include in the token payload.</param>
     /// <returns>A signed JWT access token string.</returns>
-    public string GenerateAccessToken(IEnumerable<Claim> claims)
+    public string GenerateAccessToken(IEnumerable<Claim> claims, DateTime? expires = null)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = new SymmetricSecurityKey(
@@ -43,7 +43,7 @@ public class TokenService : ITokenService
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["AccessTokenExpirationMinutes"])),
+            expires: expires ?? DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["AccessTokenExpirationMinutes"])),
             signingCredentials: signinCredentials
         );
 

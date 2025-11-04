@@ -6,6 +6,7 @@ using NotificationService.Api.Authentication.Extensions;
 using NotificationService.Api.Hubs;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Models;
 
 namespace NotificationService.Api.Controllers;
 
@@ -36,6 +37,7 @@ public class NotificationController : ControllerBase
     [HttpPost("{notificationCategory?}/{route}")]
     [ProducesResponseType(typeof(NotificationResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = $"{UserRoles.Admin},{UserRoles.ExternalApiClient}")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<NotificationResponseDto>> SendAsync(NotificationRequest request)
     {
@@ -105,14 +107,14 @@ public class NotificationController : ControllerBase
     {
       var currentUserId = User.GetUserId();
       
-   // Проверка прав: пользователь может получить только свои уведомления, кроме администратора
+        // Проверка прав: пользователь может получить только свои уведомления, кроме администратора
         if (currentUserId != userId && !User.IsAdmin())
-  {
-   return Forbid();
+        {
+            return Forbid();
         }
 
         var result = await _queryService.GetByUserAsync(userId);
-  return Ok(result);
+        return Ok(result);
     }
 
     /// <summary>
@@ -121,6 +123,7 @@ public class NotificationController : ControllerBase
     /// <param name="status">Статус (Pending|Sent|Failed|Delivered).</param>
     [HttpGet("by-status/{status}")]
     [ProducesResponseType(typeof(IReadOnlyCollection<NotificationResponseDto>), StatusCodes.Status200OK)]
+    [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> GetByStatusAsync(string status)
