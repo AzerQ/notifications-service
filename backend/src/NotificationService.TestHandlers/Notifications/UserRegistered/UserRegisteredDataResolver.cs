@@ -49,7 +49,7 @@ public class UserRegisteredDataResolver : INotificationDataResolver
         {
             UserName = user.Name,
             UserEmail = user.Email,
-            RegistrationDate = DateTime.Now,
+            RegistrationDate = DateTime.UtcNow,
             WelcomeMessage = parameters.WelcomeMessage ?? "Welcome to our service!"
         };
     }

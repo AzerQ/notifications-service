@@ -1,24 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Api.DTOs;
-using NotificationService.Api.Services;
+using NotificationService.Api.Services.Authentication.MailVerify;
 
 namespace NotificationService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(IMailChallenger mailChallenger) : ControllerBase
 {
-    private readonly IAuthService _authService;
 
-    public AuthController(IAuthService authService)
-    {
-        _authService = authService;
+
+    [HttpPost("email/sendCode")]
+    public async Task<CreatedMailChallengeResponse> SendMailCode([FromQuery] string email) {
+       var mailChallenge = await mailChallenger.GenerateMailChallenge(email);
+       return new CreatedMailChallengeResponse()
     }
 
     /// <summary>
-    /// Login with email and password
+    /// Login with email
     /// </summary>
-    [HttpPost("login")]
+    [HttpPost("email")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
@@ -33,21 +34,6 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
-    /// <summary>
-    /// Register a new user
-    /// </summary>
-    [HttpPost("register")]
-    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
-    {
-        var response = await _authService.RegisterAsync(request);
 
-        if (response == null)
-        {
-            return BadRequest(new { message = "User with this email already exists" });
-        }
 
-        return Created(string.Empty, response);
-    }
 }

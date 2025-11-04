@@ -1,4 +1,4 @@
-namespace NotificationService.Api.Services.MailVerify;
+namespace NotificationService.Api.Services.Authentication.MailVerify;
 
 /// <summary>
 /// Представляет задачу аутентификации по электронной почте с кодом подтверждения.

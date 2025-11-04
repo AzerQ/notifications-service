@@ -12,6 +12,7 @@ public class NotificationDbContext : DbContext
 
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<NotificationTemplate> Templates => Set<NotificationTemplate>();
     public DbSet<UserRoutePreference> UserRoutePreferences => Set<UserRoutePreference>();
 

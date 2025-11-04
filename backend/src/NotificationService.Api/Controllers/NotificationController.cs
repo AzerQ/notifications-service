@@ -124,7 +124,7 @@ public class NotificationController : ControllerBase
             title = request.Title ?? "Test Notification",
             message = request.Message ?? "This is a test notification",
             route = request.Route ?? "Test",
-            createdAt = DateTime.Now
+            createdAt = DateTime.UtcNow
         });
         
         return Ok(new { message = "Notification broadcast successfully" });

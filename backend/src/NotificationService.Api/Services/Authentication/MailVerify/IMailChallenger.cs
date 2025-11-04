@@ -1,6 +1,6 @@
 using NotificationService.Domain.Models;
 
-namespace NotificationService.Api.Services.MailVerify;
+namespace NotificationService.Api.Services.Authentication.MailVerify;
 
 /// <summary>
 /// Определяет интерфейс для сервиса аутентификации по электронной почте.
@@ -27,7 +27,7 @@ public interface IMailChallenger
    /// Метод отправляет код подтверждения на указанный адрес электронной почты
    /// и кэширует задачу на время, определенное константой <see cref="MailChallenger.ChallengeTtlInMinutes"/>.
    /// </remarks>
-   Task<(Guid id, string message)> GenerateMailChallenge(string email);
+   Task<CreatedMailChallengeResponse> GenerateMailChallenge(string email);
 
    /// <summary>
    /// Проверяет ответ пользователя на задачу аутентификации по электронной почте.
@@ -49,5 +49,5 @@ public interface IMailChallenger
    /// <item><description>Соответствие введенного кода сохраненному коду</description></item>
    /// </list>
    /// </remarks>
-   Task<(bool isValid, string Message, User? user)> VerifyMailChallengeAnswer(MailChallengeSubmit mailChallengeSubmit);
+   Task<()> VerifyMailChallengeAnswer(MailChallengeSubmit mailChallengeSubmit);
 }

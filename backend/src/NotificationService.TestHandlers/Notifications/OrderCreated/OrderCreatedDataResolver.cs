@@ -52,8 +52,8 @@ public class OrderCreatedDataResolver : INotificationDataResolver
             OrderNumber = parameters.OrderNumber ?? "N/A",
             OrderTotal = parameters.OrderTotal ?? 0,
             ItemCount = parameters.ItemCount ?? 0,
-            OrderDate = DateTime.Now,
-            EstimatedDelivery = DateTime.Now.AddDays(3)
+            OrderDate = DateTime.UtcNow,
+            EstimatedDelivery = DateTime.UtcNow.AddDays(3)
         };
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 
-namespace NotificationService.Api.Services.MailVerify;
+namespace NotificationService.Api.Services.Authentication.MailVerify;
 
 /// <summary>
 /// Реализует сервис аутентификации по электронной почте.
