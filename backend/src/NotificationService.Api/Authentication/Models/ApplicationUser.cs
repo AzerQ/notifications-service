@@ -17,7 +17,7 @@ public record ApplicationUser
         Name = user.Name,
         Email = user.Email,
         PhoneNumber = user.PhoneNumber,
-        Role = user.Role ?? UserRoles.User // Если роль не указана, используем User по умолчанию
+        Role = user.Role ?? UserRoles.User
     };
 
     public static ApplicationUser MapFromClaims(IEnumerable<Claim> claims)
@@ -47,7 +47,6 @@ public record ApplicationUser
             claims.Add(new Claim(ClaimTypes.MobilePhone, PhoneNumber));
         }
 
-        // ВАЖНО: Всегда добавляем роль (если не указана, используем User по умолчанию)
         var userRole = !string.IsNullOrWhiteSpace(Role) ? Role : UserRoles.User;
         claims.Add(new Claim(ClaimTypes.Role, userRole));
 
