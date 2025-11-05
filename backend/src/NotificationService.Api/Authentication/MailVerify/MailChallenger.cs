@@ -47,8 +47,11 @@ public class MailChallenger(IMemoryCache memoryCache, IEmailProvider mailProvide
       throw new NullReferenceException($"User with email {email} doesn't exists");
 
     MailChallenge mailChallenge = new (id: Guid.NewGuid(), code: GenerateCode(), email: email);
+    bool emailSendedSuccessfully = await mailProvider.SendEmailAsync(email, "Verify your identity for notifications system", $"Your code is {mailChallenge.Code}");
+    if (!emailSendedSuccessfully) {
+      throw new Exception("Can't send email (See application logs for details)");
+    }
     memoryCache.Set(mailChallenge.Id, mailChallenge, TimeSpan.FromMinutes(ChallengeTtlInMinutes));
-    await mailProvider.SendEmailAsync(email, "Verify your identity for notifications system", $"Your code is {mailChallenge.Code}");
     return new CreatedMailChallengeResponse(mailChallenge.Id, $"Check your mailbox ({email}) and enter code");
   }
 
