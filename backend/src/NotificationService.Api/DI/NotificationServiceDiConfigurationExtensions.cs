@@ -29,14 +29,14 @@ public static class NotificationServiceDiConfigurationExtensions
 
                 options.DocumentFilter<NotificationDocumentFilter>();
 
-                // Добавляем поддержку JWT Bearer токена в Swagger UI
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
                     Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Description = "JWT Authorization header using the Bearer scheme."
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
