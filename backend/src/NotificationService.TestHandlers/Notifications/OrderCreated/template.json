@@ -2,5 +2,6 @@
   "Name": "OrderCreated",
   "FilePath": "OrderCreated.hbs",
   "Subject": "Your Order Has Been Placed Successfully!",
+  "ContentShortTemplate": "{{Title}} - {{OrderNumber}}",
   "Channel": "Email"
 }

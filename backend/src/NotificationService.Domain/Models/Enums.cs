@@ -7,7 +7,8 @@ public enum NotificationChannel
 {
     Email,
     Sms,
-    Push
+    Push,
+    InApp
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]

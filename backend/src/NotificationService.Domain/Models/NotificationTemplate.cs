@@ -8,6 +8,7 @@ public class NotificationTemplate
     public string Name { get; set; } = string.Empty;
     public string Subject { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
+    public string ContentShortTemplate { get; set; } = string.Empty;
     
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public NotificationChannel Channel { get; set; }

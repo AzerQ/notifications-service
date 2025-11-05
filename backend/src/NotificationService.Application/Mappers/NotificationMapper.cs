@@ -63,7 +63,8 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             Message = renderedContent,
             Route = request.Route,
             Template = template,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            TemplateData = notificationData
         };
 
         if (request.Channels is not null 

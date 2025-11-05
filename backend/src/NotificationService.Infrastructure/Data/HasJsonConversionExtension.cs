@@ -22,7 +22,7 @@ namespace NotificationService.Infrastructure.Data
         {
             var converter = new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<T, string>(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
-                v => JsonSerializer.Deserialize<T>(v, JsonSerializerOptions.Default) ?? new T()
+                v => JsonSerializer.Deserialize<T>(v, JsonSerializerOptions.Default) ?? null!
             );
             propertyBuilder.HasConversion(converter);
         }
