@@ -105,7 +105,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> GetByUserAsync(Guid userId)
     {
-      var currentUserId = User.GetUserId();
+      var currentUserId = User.GetApplicationUser().Id;
       
         // Permission check: user can only retrieve their own notifications, except administrators
         if (currentUserId != userId && !User.IsAdmin())

@@ -1,62 +1,29 @@
-using NotificationService.Domain.Models;
+using NotificationService.Api.Authentication.Models;
 using System.Security.Claims;
 
 namespace NotificationService.Api.Authentication.Extensions;
 
 /// <summary>
-/// Расширения для работы с ClaimsPrincipal для извлечения информации о пользователе
+/// Extensions for working with ClaimsPrincipal to extract user information
 /// </summary>
 public static class ClaimsPrincipalExtensions
 {
+   
     /// <summary>
-    /// Получить ID пользователя из claims
+    /// Check if user is admin
     /// </summary>
-    public static Guid? GetUserId(this ClaimsPrincipal principal)
+    public static bool IsAdmin(this ClaimsPrincipal principal)
     {
-        // Пробуем сначала короткое имя, потом полное URI
-        var userIdClaim = principal.FindFirst("sub")?.Value
-                ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(userIdClaim))
-            return null;
-
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+        return GetApplicationUser(principal).IsAdmin;
     }
 
     /// <summary>
-    /// Получить email пользователя из claims
+    /// Get ApplicationUser object from ClaimsPrincipal
+    /// Extracts all user information from JWT claims and returns as ApplicationUser
     /// </summary>
-    public static string? GetUserEmail(this ClaimsPrincipal principal)
+    /// <returns>ApplicationUser object or null if required claims are missing</returns>
+    public static ApplicationUser GetApplicationUser(this ClaimsPrincipal principal)
     {
-        return principal.FindFirst("email")?.Value
-         ?? principal.FindFirst(ClaimTypes.Email)?.Value;
-    }
-
-    /// <summary>
-    /// Получить имя пользователя из claims
-    /// </summary>
-    public static string? GetUserName(this ClaimsPrincipal principal)
-    {
-        return principal.FindFirst("name")?.Value
-                ?? principal.FindFirst(ClaimTypes.Name)?.Value;
-    }
-
-    /// <summary>
-    /// Получить роль пользователя из claims
-    /// </summary>
-    public static string? GetUserRole(this ClaimsPrincipal principal)
-    {
-        return principal.FindFirst("role")?.Value
-         ?? principal.FindFirst(ClaimTypes.Role)?.Value;
-    }
-
-    /// <summary>
-  /// Проверить, является ли пользователь администратором
-    /// </summary>
-  public static bool IsAdmin(this ClaimsPrincipal principal)
-{
-        var role = GetUserRole(principal);
-        return role?.Equals(UserRoles.Admin, StringComparison.OrdinalIgnoreCase) == true
-            || principal.IsInRole(UserRoles.Admin);
+        return ApplicationUser.MapFromClaims(principal.Claims);
     }
 }

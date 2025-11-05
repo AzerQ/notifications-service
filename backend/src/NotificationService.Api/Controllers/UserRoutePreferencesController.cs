@@ -29,7 +29,7 @@ public class UserRoutePreferencesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IEnumerable<UserRoutePreference>>> Get(Guid userId)
     {
-        var currentUserId = User.GetUserId();
+        var currentUserId = User.GetApplicationUser().Id;
 
         // Permission check: user can only retrieve their own preferences
         if (currentUserId != userId && !User.IsAdmin())
@@ -54,7 +54,7 @@ public class UserRoutePreferencesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Put(Guid userId, [FromBody] IEnumerable<PreferenceDto> prefs)
     {
-        var currentUserId = User.GetUserId();
+        var currentUserId = User.GetApplicationUser().Id;
 
         // Permission check: user can only update their own preferences
         if (currentUserId != userId && !User.IsAdmin())

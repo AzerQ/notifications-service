@@ -33,6 +33,8 @@ public record ApplicationUser
         };
     }
 
+    public bool IsAdmin => string.Equals("Admin", Role);
+
     public IEnumerable<Claim> ToClaims()
     {
         var claims = new List<Claim>

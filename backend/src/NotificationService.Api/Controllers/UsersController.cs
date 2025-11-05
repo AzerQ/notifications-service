@@ -50,7 +50,7 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> GetUserById(Guid userId)
     {
-        var currentUserId = User.GetUserId();
+        var currentUserId = User.GetApplicationUser().Id;
 
         // Permission check: user can only retrieve their own data
         if (currentUserId != userId && !User.IsAdmin())
