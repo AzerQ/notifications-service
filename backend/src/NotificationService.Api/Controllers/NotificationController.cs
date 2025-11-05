@@ -30,10 +30,10 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
-    /// Создает новое уведомление.
+    /// Creates a new notification.
     /// </summary>
-    /// <param name="request">Данные уведомления.</param>
-    /// <returns>Созданное уведомление.</returns>
+    /// <param name="request">Notification data.</param>
+    /// <returns>Created notification.</returns>
     [HttpPost("{notificationCategory?}/{route}")]
     [ProducesResponseType(typeof(NotificationResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -76,9 +76,9 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
-    /// Возвращает уведомление по идентификатору.
+    /// Gets a notification by ID.
     /// </summary>
-    /// <param name="id">Идентификатор уведомления.</param>
+    /// <param name="id">Notification ID.</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(NotificationResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -95,10 +95,10 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
-    /// Возвращает список уведомлений по пользователю.
-    /// Обычные пользователи могут получить только свои уведомления, администраторы - любые.
+    /// Gets a list of notifications by user.
+    /// Regular users can only retrieve their own notifications, administrators can retrieve any.
     /// </summary>
-    /// <param name="userId">Идентификатор пользователя.</param>
+    /// <param name="userId">User ID.</param>
     [HttpGet("by-user/{userId:guid}")]
     [ProducesResponseType(typeof(IReadOnlyCollection<NotificationResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -107,7 +107,7 @@ public class NotificationController : ControllerBase
     {
       var currentUserId = User.GetUserId();
       
-        // Проверка прав: пользователь может получить только свои уведомления, кроме администратора
+        // Permission check: user can only retrieve their own notifications, except administrators
         if (currentUserId != userId && !User.IsAdmin())
         {
             return Forbid();
@@ -118,9 +118,9 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
-    /// Возвращает список уведомлений по статусу.
+    /// Gets a list of notifications by status.
     /// </summary>
-    /// <param name="status">Статус (Pending|Sent|Failed|Delivered).</param>
+    /// <param name="status">Status (Pending|Sent|Failed|Delivered).</param>
     [HttpGet("by-status/{status}")]
     [ProducesResponseType(typeof(IReadOnlyCollection<NotificationResponseDto>), StatusCodes.Status200OK)]
     [Authorize(Roles = UserRoles.Admin)]

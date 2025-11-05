@@ -20,8 +20,8 @@ public class UserRoutePreferencesController : ControllerBase
     }
 
     /// <summary>
-    /// Получить настройки маршрутов уведомлений для пользователя.
-    /// Обычные пользователи могут получить только свои настройки, администраторы - любые.
+    /// Gets route notification preferences for a user.
+    /// Regular users can only retrieve their own preferences, administrators can retrieve any.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UserRoutePreference>), StatusCodes.Status200OK)]
@@ -31,7 +31,7 @@ public class UserRoutePreferencesController : ControllerBase
     {
         var currentUserId = User.GetUserId();
 
-        // Проверка прав: пользователь может получить только свои настройки
+        // Permission check: user can only retrieve their own preferences
         if (currentUserId != userId && !User.IsAdmin())
         {
             return Forbid();
@@ -44,8 +44,8 @@ public class UserRoutePreferencesController : ControllerBase
     public record PreferenceDto(string Route, bool Enabled);
 
     /// <summary>
-    /// Обновить настройки маршрутов уведомлений для пользователя.
-    /// Обычные пользователи могут обновить только свои настройки, администраторы - любые.
+    /// Updates route notification preferences for a user.
+    /// Regular users can only update their own preferences, administrators can update any.
     /// </summary>
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -56,7 +56,7 @@ public class UserRoutePreferencesController : ControllerBase
     {
         var currentUserId = User.GetUserId();
 
-        // Проверка прав: пользователь может обновить только свои настройки
+        // Permission check: user can only update their own preferences
         if (currentUserId != userId && !User.IsAdmin())
         {
             return Forbid();

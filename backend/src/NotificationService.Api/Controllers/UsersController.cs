@@ -13,7 +13,7 @@ namespace NotificationService.Api.Controllers;
 public class UsersController(IUserRepository userRepository) : ControllerBase
 {
     /// <summary>
-    /// Получить список всех пользователей (только для администраторов)
+    /// Gets a list of all users (admin only).
     /// </summary>
     [HttpGet]
     [Authorize(Roles = UserRoles.Admin)]
@@ -26,7 +26,7 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
     }
 
     /// <summary>
-    /// Добавить новых пользователей (только для администраторов)
+    /// Creates new users (admin only).
     /// </summary>
     [HttpPost]
     [Authorize(Roles = UserRoles.Admin)]
@@ -40,8 +40,8 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
     }
 
     /// <summary>
-    /// Получить пользователя по ID.
-    /// Обычные пользователи могут получить только свою информацию, администраторы - любую.
+    /// Gets a user by ID.
+    /// Regular users can only retrieve their own data, administrators can retrieve any.
     /// </summary>
     [HttpGet("{userId:guid}")]
     [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
@@ -52,7 +52,7 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
     {
         var currentUserId = User.GetUserId();
 
-        // Проверка прав: пользователь может получить только свою информацию
+        // Permission check: user can only retrieve their own data
         if (currentUserId != userId && !User.IsAdmin())
         {
             return Forbid();
