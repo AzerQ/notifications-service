@@ -1,25 +1,37 @@
 {
-  "name": "sed-notifications-frontend",
+  "name": "@sed-notifications/frontend",
   "version": "1.0.0",
-  "description": "Frontend for SED notifications",
-  "main": "index.js",
+  "description": "Notification components for React with SignalR support",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "webpack serve --mode development --open",
-    "build": "webpack --mode production",
+    "build": "webpack --mode production && tsc --declaration --emitDeclarationOnly --outDir dist",
+    "build:lib": "webpack --mode production && tsc --declaration --emitDeclarationOnly --outDir dist",
     "dev": "webpack serve --mode development",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "prepublishOnly": "npm run build:lib"
   },
   "keywords": [
     "react",
     "typescript",
-    "webpack",
+    "notifications",
+    "signalr",
+    "mobx",
     "tailwind"
   ],
   "author": "",
   "license": "ISC",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -48,14 +60,14 @@
     "typescript": "^4.9.5",
     "webpack": "^5.76.3",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.13.1"
+    "webpack-dev-server": "^4.13.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@microsoft/signalr": "^9.0.6",
     "lucide-react": "^0.545.0",
     "mobx": "^6.15.0",
-    "mobx-react-lite": "^4.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "mobx-react-lite": "^4.1.1"
   }
 }

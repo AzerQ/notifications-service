@@ -2,5 +2,6 @@
   "Name": "TaskAssigned",
   "FilePath": "TaskAssigned.hbs",
   "Subject": "New Task Assigned to You",
+  "ContentShortTemplate": "{{Title}} - {{TaskName}} assigned to you",
   "Channel": "Email"
 }

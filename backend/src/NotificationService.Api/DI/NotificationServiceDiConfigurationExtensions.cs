@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using NotificationService.Api.SwaggerExtensions;
+using NotificationService.Api.Hubs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
 using NotificationService.Application.Services;
@@ -27,6 +29,31 @@ public static class NotificationServiceDiConfigurationExtensions
                 }
 
                 options.DocumentFilter<NotificationDocumentFilter>();
+
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme."
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
             });
     }
 
@@ -78,9 +105,12 @@ public static class NotificationServiceDiConfigurationExtensions
     {
         return services
             .AddScoped<INotificationMapper, NotificationMapper>()
+            .AddSingleton<InAppNotificationMapper>()
             .AddScoped<INotificationSender, NotificationSender>()
+            .AddScoped<IInAppNotificationSender, SignalRNotificationSender>()
             .AddScoped<INotificationCommandService, NotificationCommandService>()
             .AddScoped<INotificationQueryService, NotificationQueryService>()
+            .AddScoped<InAppNotificationProcessor>()
             .AddSingleton<IEmailProvider, SmtpEmailProvider>()
             .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
             .AddScoped<ITemplateLoader, FileSystemTemplateLoader>()

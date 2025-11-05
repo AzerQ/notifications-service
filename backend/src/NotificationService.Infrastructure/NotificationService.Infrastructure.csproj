@@ -30,8 +30,4 @@
     <PackageReference Include="Handlebars.Net.Extension.Json" Version="1.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>

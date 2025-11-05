@@ -55,13 +55,13 @@ public class FileSystemTemplateLoader : ITemplateLoader
             bool isTemplateAlreadyExists = await _templateRepository.IsTemplateExistsAsync(template.Name);
             if (!isTemplateAlreadyExists)
             {
-                template.CreatedAt = DateTime.Now;
+                template.CreatedAt = DateTime.UtcNow;
                 template.UpdatedAt = template.CreatedAt;
                 await _templateRepository.CreateTemplateAsync(template);
             }
             else
             {
-                template.UpdatedAt = DateTime.Now;
+                template.UpdatedAt = DateTime.UtcNow;
                 await _templateRepository.UpdateTemplateAsync(template);
             }
         }

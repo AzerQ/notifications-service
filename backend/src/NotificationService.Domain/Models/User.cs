@@ -6,8 +6,11 @@ public class User
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? DeviceToken { get; set; }
+    public string? Role { get; set; } = UserRoles.User;
+
+    public string? AccountName { get; set; }
 
     public ICollection<UserAttribute> Attributes { get; set; } = new List<UserAttribute>();
 }

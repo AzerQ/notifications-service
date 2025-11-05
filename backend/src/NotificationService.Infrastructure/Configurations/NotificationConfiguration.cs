@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NotificationService.Domain.Models;
+using NotificationService.Infrastructure.Data;
 
 namespace NotificationService.Infrastructure.Configurations;
 
@@ -30,6 +31,9 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .WithMany()
             .HasForeignKey("RecipientId")
             .IsRequired();
+
+        builder.Property(x => x.TemplateData)
+        .HasJsonConversion();
 
         builder.HasOne(x => x.Template)
             .WithMany()

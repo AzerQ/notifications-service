@@ -54,8 +54,8 @@ public class TaskAssignedDataResolver : INotificationDataResolver
             TaskTitle = parameters.TaskTitle ?? "Unnamed Task",
             TaskDescription = parameters.TaskDescription ?? "",
             Priority = parameters.Priority ?? "Normal",
-            DueDate = parameters.DueDate ?? DateTime.Now.AddDays(7),
-            AssignedDate = DateTime.Now
+            DueDate = parameters.DueDate ?? DateTime.UtcNow.AddDays(7),
+            AssignedDate = DateTime.UtcNow
         };
     }
 }

@@ -110,10 +110,10 @@ public class MyNotificationDataResolver : INotificationDataResolver
             
             // Дополнительные параметры
             ["CustomField"] = parameters.GetValueOrDefault("CustomField", "default value"),
-            ["Date"] = DateTime.Now,
+            ["Date"] = DateTime.UtcNow,
             
             // Вычисляемые поля
-            ["FormattedDate"] = DateTime.Now.ToString("dd.MM.yyyy HH:mm"),
+            ["FormattedDate"] = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
         };
 
         return Task.FromResult(data);

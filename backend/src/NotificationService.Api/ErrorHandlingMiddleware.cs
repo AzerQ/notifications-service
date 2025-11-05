@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Text.Json;
-
 namespace NotificationService.Api;
 
 /// <summary>
@@ -30,9 +28,8 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
             _ => HttpStatusCode.InternalServerError
         };
 
-        var result = JsonSerializer.Serialize(new { message = exception.Message });
         context.Response.StatusCode = (int)code;
-        await context.Response.WriteAsJsonAsync(result);
+        await context.Response.WriteAsJsonAsync(new { message = exception.Message });
     }
 }
 

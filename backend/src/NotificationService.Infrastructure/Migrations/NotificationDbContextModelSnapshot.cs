@@ -39,6 +39,10 @@ namespace NotificationService.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TemplateData")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("TemplateId")
                         .HasColumnType("TEXT");
 
@@ -120,6 +124,10 @@ namespace NotificationService.Infrastructure.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ContentShortTemplate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -143,10 +151,31 @@ namespace NotificationService.Infrastructure.Migrations
                     b.ToTable("Templates", (string)null);
                 });
 
+            modelBuilder.Entity("NotificationService.Domain.Models.RefreshToken", b =>
+                {
+                    b.Property<string>("TokenHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("TokenHash");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("NotificationService.Domain.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AccountName")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -168,6 +197,9 @@ namespace NotificationService.Infrastructure.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(24)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -263,6 +295,17 @@ namespace NotificationService.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Notification");
+                });
+
+            modelBuilder.Entity("NotificationService.Domain.Models.RefreshToken", b =>
+                {
+                    b.HasOne("NotificationService.Domain.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("NotificationService.Domain.Models.UserAttribute", b =>

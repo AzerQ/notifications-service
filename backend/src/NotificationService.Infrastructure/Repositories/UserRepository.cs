@@ -63,4 +63,9 @@ public class UserRepository : IUserRepository
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<User?> GetByAccountNameAsync(string accountName)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.AccountName == accountName);
+    }
 }
