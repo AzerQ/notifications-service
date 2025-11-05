@@ -29,7 +29,7 @@ public class NotificationDocumentFilter(NotificationRoutesContext notificationRo
 
         var operation = new OpenApiOperation
         {
-            Tags = [new OpenApiTag { Name = objectKind }],
+            Tags = [new OpenApiTag { Name = $"Notifications ({objectKind})"}],
             Summary = notificationRouteConfiguration.DisplayName,
             Description = notificationRouteConfiguration.Description,
             Responses = new OpenApiResponses
