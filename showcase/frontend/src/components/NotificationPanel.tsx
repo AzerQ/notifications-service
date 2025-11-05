@@ -57,15 +57,55 @@ const NotificationPanel: React.FC = observer(() => {
                     </h3>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">
-                    {notification.message}
+                    {notification.message || notification.content}
                   </p>
-                  <div className="flex items-center space-x-2 text-xs text-gray-500">
+                  {notification.author && (
+                    <p className="text-xs text-gray-500 mb-1">
+                      <span className="font-medium">From:</span> {notification.author}
+                    </p>
+                  )}
+                  <div className="flex items-center space-x-2 text-xs text-gray-500 mb-2">
                     <Clock className="w-3 h-3" />
-                    <span>{formatDistanceToNow(notification.createdAt)}</span>
-                    <span className="px-2 py-0.5 bg-gray-200 rounded-full">
-                      {notification.route}
-                    </span>
+                    <span>{formatDistanceToNow(notification.createdAt || notification.date)}</span>
+                    {(notification.route || notification.type) && (
+                      <span className="px-2 py-0.5 bg-gray-200 rounded-full">
+                        {notification.route || notification.type}
+                      </span>
+                    )}
                   </div>
+                  {notification.hashtags && notification.hashtags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {notification.hashtags.map((tag, idx) => (
+                        <span key={idx} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {notification.actions && notification.actions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {notification.actions.map((action, idx) => (
+                        <a
+                          key={idx}
+                          href={action.url}
+                          className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {action.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  {notification.parameters && notification.parameters.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      {notification.parameters.map((param, idx) => (
+                        <div key={idx} className="text-xs text-gray-600 mb-1">
+                          <span className="font-medium">{param.key}:</span> {param.value}
+                          {param.description && <span className="text-gray-400"> ({param.description})</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -23,12 +23,38 @@ export interface RegisterRequest {
   phoneNumber?: string;
 }
 
+// Notification action for InApp notifications
+export interface NotificationAction {
+  name: string;
+  label: string;
+  url: string;
+}
+
+// Notification parameter with key-value-description structure
+export interface NotificationParameter {
+  key: string;
+  value: string;
+  description: string;
+}
+
+// InApp notification matching backend structure
 export interface Notification {
   id: string;
+  type?: string;
   title: string;
-  message: string;
-  route: string;
-  createdAt: string;
-  userId?: string;
-  read?: boolean;
+  content: string;
+  contentShortTemplate?: string;
+  data?: any;
+  date: string;
+  read: boolean;
+  author?: string;
+  actions?: NotificationAction[];
+  hashtags?: string[];
+  parameters?: NotificationParameter[];
+  
+  // Backward compatibility - computed/alias fields
+  message?: string; // alias for content
+  route?: string; // alias for type
+  createdAt?: string; // alias for date
+  userId?: string; // for filtering
 }

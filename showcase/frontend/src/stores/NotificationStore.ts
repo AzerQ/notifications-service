@@ -18,7 +18,13 @@ export class NotificationStore {
     this.error = null;
     try {
       const notifications = await notificationApi.getByUser(userId);
-      this.notifications = notifications;
+      // Normalize notifications to ensure backward compatibility
+      this.notifications = notifications.map(n => ({
+        ...n,
+        message: n.content || n.message || '',
+        route: n.type || n.route || '',
+        createdAt: n.date || n.createdAt || new Date().toISOString(),
+      }));
     } catch (error: any) {
       this.error = error.message || 'Failed to load notifications';
     } finally {
@@ -51,7 +57,14 @@ export class NotificationStore {
   }
 
   addNotification(notification: Notification) {
-    this.notifications = [notification, ...this.notifications];
+    // Ensure backward compatibility by creating alias fields
+    const normalizedNotification = {
+      ...notification,
+      message: notification.content || notification.message || '',
+      route: notification.type || notification.route || '',
+      createdAt: notification.date || notification.createdAt || new Date().toISOString(),
+    };
+    this.notifications = [normalizedNotification, ...this.notifications];
   }
 
   markAsRead(notificationId: string) {
