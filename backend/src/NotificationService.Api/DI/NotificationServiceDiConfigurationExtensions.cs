@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using NotificationService.Api.SwaggerExtensions;
+using NotificationService.Api.Hubs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
 using NotificationService.Application.Services;
@@ -105,8 +106,10 @@ public static class NotificationServiceDiConfigurationExtensions
         return services
             .AddScoped<INotificationMapper, NotificationMapper>()
             .AddScoped<INotificationSender, NotificationSender>()
+            .AddScoped<IInAppNotificationSender, SignalRNotificationSender>()
             .AddScoped<INotificationCommandService, NotificationCommandService>()
             .AddScoped<INotificationQueryService, NotificationQueryService>()
+            .AddScoped<InAppNotificationProcessor>()
             .AddSingleton<IEmailProvider, SmtpEmailProvider>()
             .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
             .AddScoped<ITemplateLoader, FileSystemTemplateLoader>()

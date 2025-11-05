@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using NotificationService.Api.Authentication;
 using NotificationService.Api.Authentication.Extensions;
-using NotificationService.Api.Hubs;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Models;
@@ -17,16 +15,16 @@ public class NotificationController : ControllerBase
 {
     private readonly INotificationCommandService _commandService;
     private readonly INotificationQueryService _queryService;
-    private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly IInAppNotificationSender _inAppNotificationSender;
 
     public NotificationController(
         INotificationCommandService commandService,
         INotificationQueryService queryService,
-        IHubContext<NotificationHub> hubContext)
+        IInAppNotificationSender inAppNotificationSender)
     {
         _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-        _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
+        _inAppNotificationSender = inAppNotificationSender;
     }
 
     /// <summary>
@@ -42,36 +40,6 @@ public class NotificationController : ControllerBase
     public async Task<ActionResult<NotificationResponseDto>> SendAsync(NotificationRequest request)
     {
         var result = await _commandService.ProcessNotificationRequestAsync(request);
-        
-        // Send targeted notifications via SignalR to specific users
-        if (result.Recipients != null && result.Recipients.Any())
-        {
-            foreach (var recipient in result.Recipients)
-            {
-                await _hubContext.Clients.User(recipient.Id.ToString()).SendAsync("ReceiveNotification", new
-                {
-                    id = result.CreatedNotificationIds?.FirstOrDefault() ?? Guid.NewGuid(),
-                    title = result.Title,
-                    message = result.StatusMessage,
-                    route = result.Route,
-                    createdAt = result.CreatedAt,
-                    userId = recipient.Id
-                });
-            }
-        }
-        else
-        {
-            // Fallback to broadcast if no specific users
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
-            {
-                id = result.CreatedNotificationIds?.FirstOrDefault() ?? Guid.NewGuid(),
-                title = result.Title,
-                message = result.StatusMessage,
-                route = result.Route,
-                createdAt = result.CreatedAt
-            });
-        }
-        
         return Created(nameof(NotificationResponseDto), result);
     }
 
@@ -136,26 +104,21 @@ public class NotificationController : ControllerBase
     /// Test endpoint to broadcast a notification via SignalR
     /// </summary>
     [HttpPost("broadcast")]
-    [AllowAnonymous]
+    [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> BroadcastTestNotification([FromBody] BroadcastTestRequest request)
+    public async Task<ActionResult> BroadcastInAppNotification([FromBody] BroadcastRequest request)
     {
-        await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
-        {
-            id = Guid.NewGuid(),
-            title = request.Title ?? "Test Notification",
-            message = request.Message ?? "This is a test notification",
-            route = request.Route ?? "Test",
-            createdAt = DateTime.UtcNow
-        });
-        
+        await _inAppNotificationSender.SendToAllAsync(
+            request.Title,
+            request.Message,
+            DateTime.UtcNow);
+
         return Ok(new { message = "Notification broadcast successfully" });
     }
 }
 
-public class BroadcastTestRequest
+public class BroadcastRequest
 {
-    public string? Title { get; set; }
-    public string? Message { get; set; }
-    public string? Route { get; set; }
+    public required string Title { get; set; }
+    public required string Message { get; set; }
 }
