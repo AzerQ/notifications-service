@@ -12,78 +12,73 @@ namespace NotificationService.Api.Authentication;
 
 public static class AuthConfig
 {
-    public static IServiceCollection ConfigureServiceAuthentication(this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        // Ќастраиваем использование коротких имен claims
-        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
-
-        // Configure JWT authentication
-        var jwtSettings = configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"];
-
-        if (string.IsNullOrWhiteSpace(secretKey))
-   throw new Exception("JwtSettings:SecretKey must be defined in configuration!");
-
-        // Register authentication services
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IMailChallenger, MailChallenger>();
-    services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-        services.AddScoped<IStringHasher, StringHasher>();
-
-   services
-       .AddAuthentication(options =>
-            {
-           options.DefaultAuthenticateScheme = "JwtBearer";
-      options.DefaultChallengeScheme = "JwtBearer";
- })
-            .AddJwtBearer("JwtBearer", options =>
+  public static IServiceCollection ConfigureServiceAuthentication(this IServiceCollection services,
+    IConfiguration configuration)
   {
-          options.TokenValidationParameters = new TokenValidationParameters
-     {
-       ValidateIssuer = true,
-  ValidateAudience = true,
-       ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    ValidIssuer = jwtSettings["Issuer"] ?? "NotificationService",
-  ValidAudience = jwtSettings["Audience"] ?? "NotificationServiceClients",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-    
-    // ¬ажно: указываем, что нужно использовать короткие имена claims
-  NameClaimType = "name",
-  RoleClaimType = "role"
-      };
+    JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+    JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
-  // Allow JWT token in query string for SignalR
-      options.Events = new JwtBearerEvents
-    {
-          OnMessageReceived = context =>
-       {
-       var accessToken = context.Request.Query["access_token"];
-       var path = context.HttpContext.Request.Path;
+    // Configure JWT authentication
+    var jwtSettings = configuration.GetSection("JwtSettings");
+    var secretKey = jwtSettings["SecretKey"];
 
-if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
-          {
-       context.Token = accessToken;
-           }
+    if (string.IsNullOrWhiteSpace(secretKey))
+      throw new Exception("JwtSettings:SecretKey must be defined in configuration!");
 
-         return Task.CompletedTask;
-}
-     };
+    // Register authentication services
+    services.AddScoped<ITokenService, TokenService>();
+    services.AddScoped<IMailChallenger, MailChallenger>();
+    services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+    services.AddScoped<IStringHasher, StringHasher>();
+
+    services
+      .AddAuthentication(options =>
+      {
+        options.DefaultAuthenticateScheme = "JwtBearer";
+        options.DefaultChallengeScheme = "JwtBearer";
       })
- .AddNegotiate();
+      .AddJwtBearer("JwtBearer", options =>
+      {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+          ValidateIssuer = true,
+          ValidateAudience = true,
+          ValidateLifetime = true,
+          ValidateIssuerSigningKey = true,
+          ValidIssuer = jwtSettings["Issuer"] ?? "NotificationService",
+          ValidAudience = jwtSettings["Audience"] ?? "NotificationServiceClients",
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        };
 
-        services.AddAuthorizationBuilder()
-  .AddPolicy(WindowsAuthPolicyName, policy =>
-  policy.RequireAuthenticatedUser().AddAuthenticationSchemes("Negotiate"))
-  .AddPolicy(JwtAuthPolicyName, policy =>
- policy.RequireAuthenticatedUser().AddAuthenticationSchemes("JwtBearer"));
+        // Allow JWT token in query string for SignalR
+        options.Events = new JwtBearerEvents
+        {
+          OnMessageReceived = context =>
+          {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
 
-        return services;
-}
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+            {
+              context.Token = accessToken;
+            }
 
-    public const string WindowsAuthPolicyName = "WindowsAuth";
+            return Task.CompletedTask;
+          }
+        };
+      })
+      .AddNegotiate();
+
+    services.AddAuthorizationBuilder()
+      .AddPolicy(WindowsAuthPolicyName, policy =>
+        policy.RequireAuthenticatedUser().AddAuthenticationSchemes("Negotiate"))
+      .AddPolicy(JwtAuthPolicyName, policy =>
+        policy.RequireAuthenticatedUser().AddAuthenticationSchemes("JwtBearer"));
+
+    return services;
+  }
+
+  public const string WindowsAuthPolicyName = "WindowsAuth";
 
   public const string JwtAuthPolicyName = "JWT";
 }
