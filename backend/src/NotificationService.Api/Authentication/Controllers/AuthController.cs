@@ -18,6 +18,11 @@ public class AuthController(
     IConfiguration configuration) : ControllerBase
 {
 
+    /// <summary>
+    /// Sends a verification code to the specified email address.
+    /// </summary>
+    /// <param name="email">Email address to send the verification code to.</param>
+    /// <returns>Mail challenge response with challenge ID and expiration time.</returns>
     [HttpPost("email/sendCode")]
     [AllowAnonymous]
     public async Task<CreatedMailChallengeResponse> SendMailCode([FromQuery] string email)
@@ -26,8 +31,10 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Login with email
+    /// Authenticates user with email and verification code.
     /// </summary>
+    /// <param name="mailChallengeSubmit">Email and verification code submission.</param>
+    /// <returns>Access and refresh tokens for authenticated user.</returns>
     [HttpPost("email")]
     [ProducesResponseType(typeof(LoginTokensResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -43,7 +50,7 @@ public class AuthController(
 
         User user = mailChallengeResult.User!;
 
-        string accessToken = MakeAcessTokenForUser(user);
+        string accessToken = MakeAccessTokenForUser(user);
 
         string refreshToken = await MakeRefreshTokenForUser(user);
 
@@ -51,9 +58,9 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Windows Authentication - сквозная авторизация через доменную учетную запись
+    /// Windows Authentication - performs authentication using Windows credentials.
     /// </summary>
-    /// <returns>JWT токены для аутентифицированного доменного пользователя</returns>
+    /// <returns>JWT tokens for authenticated user.</returns>
     [HttpPost("windows")]
     [Authorize(Policy = AuthConfig.WindowsAuthPolicyName)]
     [ProducesResponseType(typeof(LoginTokensResponse), StatusCodes.Status200OK)]
@@ -61,7 +68,7 @@ public class AuthController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LoginTokensResponse>> LoginByWindows()
     {
-        // Получаем доменное имя пользователя из Windows Identity
+        // Get Windows identity from the current user
         var windowsIdentity = User.Identity?.Name;
 
         if (string.IsNullOrWhiteSpace(windowsIdentity))
@@ -69,7 +76,7 @@ public class AuthController(
             return Unauthorized(new { message = "Windows identity not found" });
         }
 
-        // Ищем пользователя по доменному имени (например: DOMAIN\username)
+        // Find user by account name (format: DOMAIN\username)
         var user = await userRepository.GetByAccountNameAsync(windowsIdentity);
 
         if (user is null)
@@ -77,7 +84,7 @@ public class AuthController(
             return NotFound(new { message = $"User with account name '{windowsIdentity}' not found in the system" });
         }
 
-        string accessToken = MakeAcessTokenForUser(user);
+        string accessToken = MakeAccessTokenForUser(user);
         string refreshToken = await MakeRefreshTokenForUser(user);
 
         return new LoginTokensResponse(refreshToken, accessToken);
@@ -92,19 +99,23 @@ public class AuthController(
         return refreshToken;
     }
 
-    private string MakeAcessTokenForUser(User user)
+    private string MakeAccessTokenForUser(User user)
     {
         var userClaims = ApplicationUser.MapFromUser(user).ToClaims();
         
-        var externalApiClientsAcessTokenExpirationInDays = configuration.GetValue<int>("JwtSettings:ExternalApiClientsAcessTokenExpirationInDays");
+        var externalApiClientsAccessTokenExpirationInDays = configuration.GetValue<int>("JwtSettings:ExternalApiClientsAccessTokenExpirationInDays");
         DateTime? expires = user.Role == UserRoles.ExternalApiClient ? 
-            DateTime.UtcNow.AddDays(externalApiClientsAcessTokenExpirationInDays) 
+            DateTime.UtcNow.AddDays(externalApiClientsAccessTokenExpirationInDays) 
             : null;
         
         return tokenService.GenerateAccessToken(userClaims, expires);
     }
 
-
+    /// <summary>
+    /// Refreshes the access token using a valid refresh token.
+    /// </summary>
+    /// <param name="refreshTokenRequest">Refresh token request containing the refresh token value.</param>
+    /// <returns>New access token.</returns>
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(AccessTokenResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -118,6 +129,6 @@ public class AuthController(
             return Unauthorized(new { message = "Invalid or expired refresh token" });
         }
 
-        return new AccessTokenResponse(MakeAcessTokenForUser(refreshToken.User!));
+        return new AccessTokenResponse(MakeAccessTokenForUser(refreshToken.User!));
     }
 }
