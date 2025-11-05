@@ -13,18 +13,23 @@ export class NotificationStore {
     makeAutoObservable(this);
   }
 
+  private normalizeNotification(notification: Notification): Notification {
+    // Ensure backward compatibility by creating alias fields
+    return {
+      ...notification,
+      message: notification.content || notification.message || '',
+      route: notification.type || notification.route || '',
+      createdAt: notification.date || notification.createdAt || new Date().toISOString(),
+    };
+  }
+
   async loadNotifications(userId: string) {
     this.loading = true;
     this.error = null;
     try {
       const notifications = await notificationApi.getByUser(userId);
       // Normalize notifications to ensure backward compatibility
-      this.notifications = notifications.map(n => ({
-        ...n,
-        message: n.content || n.message || '',
-        route: n.type || n.route || '',
-        createdAt: n.date || n.createdAt || new Date().toISOString(),
-      }));
+      this.notifications = notifications.map(n => this.normalizeNotification(n));
     } catch (error: any) {
       this.error = error.message || 'Failed to load notifications';
     } finally {
@@ -57,14 +62,7 @@ export class NotificationStore {
   }
 
   addNotification(notification: Notification) {
-    // Ensure backward compatibility by creating alias fields
-    const normalizedNotification = {
-      ...notification,
-      message: notification.content || notification.message || '',
-      route: notification.type || notification.route || '',
-      createdAt: notification.date || notification.createdAt || new Date().toISOString(),
-    };
-    this.notifications = [normalizedNotification, ...this.notifications];
+    this.notifications = [this.normalizeNotification(notification), ...this.notifications];
   }
 
   markAsRead(notificationId: string) {

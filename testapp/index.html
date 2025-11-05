@@ -321,6 +321,12 @@
             renderNotifications();
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function renderNotifications() {
             const container = document.getElementById('notifications');
             if (notifications.length === 0) {
@@ -329,19 +335,19 @@
             }
 
             container.innerHTML = notifications.map(n => {
-                const title = n.title || 'Notification';
-                const content = n.content || n.message || '';
-                const type = n.type || n.route || 'N/A';
+                const title = escapeHtml(n.title || 'Notification');
+                const content = escapeHtml(n.content || n.message || '');
+                const type = escapeHtml(n.type || n.route || 'N/A');
                 const date = n.date || n.createdAt || Date.now();
-                const author = n.author ? `<p class="text-xs text-gray-500"><strong>From:</strong> ${n.author}</p>` : '';
+                const author = n.author ? `<p class="text-xs text-gray-500"><strong>From:</strong> ${escapeHtml(n.author)}</p>` : '';
                 const hashtags = n.hashtags && n.hashtags.length > 0 
-                    ? `<div class="mt-2">${n.hashtags.map(tag => `<span style="display: inline-block; padding: 2px 8px; margin: 2px; background: #e0e7ff; color: #4338ca; border-radius: 12px; font-size: 11px;">#${tag}</span>`).join('')}</div>` 
+                    ? `<div class="mt-2">${n.hashtags.map(tag => `<span style="display: inline-block; padding: 2px 8px; margin: 2px; background: #e0e7ff; color: #4338ca; border-radius: 12px; font-size: 11px;">#${escapeHtml(tag)}</span>`).join('')}</div>` 
                     : '';
                 const actions = n.actions && n.actions.length > 0
-                    ? `<div class="mt-2">${n.actions.map(action => `<a href="${action.url}" style="display: inline-block; padding: 4px 12px; margin: 2px; background: #f3e8ff; color: #7c3aed; border-radius: 6px; font-size: 12px; text-decoration: none;">${action.label}</a>`).join('')}</div>`
+                    ? `<div class="mt-2">${n.actions.map(action => `<a href="${escapeHtml(action.url)}" style="display: inline-block; padding: 4px 12px; margin: 2px; background: #f3e8ff; color: #7c3aed; border-radius: 6px; font-size: 12px; text-decoration: none;">${escapeHtml(action.label)}</a>`).join('')}</div>`
                     : '';
                 const parameters = n.parameters && n.parameters.length > 0
-                    ? `<div class="mt-2 pt-2" style="border-top: 1px solid #e5e7eb;">${n.parameters.map(param => `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;"><strong>${param.key}:</strong> ${param.value}${param.description ? ` <span style="color: #9ca3af;">(${param.description})</span>` : ''}</div>`).join('')}</div>`
+                    ? `<div class="mt-2 pt-2" style="border-top: 1px solid #e5e7eb;">${n.parameters.map(param => `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;"><strong>${escapeHtml(param.key)}:</strong> ${escapeHtml(param.value)}${param.description ? ` <span style="color: #9ca3af;">(${escapeHtml(param.description)})</span>` : ''}</div>`).join('')}</div>`
                     : '';
                 
                 return `
