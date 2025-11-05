@@ -33,7 +33,9 @@ export interface BaseNotification {
   date: string;
   read: boolean;
 
-  // Optional fields
+  // Optional fields from InAppNotification
+  contentShortTemplate?: string; // Short template for compact display
+  data?: any; // Template substitution data
   author?: string;
   actions?: NotificationAction[];
   hashtags?: string[];
@@ -76,11 +78,13 @@ export function isBaseNotification(obj: any): obj is BaseNotification {
 export function toBaseNotification(oldNotification: any): BaseNotification {
   return {
     id: oldNotification.id,
-    type: oldNotification.type,
+    type: oldNotification.type || oldNotification.route,
     title: oldNotification.title,
-    content: oldNotification.description || oldNotification.content || '',
-    date: oldNotification.date,
-    read: oldNotification.read,
+    content: oldNotification.description || oldNotification.content || oldNotification.message || '',
+    date: oldNotification.date || oldNotification.createdAt,
+    read: oldNotification.read || false,
+    contentShortTemplate: oldNotification.contentShortTemplate,
+    data: oldNotification.data,
     author: oldNotification.author,
     actions: oldNotification.actions,
     hashtags: oldNotification.hashtags,
