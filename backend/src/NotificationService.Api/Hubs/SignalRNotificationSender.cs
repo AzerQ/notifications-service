@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.SignalR;
 using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Models.InApp;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NotificationService.Api.Hubs
 {
@@ -12,30 +16,16 @@ namespace NotificationService.Api.Hubs
             _hubContext = hubContext;
         }
 
-        public async Task SendToAllAsync(string title, string message, DateTime createdAt)
+        public async Task SendToAllAsync(InAppNotification notification)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
-            {
-                id = Guid.NewGuid(),
-                title,
-                message,
-                createdAt
-            });
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notification);
         }
 
-        public async Task SendToUsersAsync(IEnumerable<string> userIds, string title, string message, string route, DateTime createdAt)
+        public async Task SendToUsersAsync(IEnumerable<string> userIds, InAppNotification notification)
         {
             foreach (var userId in userIds)
             {
-                await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", new
-                {
-                    id = Guid.NewGuid(),
-                    title,
-                    message,
-                    route,
-                    createdAt,
-                    userId
-                });
+                await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notification);
             }
         }
     }

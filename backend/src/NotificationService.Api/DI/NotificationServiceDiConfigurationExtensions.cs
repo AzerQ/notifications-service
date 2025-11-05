@@ -105,6 +105,7 @@ public static class NotificationServiceDiConfigurationExtensions
     {
         return services
             .AddScoped<INotificationMapper, NotificationMapper>()
+            .AddSingleton<InAppNotificationMapper>()
             .AddScoped<INotificationSender, NotificationSender>()
             .AddScoped<IInAppNotificationSender, SignalRNotificationSender>()
             .AddScoped<INotificationCommandService, NotificationCommandService>()

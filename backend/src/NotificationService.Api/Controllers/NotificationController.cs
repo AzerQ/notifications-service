@@ -5,6 +5,7 @@ using NotificationService.Api.Authentication.Extensions;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Models;
+using NotificationService.Domain.Models.InApp;
 
 namespace NotificationService.Api.Controllers;
 
@@ -106,19 +107,10 @@ public class NotificationController : ControllerBase
     [HttpPost("broadcast")]
     [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> BroadcastInAppNotification([FromBody] BroadcastRequest request)
+    public async Task<ActionResult> BroadcastInAppNotification([FromBody] InAppNotification request)
     {
-        await _inAppNotificationSender.SendToAllAsync(
-            request.Title,
-            request.Message,
-            DateTime.UtcNow);
+        await _inAppNotificationSender.SendToAllAsync(request);
 
         return Ok(new { message = "Notification broadcast successfully" });
     }
-}
-
-public class BroadcastRequest
-{
-    public required string Title { get; set; }
-    public required string Message { get; set; }
 }
