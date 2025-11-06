@@ -94,6 +94,19 @@ public class NotificationController(
         return Ok(result);
     }
 
+    [HttpPut("set-read-flag")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> SetNotificationReadFlag([FromQuery] Guid notificationId, [FromQuery] bool flagValue) {
+        var notification = await notificationDb.Notifications.FindAsync(notificationId);
+        if (notification is null)
+            return NotFound("Notification not found");
+        notification.NotificationWasRead = flagValue;
+        await notificationDb.SaveChangesAsync();
+        return Ok($"Read flag for notification with id {notificationId} updated"); 
+    }
+
     /// <summary>
     /// Test endpoint to broadcast a notification via SignalR
     /// </summary>
