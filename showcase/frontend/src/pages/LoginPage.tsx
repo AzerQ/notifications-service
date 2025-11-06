@@ -2,21 +2,20 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStores } from '../stores/RootStore';
-import { LogIn } from 'lucide-react';
+import { LogIn, Mail } from 'lucide-react';
 
 const LoginPage: React.FC = observer(() => {
   const { authStore } = useStores();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await authStore.login({ email, password });
-      navigate('/dashboard');
+      await authStore.sendVerificationCode(email);
+      navigate('/verify-code');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Send code error:', error);
     }
   };
 
@@ -40,43 +39,36 @@ const LoginPage: React.FC = observer(() => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              Email Address
             </label>
-            <input
-              type="email"
-              className="input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="your@email.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              className="input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+              <input
+                type="email"
+                className="input pl-10"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="your@email.com"
+                autoFocus
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              We'll send you a verification code via email
+            </p>
           </div>
 
           <button
             type="submit"
             className="btn-primary w-full"
-            disabled={authStore.loading}
+            disabled={authStore.loading || !email}
           >
-            {authStore.loading ? 'Signing in...' : 'Sign In'}
+            {authStore.loading ? 'Sending code...' : 'Send Verification Code'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm">
             Don't have an account?{' '}
             <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign up

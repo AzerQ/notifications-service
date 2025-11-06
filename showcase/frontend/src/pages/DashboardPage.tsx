@@ -18,15 +18,15 @@ const DashboardPage: React.FC = observer(() => {
     }
 
     // Load notifications and initialize SignalR
-    if (authStore.user && authStore.token) {
+    if (authStore.user && authStore.accessToken) {
       notificationStore.loadNotifications(authStore.user.id);
-      notificationStore.initializeSignalR(authStore.user.id, authStore.token);
+      notificationStore.initializeSignalR(authStore.user.id, authStore.accessToken);
     }
 
     return () => {
       notificationStore.disconnect();
     };
-  }, [authStore.isAuthenticated, authStore.user, authStore.token]);
+  }, [authStore.isAuthenticated, authStore.user, authStore.accessToken]);
 
   const handleLogout = () => {
     authStore.logout();

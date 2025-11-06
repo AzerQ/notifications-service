@@ -6,14 +6,33 @@ export interface User {
   role?: string;
 }
 
+export interface LoginTokensResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface CreatedMailChallengeResponse {
+  challengeId: string;
+  expiresAt: string;
+}
+
+export interface MailChallengeSubmit {
+  id: string;
+  code: string;
+}
+
 export interface AuthResponse {
-  token: string;
-  user: User;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface LoginRequest {
   email: string;
-  password: string;
+}
+
+export interface CodeVerificationRequest {
+  challengeId: string;
+  code: string;
 }
 
 export interface RegisterRequest {

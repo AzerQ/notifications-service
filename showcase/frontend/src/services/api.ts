@@ -1,5 +1,11 @@
 import axios from 'axios';
-import type { AuthResponse, LoginRequest, RegisterRequest, Notification, User } from '../types';
+import type {
+  AuthResponse,
+  Notification,
+  User,
+  CreatedMailChallengeResponse,
+  MailChallengeSubmit
+} from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -9,7 +15,7 @@ const api = axios.create({
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -17,13 +23,17 @@ api.interceptors.request.use((config) => {
 });
 
 export const authApi = {
-  login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', data);
+  sendCode: async (email: string): Promise<CreatedMailChallengeResponse> => {
+    const response = await api.post<CreatedMailChallengeResponse>(
+      '/auth/email/sendCode',
+      {},
+      { params: { email } }
+    );
     return response.data;
   },
-  
-  register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/register', data);
+
+  verifyCode: async (data: MailChallengeSubmit): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/email', data);
     return response.data;
   },
 };
