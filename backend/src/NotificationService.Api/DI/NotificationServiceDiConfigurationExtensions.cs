@@ -1,3 +1,4 @@
+using EF.DynamicFilters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using NotificationService.Api.SwaggerExtensions;
@@ -114,7 +115,8 @@ public static class NotificationServiceDiConfigurationExtensions
             .AddSingleton<IEmailProvider, SmtpEmailProvider>()
             .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
             .AddScoped<ITemplateLoader, FileSystemTemplateLoader>()
-            .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
+            .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>()
+            .AddScoped<IQueryBuilder, QueryBuilder>();
     }
 
     public static IServiceCollection AddNotificationApplicationServices(this IServiceCollection services,

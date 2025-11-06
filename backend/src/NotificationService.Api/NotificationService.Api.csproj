@@ -31,6 +31,7 @@
     <ProjectReference Include="..\NotificationService.Application\NotificationService.Application.csproj" />
     <ProjectReference Include="..\NotificationService.Infrastructure\NotificationService.Infrastructure.csproj" />
     <ProjectReference Include="..\NotificationService.TestHandlers\NotificationService.TestHandlers.csproj" />
+    <ProjectReference Include="..\EF.DynamicFilters\EF.DynamicFilters.csproj" />
   </ItemGroup>
 
   <ItemGroup>
