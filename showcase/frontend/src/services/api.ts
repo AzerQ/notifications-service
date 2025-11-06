@@ -4,8 +4,11 @@ import type {
   Notification,
   User,
   CreatedMailChallengeResponse,
-  MailChallengeSubmit
+  MailChallengeSubmit,
+  RefreshTokenRequest,
+  AccessTokenResponse
 } from '../types';
+import { AuthInterceptor } from './authInterceptor';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -13,14 +16,12 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// AuthInterceptor будет инициализирован позже через setupAuthInterceptor
+let authInterceptor: AuthInterceptor | null = null;
+
+export const setupAuthInterceptor = (authStore: any) => {
+  authInterceptor = new AuthInterceptor(api, authStore);
+};
 
 export const authApi = {
   sendCode: async (email: string): Promise<CreatedMailChallengeResponse> => {
@@ -34,6 +35,11 @@ export const authApi = {
 
   verifyCode: async (data: MailChallengeSubmit): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/email', data);
+    return response.data;
+  },
+
+  refreshToken: async (data: RefreshTokenRequest): Promise<AccessTokenResponse> => {
+    const response = await api.post<AccessTokenResponse>('/auth/refresh', data);
     return response.data;
   },
 };

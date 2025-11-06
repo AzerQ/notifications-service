@@ -26,6 +26,14 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface RefreshTokenRequest {
+  refreshTokenValue: string;
+}
+
+export interface AccessTokenResponse {
+  accessToken: string;
+}
+
 export interface LoginRequest {
   email: string;
 }

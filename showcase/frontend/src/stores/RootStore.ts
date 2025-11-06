@@ -1,6 +1,7 @@
 import React from 'react';
 import { AuthStore } from './AuthStore';
 import { NotificationStore } from './NotificationStore';
+import { setupAuthInterceptor } from '../services/api';
 
 export class RootStore {
   authStore: AuthStore;
@@ -9,6 +10,9 @@ export class RootStore {
   constructor() {
     this.authStore = new AuthStore();
     this.notificationStore = new NotificationStore();
+    
+    // Настраиваем интерсептор аутентификации после создания authStore
+    setupAuthInterceptor(this.authStore);
   }
 }
 

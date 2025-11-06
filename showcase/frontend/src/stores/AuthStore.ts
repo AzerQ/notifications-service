@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { authApi } from '../services/api';
-import type { User, CreatedMailChallengeResponse, MailChallengeSubmit } from '../types';
+import type { User, CreatedMailChallengeResponse, MailChallengeSubmit, RefreshTokenRequest } from '../types';
 
 export class AuthStore {
   user: User | null = null;
@@ -113,12 +113,40 @@ export class AuthStore {
     }
   }
 
+  // Метод для обновления access token (вызывается интерсептором)
+  updateAccessToken(newAccessToken: string) {
+    this.accessToken = newAccessToken;
+    localStorage.setItem('accessToken', newAccessToken);
+  }
+
+  // Метод для программного обновления токена
+  async refreshAccessToken() {
+    if (!this.refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      const refreshRequest: RefreshTokenRequest = {
+        refreshTokenValue: this.refreshToken
+      };
+
+      const response = await authApi.refreshToken(refreshRequest);
+      this.updateAccessToken(response.accessToken);
+      return response.accessToken;
+    } catch (error: any) {
+      this.error = error.response?.data?.message || 'Failed to refresh access token';
+      this.logout();
+      throw error;
+    }
+  }
+
   logout() {
     this.user = null;
     this.accessToken = null;
     this.refreshToken = null;
     this.currentChallenge = null;
     this.currentEmail = null;
+    this.error = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
