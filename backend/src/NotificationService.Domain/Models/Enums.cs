@@ -17,6 +17,5 @@ public enum NotificationDeliveryStatus
     Pending,
     Skipped,
     Sent,
-    Failed,
-    Readed
+    Failed
 }

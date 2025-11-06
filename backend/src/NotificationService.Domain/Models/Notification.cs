@@ -10,6 +10,7 @@ public record Notification
     public User Recipient { get; set; } = null!;
     public object TemplateData {get; set;} = null!;
     public NotificationTemplate? Template { get; set; }
+    public bool NotificationVasRead {get; set;} = false;
 
     public ICollection<NotificationMetadataField> Metadata { get; set; } = new List<NotificationMetadataField>();
 
