@@ -44,8 +44,8 @@ export const notificationApi = {
     return response.data;
   },
   
-  send: async (data: any): Promise<any> => {
-    const response = await api.post('/notification', data);
+  send: async (params: {route: string, data:any}): Promise<any> => {
+    const response = await api.post(`/notification/${params.route}`, params.data);
     return response.data;
   },
 };

@@ -47,10 +47,16 @@ const SendNotificationForm: React.FC = observer(() => {
           break;
       }
 
+      const routesMap = new Map<string, string>(
+        [
+          ["UserRegistered","User/UserRegistered"],
+          ["OrderCreated","Order/OrderCreated"],
+          ["TaskAssigned","Task/TaskAssigned"],
+        ]
+      ) 
       await notificationApi.send({
-        route: notificationType,
-        channel: 'Email',
-        parameters
+        route: routesMap.get(notificationType) ?? "User/UserRegistered",
+        data: parameters
       });
 
       setMessage({ type: 'success', text: 'Notification sent successfully!' });
