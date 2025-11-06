@@ -62,7 +62,7 @@ export class AuthStore {
       this.accessToken = response.accessToken;
       this.refreshToken = response.refreshToken;
       
-      // Extract user info from JWT token (basic parsing)
+      // Extract user info from JWT token
       const userInfo = this.extractUserFromToken(response.accessToken);
       this.user = userInfo;
 
@@ -90,11 +90,18 @@ export class AuthStore {
 
       const decoded = JSON.parse(atob(parts[1]));
       
+      // Map from standard JWT claims to User object
+      // Using the claim URIs from the backend
+      const nameIdentifierClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier';
+      const nameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+      const emailClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+      const roleClaim = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+
       return {
-        id: decoded.sub || decoded.userId || '',
-        name: decoded.name || decoded.email || '',
-        email: decoded.email || this.currentEmail || '',
-        role: decoded.role,
+        id: decoded[nameIdentifierClaim] || decoded.sub || decoded.userId || '',
+        name: decoded[nameClaim] || decoded.name || '',
+        email: decoded[emailClaim] || decoded.email || this.currentEmail || '',
+        role: decoded[roleClaim] || decoded.role,
       };
     } catch (error) {
       console.error('Failed to extract user from token:', error);
