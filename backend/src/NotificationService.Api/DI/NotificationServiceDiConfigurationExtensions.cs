@@ -90,7 +90,7 @@ public static class NotificationServiceDiConfigurationExtensions
                 .AddSingleton<IUserRepository, UserRepository>()
                 .AddSingleton<ITemplateRepository, TemplateRepository>()
                 .AddSingleton<IUserRoutePreferenceRepository, UserRoutePreferenceRepository>()
-            ;
+                .AddScoped<IQueryBuilder, QueryBuilder>();
     }
 
     public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services,
@@ -115,8 +115,7 @@ public static class NotificationServiceDiConfigurationExtensions
             .AddSingleton<IEmailProvider, SmtpEmailProvider>()
             .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
             .AddScoped<ITemplateLoader, FileSystemTemplateLoader>()
-            .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>()
-            .AddScoped<IQueryBuilder, QueryBuilder>();
+            .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
     }
 
     public static IServiceCollection AddNotificationApplicationServices(this IServiceCollection services,

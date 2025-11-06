@@ -1,32 +1,28 @@
+using EF.DynamicFilters;
+using EF.DynamicFilters.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NotificationService.Api.Authentication;
 using NotificationService.Api.Authentication.Extensions;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Models;
 using NotificationService.Domain.Models.InApp;
+using NotificationService.Infrastructure.Data;
 
 namespace NotificationService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Policy = AuthConfig.JwtAuthPolicyName)]
-public class NotificationController : ControllerBase
+public class NotificationController(
+    INotificationCommandService commandService,
+    INotificationQueryService queryService,
+    IInAppNotificationSender inAppNotificationSender,
+    IQueryBuilder queryBuilder,
+    NotificationDbContext notificationDb) : ControllerBase
 {
-    private readonly INotificationCommandService _commandService;
-    private readonly INotificationQueryService _queryService;
-    private readonly IInAppNotificationSender _inAppNotificationSender;
-
-    public NotificationController(
-        INotificationCommandService commandService,
-        INotificationQueryService queryService,
-        IInAppNotificationSender inAppNotificationSender)
-    {
-        _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
-        _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
-        _inAppNotificationSender = inAppNotificationSender;
-    }
 
     /// <summary>
     /// Creates a new notification.
@@ -40,7 +36,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<NotificationResponseDto>> SendAsync(NotificationRequest request)
     {
-        var result = await _commandService.ProcessNotificationRequestAsync(request);
+        var result = await commandService.ProcessNotificationRequestAsync(request);
         return Created(nameof(NotificationResponseDto), result);
     }
 
@@ -54,7 +50,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<NotificationResponseDto>> GetByIdAsync(Guid id)
     {
-        var result = await _queryService.GetByIdAsync(id);
+        var result = await queryService.GetByIdAsync(id);
         if (result is null)
         {
             return NotFound();
@@ -82,22 +78,19 @@ public class NotificationController : ControllerBase
             return Forbid();
         }
 
-        var result = await _queryService.GetByUserAsync(userId);
+        var result = await queryService.GetByUserAsync(userId);
         return Ok(result);
     }
 
-    /// <summary>
-    /// Gets a list of notifications by status.
-    /// </summary>
-    /// <param name="status">Status (Pending|Sent|Failed|Delivered).</param>
-    [HttpGet("by-status/{status}")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<NotificationResponseDto>), StatusCodes.Status200OK)]
-    [Authorize(Roles = UserRoles.Admin)]
+    [HttpPost("search")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<Notification>), StatusCodes.Status200OK)]
+    // [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> GetByStatusAsync(string status)
+    public async Task<ActionResult<IReadOnlyCollection<Notification>>> SearchNotificationsAsync([FromBody] QueryRequest queryRequest)
     {
-        var result = await _queryService.GetByStatusAsync(status);
+        var query = queryBuilder.BuildQuery(notificationDb.Notifications, queryRequest);
+        var result = await query.ToListAsync();
         return Ok(result);
     }
 
@@ -109,7 +102,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> BroadcastInAppNotification([FromBody] InAppNotification request)
     {
-        await _inAppNotificationSender.SendToAllAsync(request);
+        await inAppNotificationSender.SendToAllAsync(request);
 
         return Ok(new { message = "Notification broadcast successfully" });
     }
