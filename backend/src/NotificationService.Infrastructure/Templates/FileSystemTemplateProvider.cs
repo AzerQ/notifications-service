@@ -31,10 +31,15 @@ public class FileSystemTemplateLoader : ITemplateLoader
         
         if (notificationTemplate == null)
             return null;
-        
-        string templateContentPath = Path.Combine(folderPath, notificationTemplate.FilePath);
-        
-        notificationTemplate.Content = File.ReadAllText(templateContentPath);
+
+        foreach (var channelTemplate in notificationTemplate.ChannelsTemplates)
+        {
+            string? filePath = channelTemplate.FilePath;
+            if (!string.IsNullOrWhiteSpace(filePath)) {
+                string templateContentPath = Path.Combine(folderPath, filePath);
+                channelTemplate.Content = File.ReadAllText(templateContentPath);
+            }
+        }    
         
         return notificationTemplate;
     }

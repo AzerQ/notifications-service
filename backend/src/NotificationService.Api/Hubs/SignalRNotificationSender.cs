@@ -16,17 +16,14 @@ namespace NotificationService.Api.Hubs
             _hubContext = hubContext;
         }
 
-        public async Task SendToAllAsync(InAppNotification notification)
+        public async Task SendToAllAsync(AppNotification notification)
         {
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", notification);
         }
 
-        public async Task SendToUsersAsync(IEnumerable<string> userIds, InAppNotification notification)
+        public async Task SendToUsersAsync(AppNotification notification)
         {
-            foreach (var userId in userIds)
-            {
-                await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notification);
-            }
+            await _hubContext.Clients.User(notification.ReceiverId).SendAsync("ReceiveNotification", notification);
         }
     }
 }

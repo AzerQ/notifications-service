@@ -1,7 +1,9 @@
 {
   "Name": "TaskAssigned",
-  "FilePath": "TaskAssigned.hbs",
   "Subject": "New Task Assigned to You",
-  "ContentShortTemplate": "{{Title}} - {{TaskName}} assigned to you",
-  "Channel": "Email"
+  "CommonContentTemplate": "{{TaskName}} assigned to you",
+  "ChannelsTemplates": [
+    {"Channel": "Email", "FilePath": "TaskAssigned.hbs"},
+    {"Channel": "InApp", "Content": "{{Title}} - {{TaskName}} assigned to you"}
+  ]
 }

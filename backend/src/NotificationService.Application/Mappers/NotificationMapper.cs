@@ -52,7 +52,7 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
 
         var notificationData = await notificationDataResolver.ResolveNotificationFullData(request);
         
-        var renderedContent = templateRenderer.Render(template.Content, notificationData);
+        var renderedContent = templateRenderer.Render(template.CommonContentTemplate, notificationData);
         var renderedSubject = string.IsNullOrWhiteSpace(template.Subject)
             ? request.Title ?? "Тема отсутсвует"
             : templateRenderer.Render(template.Subject, notificationData);

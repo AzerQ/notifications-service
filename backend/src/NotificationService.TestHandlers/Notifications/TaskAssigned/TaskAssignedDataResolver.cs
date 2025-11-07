@@ -30,7 +30,7 @@ public class TaskAssignedDataResolver : INotificationDataResolver
         return user != null ? new[] { user } : Enumerable.Empty<User>();
     }
 
-    public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
+    public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<TaskAssignedRequestData>();
         
@@ -47,7 +47,7 @@ public class TaskAssignedDataResolver : INotificationDataResolver
             throw new ArgumentException($"Assignee with ID {parameters.AssigneeId} not found");
         }
 
-        return new TaskAssignedTemplateModel
+        return new NotificationFullData(new TaskAssignedTemplateModel
         {
             AssigneeName = assignee.Name,
             AssignerName = assigner?.Name ?? "System",
@@ -56,7 +56,7 @@ public class TaskAssignedDataResolver : INotificationDataResolver
             Priority = parameters.Priority ?? "Normal",
             DueDate = parameters.DueDate ?? DateTime.UtcNow.AddDays(7),
             AssignedDate = DateTime.UtcNow
-        };
+        }, "https://example.com");
     }
 }
 

@@ -21,11 +21,6 @@ public class TemplateRepository : ITemplateRepository
         return await _context.Templates.FirstOrDefaultAsync(t => t.Name == name);
     }
 
-    public async Task<IEnumerable<NotificationTemplate>> GetTemplatesByChannelAsync(NotificationChannel channel)
-    {
-        return await _context.Templates.Where(t => t.Channel == channel).ToListAsync();
-    }
-
     public async Task<NotificationTemplate> CreateTemplateAsync(NotificationTemplate template)
     {
         ArgumentNullException.ThrowIfNull(template);
@@ -40,18 +35,6 @@ public class TemplateRepository : ITemplateRepository
         ArgumentNullException.ThrowIfNull(template);
 
         _context.Templates.Update(template);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteTemplateAsync(Guid id)
-    {
-        var template = await _context.Templates.FindAsync(id);
-        if (template is null)
-        {
-            return;
-        }
-
-        _context.Templates.Remove(template);
         await _context.SaveChangesAsync();
     }
 }

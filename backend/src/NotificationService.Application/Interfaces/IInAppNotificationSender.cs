@@ -7,7 +7,7 @@ namespace NotificationService.Application.Interfaces
 {
     public interface IInAppNotificationSender
     {
-        Task SendToAllAsync(InAppNotification notification);
-        Task SendToUsersAsync(IEnumerable<string> userIds, InAppNotification notification);
+        Task SendToAllAsync(AppNotification notification);
+        Task SendToUsersAsync(AppNotification notification);
     }
 }

@@ -19,20 +19,25 @@ namespace NotificationService.Domain.Models.InApp
         public required string Description { get; set; }
     }
 
-    /// <summary>
+        /// <summary>
         /// Represents an In-App notification.
         /// </summary>
-        public record InAppNotification
+        public record AppNotification
         {
-            
             /// <summary>
             /// The unique identifier of the notification.
             /// </summary>
-            public string Id { get; set; } = Guid.NewGuid().ToString();
+            public Guid Id { get; set; }
+
+            public string ReceiverId {get; set;} = null!;
+
             /// <summary>
             /// The type of the notification.
             /// </summary>
             public string? Type { get; set; }
+
+            public string? SubType {get; set;}
+
             /// <summary>
             /// The title of the notification.
             /// </summary>
@@ -41,14 +46,11 @@ namespace NotificationService.Domain.Models.InApp
             /// The content of the notification.
             /// </summary>
             public required string Content { get; set; }
-            /// <summary>
-            /// The short content template for the notification.
-            /// </summary>
-            public string? ContentShortTemplate { get; set; }
-            /// <summary>
-            /// The data object for template substitution.
-            /// </summary>
-            public object? Data { get; set; }
+
+            public required string Url {get; set;}
+
+            public string? Icon { get; set; }
+
             /// <summary>
             /// The date and time the notification was created.
             /// </summary>
@@ -58,7 +60,7 @@ namespace NotificationService.Domain.Models.InApp
             /// </summary>
             public bool Read { get; set; } = false;
             /// <summary>
-            /// The author of the notification.
+            /// Name author of the notification.
             /// </summary>
             public string? Author { get; set; }
             /// <summary>

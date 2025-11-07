@@ -1,7 +1,9 @@
 {
   "Name": "OrderCreated",
-  "FilePath": "OrderCreated.hbs",
   "Subject": "Your Order Has Been Placed Successfully!",
-  "ContentShortTemplate": "{{Title}} - {{OrderNumber}}",
-  "Channel": "Email"
+  "CommonContentTemplate": "{{Title}} - {{OrderNumber}}",
+  "ChannelsTemplates": [
+      {"Channel": "Email", "FilePath": "OrderCreated.hbs"},
+      {"Channel": "InApp", "Content": "{{Title}} - {{OrderNumber}}"}
+  ]
 }

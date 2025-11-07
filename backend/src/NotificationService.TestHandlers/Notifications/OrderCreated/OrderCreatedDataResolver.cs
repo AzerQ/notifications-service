@@ -30,7 +30,7 @@ public class OrderCreatedDataResolver : INotificationDataResolver
         return user != null ? new[] { user } : Enumerable.Empty<User>();
     }
 
-    public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
+    public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<OrderCreatedRequestData>();
         
@@ -46,7 +46,7 @@ public class OrderCreatedDataResolver : INotificationDataResolver
             throw new ArgumentException($"Customer with ID {parameters.CustomerId} not found");
         }
 
-        return new OrderCreatedTemplateModel
+        return new NotificationFullData(new OrderCreatedTemplateModel
         {
             CustomerName = user.Name,
             OrderNumber = parameters.OrderNumber ?? "N/A",
@@ -54,7 +54,7 @@ public class OrderCreatedDataResolver : INotificationDataResolver
             ItemCount = parameters.ItemCount ?? 0,
             OrderDate = DateTime.UtcNow,
             EstimatedDelivery = DateTime.UtcNow.AddDays(3)
-        };
+        }, "https://example.com");
     }
 }
 

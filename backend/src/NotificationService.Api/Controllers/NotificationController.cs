@@ -113,7 +113,7 @@ public class NotificationController(
     [HttpPost("broadcast")]
     [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> BroadcastInAppNotification([FromBody] InAppNotification request)
+    public async Task<ActionResult> BroadcastInAppNotification([FromBody] AppNotification request)
     {
         await inAppNotificationSender.SendToAllAsync(request);
 

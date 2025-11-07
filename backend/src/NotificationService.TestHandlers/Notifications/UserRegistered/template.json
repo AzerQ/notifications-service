@@ -1,7 +1,9 @@
 {
   "Name": "UserRegistered",
-  "FilePath": "UserRegistered.hbs",
   "Subject": "Welcome to the Notification Service!",
-  "ContentShortTemplate": "Welcome {{UserName}}!",
-  "Channel": "Email"
+  "CommonContentTemplate": "Welcome {{UserName}}!",
+  "ChannelsTemplates": [
+    {"Channel": "Email", "FilePath": "UserRegistered.hbs"},
+    {"Channel": "InApp", "Content": "Welcome {{UserName}}!"}
+  ]
 }

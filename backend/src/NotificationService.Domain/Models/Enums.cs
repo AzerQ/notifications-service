@@ -6,8 +6,6 @@ namespace NotificationService.Domain.Models;
 public enum NotificationChannel
 {
     Email,
-    Sms,
-    Push,
     InApp
 }
 

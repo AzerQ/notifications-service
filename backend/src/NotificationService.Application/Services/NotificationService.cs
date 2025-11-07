@@ -15,7 +15,6 @@ public class NotificationCommandService
     INotificationRepository notificationRepository,
     ITemplateRepository templateRepository,
     INotificationSender notificationSender,
-    InAppNotificationProcessor inAppNotificationProcessor,
     INotificationMapper notificationMapper) : INotificationCommandService
 {
     
@@ -44,9 +43,7 @@ public class NotificationCommandService
 
         await notificationRepository.SaveNotificationsAsync(preparedNotifications);
         
-        await Task.WhenAll(preparedNotifications.Select(notificationSender.SendAsync).ToArray());
-
-        await Task.WhenAll(preparedNotifications.Select(inAppNotificationProcessor.ProcessAsync));
+        await Task.WhenAll(preparedNotifications.Select(notification => notificationSender.SendAsync(notification, notificationRouteConfiguration)));
         
         return notificationMapper.MapToResponse(preparedNotifications);
         

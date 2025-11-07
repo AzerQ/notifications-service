@@ -8,10 +8,12 @@ public record Notification
     public required string Route { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public User Recipient { get; set; } = null!;
+    public Guid RecipientId {get; set;}
     public object TemplateData {get; set;} = null!;
-    public NotificationTemplate? Template { get; set; }
+    public NotificationTemplate Template { get; set; } = null!;
+    public Guid TemplateId {get; set;}
     public bool NotificationWasRead {get; set;} = false;
-
+    public string Url {get; set;} = null!;
     public ICollection<NotificationMetadataField> Metadata { get; set; } = new List<NotificationMetadataField>();
 
      
@@ -26,7 +28,7 @@ public record Notification
     }
 
     public ICollection<NotificationChannelDeliveryStatus> DeliveryChannelsState { get; set; }
-    = ChannelsDefaultState(NotificationChannel.Email, NotificationChannel.Push);
+    = ChannelsDefaultState(NotificationChannel.Email, NotificationChannel.InApp);
 
 
 }

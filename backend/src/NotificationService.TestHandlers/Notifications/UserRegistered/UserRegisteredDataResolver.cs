@@ -30,7 +30,7 @@ public class UserRegisteredDataResolver : INotificationDataResolver
         return user != null ? new[] { user } : Enumerable.Empty<User>();
     }
 
-    public async Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest)
+    public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<UserRegisteredRequestData>();
         if (parameters?.UserId == null)
@@ -45,13 +45,13 @@ public class UserRegisteredDataResolver : INotificationDataResolver
             throw new ArgumentException($"User with ID {parameters.UserId} not found");
         }
 
-        return new UserRegisteredTemplateModel
+        return new NotificationFullData(new UserRegisteredTemplateModel
         {
             UserName = user.Name,
             UserEmail = user.Email,
             RegistrationDate = DateTime.UtcNow,
             WelcomeMessage = parameters.WelcomeMessage ?? "Welcome to our service!"
-        };
+        }, "https://example.com");
     }
 }
 

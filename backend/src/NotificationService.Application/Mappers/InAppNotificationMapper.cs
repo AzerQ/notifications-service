@@ -1,3 +1,4 @@
+using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 using NotificationService.Domain.Models.InApp;
 
@@ -5,17 +6,27 @@ namespace NotificationService.Application.Mappers
 {
     public class InAppNotificationMapper
     {
-        public InAppNotification Map(Notification notification)
+        public AppNotification Map
+        (
+            Notification notification,
+            INotificationRouteConfiguration routeConfiguration,
+            List<NotificationAction>? notificationActions = null,
+            List<NotificationParameter>? notificationParameters = null
+        )
                 {
-                    return new InAppNotification
+                    return new AppNotification
                     {
-                        Id = notification.Id.ToString(),
+                        Id = notification.Id,
+                        ReceiverId = notification.RecipientId.ToString(), 
                         Content = notification.Message,
-                        ContentShortTemplate = notification.Template?.ContentShortTemplate,
-                        Data = notification.TemplateData,
                         Date = notification.CreatedAt,
-                        Type = notification.Route,
+                        Type = routeConfiguration.NotificationObjectKind.DisplayName,
+                        SubType = routeConfiguration.DisplayName,
                         Title = notification.Title,
+                        Hashtags = [.. routeConfiguration.Tags],
+                        Url = notification.Url,
+                        Actions = notificationActions,
+                        Parameters = notificationParameters,
                         Read = false // Assuming default value
                     };
                 }

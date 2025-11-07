@@ -25,5 +25,7 @@ public interface INotificationDataResolver
     /// </summary>
     /// <param name="notificationRequest">Запрос на форирование уведомления</param>
     /// <returns>Полные данные по уведомлению</returns>
-    Task<object> ResolveNotificationFullData(NotificationRequest notificationRequest);
+    Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest);
 }
+
+public record NotificationFullData (object Data, string Url);
