@@ -25,7 +25,11 @@ public static class DbInitializer
         try
         {
             var context = scopedProvider.GetRequiredService<NotificationDbContext>();
-            await context.Database.MigrateAsync();
+            
+            if (isProduction)
+                await context.Database.MigrateAsync();
+            else 
+                await context.Database.EnsureCreatedAsync();
 
             ITemplateLoader templateLoader = scopedProvider.GetRequiredService<ITemplateLoader>();
             await templateLoader.LoadTemplatesAsync();
