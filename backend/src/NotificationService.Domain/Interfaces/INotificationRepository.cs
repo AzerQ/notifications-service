@@ -8,7 +8,6 @@ public interface INotificationRepository
 
     Task UpdateNotificationsAsync(params Notification[] notifications);
 
-    Task<IEnumerable<Notification>> GetNotificationsForUserAsync(Guid userId);
+    Task<IEnumerable<Notification>> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
     Task<Notification?> GetNotificationByIdAsync(Guid id);
-    Task<IEnumerable<Notification>> GetNotificationsByStatusAsync(NotificationDeliveryStatus status);
 }

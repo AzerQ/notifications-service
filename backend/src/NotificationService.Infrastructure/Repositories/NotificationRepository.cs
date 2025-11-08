@@ -29,13 +29,22 @@ public class NotificationRepository : INotificationRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Notification>> GetNotificationsForUserAsync(Guid userId)
+    public async Task<IEnumerable<Notification>> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest)
     {
-        return await _context.Notifications
+        var query =  _context.Notifications
             .Include(n => n.Recipient)
-            .Include(n => n.Template)
-            .Where(n => n.Recipient.Id == userId)
-            .ToListAsync();
+            .Where(n => n.RecipientId == userId);
+
+         if (userNotificationsRequest.OnlyUnread)
+            query = query.Where(n => n.NotificationWasRead == false);
+
+        // Apply pagination
+        query = query
+            .Skip((userNotificationsRequest.PageNumber - 1) * userNotificationsRequest.PageSize)
+            .Take(userNotificationsRequest.PageSize);
+
+        return await query.ToListAsync();
+
     }
 
     public async Task<Notification?> GetNotificationByIdAsync(Guid id)
@@ -44,16 +53,6 @@ public class NotificationRepository : INotificationRepository
             .Include(n => n.Recipient)
             .Include(n => n.Template)
             .FirstOrDefaultAsync(n => n.Id == id);
-    }
-
-    public async Task<IEnumerable<Notification>> GetNotificationsByStatusAsync(NotificationDeliveryStatus status)
-    {
-        return await _context.Notifications
-            .Include(n => n.Recipient)
-            .Include(n => n.Template)
-            .Include(n => n.DeliveryChannelsState)
-            .Where(n => n.DeliveryChannelsState.Any(channel => channel.DeliveryStatus == status))
-            .ToListAsync();
     }
 
     public async Task UpdateNotificationsAsync(params Notification[] notifications)

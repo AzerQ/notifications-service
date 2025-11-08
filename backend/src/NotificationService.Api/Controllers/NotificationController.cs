@@ -63,28 +63,19 @@ public class NotificationController(
     /// Gets a list of notifications by user.
     /// Regular users can only retrieve their own notifications, administrators can retrieve any.
     /// </summary>
-    /// <param name="userId">User ID.</param>
-    [HttpGet("by-user/{userId:guid}")]
-    [ProducesResponseType(typeof(IReadOnlyCollection<NotificationResponseDto>), StatusCodes.Status200OK)]
+    [HttpGet("personal")]
+    [ProducesResponseType(typeof(UserNotificationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> GetByUserAsync(Guid userId)
+    public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> GetUserNotifications([FromQuery] GetUserNotificationsRequest userNotificationsRequest)
     {
       var currentUserId = User.GetApplicationUser().Id;
-      
-        // Permission check: user can only retrieve their own notifications, except administrators
-        if (currentUserId != userId && !User.IsAdmin())
-        {
-            return Forbid();
-        }
-
-        var result = await queryService.GetByUserAsync(userId);
-        return Ok(result);
+      var result = await queryService.GetUserNotifications(currentUserId, userNotificationsRequest);
+      return Ok(result);
     }
 
     [HttpPost("search")]
     [ProducesResponseType(typeof(IReadOnlyCollection<Notification>), StatusCodes.Status200OK)]
-    // [Authorize(Roles = UserRoles.Admin)]
+    [Authorize(Roles = UserRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyCollection<Notification>>> SearchNotificationsAsync([FromBody] QueryRequest queryRequest)

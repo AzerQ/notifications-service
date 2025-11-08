@@ -3,6 +3,7 @@ using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
 using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
+using NotificationService.Domain.Models.InApp;
 
 namespace NotificationService.Application.Services;
 
@@ -54,19 +55,13 @@ public class NotificationCommandService
 /// Сервис для выполнения запросов на чтение уведомлений.
 /// Предоставляет методы для получения уведомлений по различным критериям.
 /// </summary>
-public class NotificationQueryService : INotificationQueryService
+public class NotificationQueryService(
+    INotificationRepository notificationRepository,
+    INotificationMapper notificationMapper,
+    InAppNotificationMapper inAppNotificationMapper,
+    NotificationRoutesContext notificationRoutesContext
+) : INotificationQueryService
 {
-    private readonly INotificationRepository _notificationRepository;
-    private readonly INotificationMapper _notificationMapper;
-
-    public NotificationQueryService(
-        INotificationRepository notificationRepository,
-        INotificationMapper notificationMapper)
-    {
-        _notificationRepository = notificationRepository ?? throw new ArgumentNullException(nameof(notificationRepository));
-        _notificationMapper = notificationMapper;
-    }
-
     /// <summary>
     /// Получает уведомление по его идентификатору.
     /// </summary>
@@ -74,8 +69,8 @@ public class NotificationQueryService : INotificationQueryService
     /// <returns>DTO уведомления или null, если не найдено</returns>
     public async Task<NotificationResponseDto?> GetByIdAsync(Guid id)
     {
-        var notification = await _notificationRepository.GetNotificationByIdAsync(id);
-        return notification is null ? null : _notificationMapper.MapToResponse([notification]);
+        var notification = await notificationRepository.GetNotificationByIdAsync(id);
+        return notification is null ? null : notificationMapper.MapToResponse([notification]);
     }
 
     /// <summary>
@@ -83,26 +78,18 @@ public class NotificationQueryService : INotificationQueryService
     /// </summary>
     /// <param name="userId">Идентификатор пользователя</param>
     /// <returns>Коллекция DTO уведомлений пользователя</returns>
-    public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByUserAsync(Guid userId)
+    public async Task<IReadOnlyCollection<AppNotification>> GetUserNotifications(Guid userId,
+        GetUserNotificationsRequest userNotificationsRequest)
     {
-        var notifications = await _notificationRepository.GetNotificationsForUserAsync(userId);
-        return notifications.Select(n => _notificationMapper.MapToResponse([n])).ToArray();
-    }
+        var notifications = (await notificationRepository.GetUserNotifications(userId, userNotificationsRequest)).ToList();
 
-    /// <summary>
-    /// Получает уведомления по статусу доставки.
-    /// </summary>
-    /// <param name="status">Статус доставки (строка)</param>
-    /// <returns>Коллекция DTO уведомлений с указанным статусом</returns>
-    /// <exception cref="ArgumentException">Выбрасывается, если статус неизвестен</exception>
-    public async Task<IReadOnlyCollection<NotificationResponseDto>> GetByStatusAsync(string status)
-    {
-        if (!Enum.TryParse<NotificationDeliveryStatus>(status, true, out var parsedStatus))
-        {
-            throw new ArgumentException($"Unknown notification status '{status}'.", nameof(status));
-        }
+        var distinctRoutesConfigurations = notifications
+                            .Select(n => n.Route)
+                            .Distinct()
+                            .Select(notificationRoutesContext.GetNotificationRouteConfiguration)
+                            .ToDictionary(k => k.Name, v => v);
 
-        var notifications = await _notificationRepository.GetNotificationsByStatusAsync(parsedStatus);
-        return notifications.Select(n =>_notificationMapper.MapToResponse([n])).ToArray();
+        return [.. notifications.Select(n => inAppNotificationMapper.Map(n, distinctRoutesConfigurations[n.Route]))];
+
     }
 }
