@@ -27,8 +27,13 @@ public class FileSystemTemplateLoader : ITemplateLoader
     NotificationTemplate? LoadFromFolder(string folderPath)
     {
         string templateConfigFilePath = Path.Combine(folderPath, "template.json");
-        var notificationTemplate = JsonSerializer.Deserialize<NotificationTemplate>(File.ReadAllText(templateConfigFilePath));
-        
+        string configContent = File.ReadAllText(templateConfigFilePath);
+
+         _logger.LogInformation("Loaded config {Path} with content {Content}", templateConfigFilePath, configContent);
+
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var notificationTemplate = JsonSerializer.Deserialize<NotificationTemplate>(configContent, options);
+
         if (notificationTemplate == null)
             return null;
 

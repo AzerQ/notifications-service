@@ -11,7 +11,7 @@ public record Notification
     public Guid RecipientId {get; set;}
     public object TemplateData {get; set;} = null!;
     public NotificationTemplate Template { get; set; } = null!;
-    public Guid TemplateId {get; set;}
+    public string TemplateId {get; set;}
     public bool NotificationWasRead {get; set;} = false;
     public string Url {get; set;} = null!;
     public ICollection<NotificationMetadataField> Metadata { get; set; } = new List<NotificationMetadataField>();

@@ -18,11 +18,11 @@ namespace NotificationService.Infrastructure.Data
         /// и десериализации JSON-строки обратно в объект при чтении из базы данных.
         /// Если десериализация возвращает null, создается новый экземпляр типа T.
         /// </remarks>
-        public static void HasJsonConversion<T>(this PropertyBuilder<T> propertyBuilder) where T : class, new()
+        public static void HasJsonConversion<T>(this PropertyBuilder<T> propertyBuilder)
         {
             var converter = new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<T, string>(
                 v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
-                v => string.IsNullOrWhiteSpace(v) ? null! : JsonSerializer.Deserialize<T>(v, JsonSerializerOptions.Default)!
+                v => string.IsNullOrWhiteSpace(v) ? default! : JsonSerializer.Deserialize<T>(v, JsonSerializerOptions.Default)!
             );
             propertyBuilder.HasConversion(converter);
         }
