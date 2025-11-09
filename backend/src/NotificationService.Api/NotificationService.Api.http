@@ -1,6 +1,481 @@
-@NotificationService.Api_HostAddress = http://localhost:5226
+### ===================================================================
+### Notification Service API - Comprehensive Test Suite
+### ===================================================================
+### Этот файл содержит тесты для всех эндпоинтов NotificationService API
+### Включает аутентификацию, CRUD операции и специальные функции
+### ===================================================================
 
-GET {{NotificationService.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+# Переменные окружения
+@baseUrl = http://localhost:5093
+@contentType = application/json
 
-###
+# Тестовые пользователи из конфигурации
+@adminEmail = admin@examle.com
+@testUserEmail = test@examle.com
+@testUser2Email = test2@examle.com
+@testUser3Email = test3@examle.com
+
+# ID пользователей из seed данных
+@adminUserId = b606cd21-7260-45b3-9e6f-6053690add9a
+@testUserId = 9490fae9-2a4c-4545-8025-7dd3bf8397ec
+@testUser2Id = a3b1c2d3-e4f5-6789-0abc-def123456789
+@testUser3Id = 5773919a-49b8-49ff-907f-8dca50791f51
+
+# Динамические переменные (будут заполнены в процессе тестирования)
+@accessToken = 
+@refreshToken = 
+@challengeId = 
+@notificationId = 
+
+### ===================================================================
+### 📧 АУТЕНТИФИКАЦИЯ - Authentication Controller
+### ===================================================================
+
+### 1. Отправка кода верификации на email - Admin
+# @name sendVerificationCodeAdmin
+POST {{baseUrl}}/api/Auth/email/sendCode?email={{adminEmail}}
+Content-Type: {{contentType}}
+
+### 2. Отправка кода верификации на email - Test User
+# @name sendVerificationCodeTestUser
+POST {{baseUrl}}/api/Auth/email/sendCode?email={{testUserEmail}}
+Content-Type: {{contentType}}
+
+### 3. Авторизация по email и коду - ADMIN
+# @name loginAdmin
+# Замените "123456" на реальный код из email/логов
+POST {{baseUrl}}/api/Auth/email
+Content-Type: {{contentType}}
+
+{
+  "id": "{{challengeId}}",
+  "code": "123456"
+}
+
+### 4. Авторизация по email и коду - TEST USER
+# @name loginTestUser
+POST {{baseUrl}}/api/Auth/email
+Content-Type: {{contentType}}
+
+{
+  "id": "{{challengeId}}",
+  "code": "123456"
+}
+
+### 5. Windows аутентификация (требует настройки IIS)
+# @name windowsAuth
+POST {{baseUrl}}/api/Auth/windows
+Content-Type: {{contentType}}
+# Windows-Identity: DOMAIN\username
+
+### 6. Обновление access токена
+# @name refreshAccessToken
+POST {{baseUrl}}/api/Auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshTokenValue": "{{refreshToken}}"
+}
+
+### ===================================================================
+### 🔔 УВЕДОМЛЕНИЯ - Notification Controller
+### ===================================================================
+
+### 7. Создание уведомления - простой пример
+# @name createNotification
+POST {{baseUrl}}/api/Notification/System/SystemAlert
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Системное уведомление",
+  "message": "Это тестовое системное уведомление",
+  "channels": ["Email", "InApp"],
+  "templateData": {
+    "userName": "Тестовый пользователь",
+    "alertType": "info",
+    "timestamp": "2024-11-09T18:40:00Z"
+  }
+}
+
+### 8. Создание уведомления с категорией User
+# @name createUserNotification
+POST {{baseUrl}}/api/Notification/User/UserRegistered
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "{{testUser2Id}}",
+  "welcomeMessage": "Добро пожаловать в систему!"
+}
+
+### 9. Создание уведомления с категорией Task
+# @name createTaskNotification
+POST {{baseUrl}}/api/Notification/Task/TaskAssigned
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "assigneeId": "{{testUserId}}",
+  "assignerId": "{{adminUserId}}",
+  "taskTitle": "Разработка новой функции",
+  "taskDescription": "Необходимо реализовать новую функцию в системе уведомлений",
+  "priority": "High",
+  "dueDate": "2024-12-01T23:59:59Z"
+}
+
+### 10. Создание уведомления с категорией Order
+# @name createOrderNotification
+POST {{baseUrl}}/api/Notification/Order/OrderCreated
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "customerId": "{{testUser3Id}}",
+  "orderNumber": "ORD-2024-001",
+  "orderTotal": 1599.99,
+  "itemCount": 3
+}
+
+### 11. Получение уведомления по ID
+# @name getNotificationById
+GET {{baseUrl}}/api/Notification/{{notificationId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 12. Получение персональных уведомлений пользователя
+# @name getUserNotifications
+GET {{baseUrl}}/api/Notification/personal?OnlyUnread=false&PageSize=10&PageNumber=1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 13. Получение только непрочитанных уведомлений
+# @name getUnreadNotifications
+GET {{baseUrl}}/api/Notification/personal?OnlyUnread=true&PageSize=50&PageNumber=1
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 14. Поиск уведомлений (только для Admin)
+# @name searchNotifications
+POST {{baseUrl}}/api/Notification/search
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "filters": [
+    {
+      "field": "Title",
+      "operator": 1,
+      "value": "Системное",
+      "logic": 0
+    }
+  ],
+  "sort": [
+    {
+      "field": "CreatedAt",
+      "direction": 1
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "includes": ["Recipient", "Template"],
+  "includeTotalCount": true
+}
+
+### 15. Расширенный поиск с множественными фильтрами
+# @name advancedSearch
+POST {{baseUrl}}/api/Notification/search
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "filters": [
+    {
+      "field": "CreatedAt",
+      "operator": 4,
+      "value": "2024-11-01T00:00:00Z",
+      "logic": 0
+    },
+    {
+      "field": "NotificationWasRead",
+      "operator": 0,
+      "value": false,
+      "logic": 0
+    }
+  ],
+  "sort": [
+    {
+      "field": "CreatedAt",
+      "direction": 1
+    }
+  ],
+  "page": 1,
+  "pageSize": 100
+}
+
+### 16. Установка флага прочтения уведомления
+# @name setNotificationReadFlag
+PUT {{baseUrl}}/api/Notification/set-read-flag?notificationId={{notificationId}}&flagValue=true
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 17. Отмена флага прочтения уведомления
+# @name setNotificationUnreadFlag
+PUT {{baseUrl}}/api/Notification/set-read-flag?notificationId={{notificationId}}&flagValue=false
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 18. Трансляция уведомления через SignalR (только Admin)
+# @name broadcastNotification
+POST {{baseUrl}}/api/Notification/broadcast
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "id": "broadcast-001",
+  "type": "system",
+  "title": "Системное объявление",
+  "content": "Запланировано техническое обслуживание системы",
+  "contentShortTemplate": "Техобслуживание запланировано",
+  "data": {
+    "maintenanceDate": "2024-11-10T02:00:00Z",
+    "duration": "2 hours"
+  },
+  "date": "2024-11-09T18:40:00Z",
+  "read": false,
+  "author": "Системный администратор",
+  "actions": [
+    {
+      "name": "view_details",
+      "label": "Подробнее",
+      "url": "/maintenance/details"
+    }
+  ],
+  "hashtags": ["maintenance", "system", "announcement"],
+  "parameters": [
+    {
+      "key": "priority",
+      "value": "high",
+      "description": "Приоритет уведомления"
+    }
+  ]
+}
+
+### ===================================================================
+### 👥 ПОЛЬЗОВАТЕЛИ - Users Controller
+### ===================================================================
+
+### 19. Получение списка всех пользователей (только Admin)
+# @name getAllUsers
+GET {{baseUrl}}/api/Users
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 20. Создание новых пользователей (только Admin)
+# @name createUsers
+POST {{baseUrl}}/api/Users
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+[
+  {
+    "id": "12345678-1234-1234-1234-123456789012",
+    "name": "Новый пользователь 1",
+    "email": "newuser1@example.com",
+    "phoneNumber": "+7-900-123-45-67",
+    "role": "User",
+    "deviceToken": "fcm_token_123",
+    "attributes": [
+      {
+        "key": "department",
+        "value": "IT"
+      },
+      {
+        "key": "position",
+        "value": "Developer"
+      }
+    ]
+  },
+  {
+    "id": "87654321-4321-4321-4321-210987654321",
+    "name": "Новый пользователь 2",
+    "email": "newuser2@example.com",
+    "phoneNumber": "+7-900-765-43-21",
+    "role": "User"
+  }
+]
+
+### 21. Получение пользователя по ID - Admin
+# @name getUserByIdAdmin
+GET {{baseUrl}}/api/Users/{{adminUserId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 22. Получение пользователя по ID - Test User
+# @name getUserByIdTestUser
+GET {{baseUrl}}/api/Users/{{testUserId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### ===================================================================
+### ⚙️ НАСТРОЙКИ МАРШРУТОВ - User Route Preferences Controller
+### ===================================================================
+
+### 23. Получение настроек маршрутов пользователя
+# @name getUserRoutePreferences
+GET {{baseUrl}}/api/users/{{testUserId}}/routes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 24. Получение настроек маршрутов для Admin пользователя
+# @name getAdminRoutePreferences
+GET {{baseUrl}}/api/users/{{adminUserId}}/routes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+### 25. Обновление настроек маршрутов уведомлений
+# @name updateUserRoutePreferences
+PUT {{baseUrl}}/api/users/{{testUserId}}/routes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+[
+  {
+    "route": "System/SystemAlert",
+    "enabled": true
+  },
+  {
+    "route": "User/UserRegistered",
+    "enabled": true
+  },
+  {
+    "route": "Task/TaskAssigned",
+    "enabled": true
+  },
+  {
+    "route": "Task/TaskCompleted",
+    "enabled": false
+  },
+  {
+    "route": "Order/OrderCreated",
+    "enabled": true
+  },
+  {
+    "route": "Order/OrderCancelled",
+    "enabled": false
+  }
+]
+
+### 26. Отключение всех уведомлений для пользователя
+# @name disableAllNotifications
+PUT {{baseUrl}}/api/users/{{testUser2Id}}/routes
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+[
+  {
+    "route": "System/SystemAlert",
+    "enabled": false
+  },
+  {
+    "route": "User/UserRegistered",
+    "enabled": false
+  },
+  {
+    "route": "Task/TaskAssigned",
+    "enabled": false
+  },
+  {
+    "route": "Order/OrderCreated",
+    "enabled": false
+  }
+]
+
+### ===================================================================
+### 🧪 ТЕСТОВЫЕ СЦЕНАРИИ И КОМПЛЕКСНЫЕ ОПЕРАЦИИ
+### ===================================================================
+
+### 27. Тестирование полного цикла уведомления
+# @name fullNotificationCycle
+POST {{baseUrl}}/api/Notification/Test/ComplexScenario
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Комплексное тестовое уведомление",
+  "message": "Это уведомление для тестирования полного цикла обработки",
+  "channels": ["Email", "InApp", "Push"],
+  "templateData": {
+    "userName": "{{testUserId}}",
+    "testScenario": "full_cycle",
+    "complexity": "high",
+    "timestamp": "2024-11-09T18:40:00Z"
+  },
+  "metadata": [
+    {
+      "key": "test_type",
+      "value": "integration",
+      "description": "Тип интеграционного теста"
+    },
+    {
+      "key": "environment",
+      "value": "development",
+      "description": "Среда выполнения теста"
+    }
+  ]
+}
+
+### 28. Тестирование ошибок авторизации
+# @name testUnauthorized
+GET {{baseUrl}}/api/Users
+# Authorization: Bearer invalid_token
+Content-Type: {{contentType}}
+
+### 29. Тестирование доступа с истекшим токеном
+# @name testExpiredToken
+GET {{baseUrl}}/api/Users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+Content-Type: {{contentType}}
+
+### 30. Тестирование неверного формата запроса
+# @name testBadRequest
+POST {{baseUrl}}/api/Notification/Invalid/Route
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "invalid": "data",
+  "missing": "required_fields"
+}
+
+### ===================================================================
+### 📝 ПОЛЕЗНЫЕ ЗАМЕТКИ И ИНСТРУКЦИИ
+### ===================================================================
+
+### Как использовать этот файл:
+### 1. Замените {{accessToken}} на реальный токен после выполнения авторизации
+### 2. Замените {{challengeId}} на ID из ответа при отправке кода верификации
+### 3. Замените {{notificationId}} на ID созданного уведомления
+### 4. Убедитесь, что сервер запущен на {{baseUrl}}
+
+### Последовательность тестирования:
+### 1. Отправка кода верификации (шаги 1-2)
+### 2. Авторизация и получение токенов (шаги 3-4)
+### 3. Установка полученного accessToken в переменную @accessToken
+### 4. Тестирование API уведомлений (шаги 7-18)
+### 5. Тестирование API пользователей (шаги 19-22)
+### 6. Тестирование настроек маршрутов (шаги 23-26)
+### 7. Комплексные тесты (шаги 27-30)
+
+### Операторы для фильтров в поиске:
+### 0 = Equal, 1 = Contains, 2 = StartsWith, 3 = EndsWith
+### 4 = GreaterThan, 5 = GreaterThanOrEqual, 6 = LessThan, 7 = LessThanOrEqual
+### 8 = NotEqual, 9 = In
+
+### Каналы уведомлений:
+### "Email", "Sms", "Push", "InApp"
+
+### Роли пользователей:
+### "User", "Admin", "ExternalApiClient"
+
+### ===================================================================
