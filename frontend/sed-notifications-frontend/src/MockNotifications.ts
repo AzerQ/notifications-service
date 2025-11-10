@@ -4,18 +4,16 @@ import {registerActionHandler} from "./NotificationsBar/notificationsActions";
 // Mock data with actions
 export const mockNotifications: InAppNotificationData[] = [
     {
-        id: 1,
+        id: "1",
         title: 'Новый входящий документ',
         type: 'document',
-        subtype: 'Входящий документ',
-        description: 'Поступил новый входящий документ от ООО "ТехноСервис"',
+        subType: 'Входящий документ',
         content: 'Поступил новый входящий документ от ООО "ТехноСервис"',
         author: 'Иван Петров',
         date: '2024-01-15T10:30:00',
         read: false,
-        starred: false,
-        cardUrl: '/documents/12345',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/12345',
         actions: [
             {
                 name: 'approve',
@@ -43,18 +41,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 2,
+        id: "2",
         title: 'Задание на согласование',
         type: 'task',
-        subtype: 'Задание на согласование',
-        description: 'Требуется ваше согласование по проекту приказа №45',
+        subType: 'Задание на согласование',
         content: 'Требуется ваше согласование по проекту приказа №45',
         author: 'Мария Сидорова',
         date: '2024-01-15T09:15:00',
         read: true,
-        starred: true,
-        cardUrl: '/tasks/67890',
-        delegate: true,
+        receiverId: 'user-764',
+        url: '/tasks/67890',
         actions: [
             {
                 name: 'completeTask',
@@ -82,32 +78,29 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 3,
+        id: "3",
         title: 'Системное обновление',
         type: 'system',
-        subtype: 'Системное уведомление',
-        description: 'Планируется техническое обслуживание системы 16.01.2024 с 22:00 до 02:00',
+        subType: 'Системное уведомление',
         content: 'Планируется техническое обслуживание системы 16.01.2024 с 22:00 до 02:00',
         author: 'Система',
         date: '2024-01-14T18:00:00',
         read: false,
-        starred: false,
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/system/maintenance',
         actions: []
     },
     {
-        id: 4,
+        id: "4",
         title: 'Служебная записка',
         type: 'document',
-        subtype: 'Служебная записка',
-        description: 'Подана служебная записка на командировку в Москву',
+        subType: 'Служебная записка',
         content: 'Подана служебная записка на командировку в Москву',
         author: 'Алексей Козлов',
         date: '2024-01-14T16:45:00',
         read: false,
-        starred: false,
-        cardUrl: '/documents/54321',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/54321',
         actions: [
             {
                 name: 'signDocument',
@@ -122,18 +115,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 5,
+        id: "5",
         title: 'Встреча с клиентом',
         type: 'other',
-        subtype: 'Плановая встреча',
-        description: 'Запланирована встреча с представителями компании "Ромашка" для обсуждения нового контракта',
+        subType: 'Плановая встреча',
         content: 'Запланирована встреча с представителями компании "Ромашка" для обсуждения нового контракта',
         author: 'Ольга Новикова',
         date: '2024-01-15T14:00:00',
         read: false,
-        starred: true,
-        cardUrl: '/meetings/98765',
-        delegate: true,
+        receiverId: 'user-764',
+        url: '/meetings/98765',
         actions: [
             {
                 name: 'acceptMeeting',
@@ -148,18 +139,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 6,
+        id: "6",
         title: 'Напоминание о дедлайне',
         type: 'other',
-        subtype: 'Напоминание',
-        description: 'Завтра истекает срок сдачи квартального отчета',
+        subType: 'Напоминание',
         content: 'Завтра истекает срок сдачи квартального отчета',
         author: 'Система',
         date: '2024-01-15T11:30:00',
         read: true,
-        starred: false,
-        cardUrl: '/reminders/11111',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/reminders/11111',
         actions: [
             {
                 name: 'postponeReminder',
@@ -169,18 +158,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 7,
+        id: "7",
         title: 'Новый проект',
         type: 'task',
-        subtype: 'Проект',
-        description: 'Вам назначен новый проект "Модернизация CRM системы"',
+        subType: 'Проект',
         content: 'Вам назначен новый проект "Модернизация CRM системы"',
         author: 'Елена Волкова',
         date: '2024-01-14T15:20:00',
         read: false,
-        starred: true,
-        cardUrl: '/projects/22222',
-        delegate: true,
+        receiverId: 'user-764',
+        url: '/projects/22222',
         actions: [
             {
                 name: 'acceptProject',
@@ -195,18 +182,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 8,
+        id: "8",
         title: 'Договор на подпись',
         type: 'document',
-        subtype: 'Договор',
-        description: 'Готов к подписанию договор с ООО "СтройМастер" на поставку оборудования',
+        subType: 'Договор',
         content: 'Готов к подписанию договор с ООО "СтройМастер" на поставку оборудования',
         author: 'Дмитрий Соколов',
         date: '2024-01-13T13:45:00',
         read: false,
-        starred: false,
-        cardUrl: '/documents/33333',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/33333',
         actions: [
             {
                 name: 'signDocument',
@@ -221,18 +206,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 9,
+        id: "9",
         title: 'Изменение в расписании',
         type: 'system',
-        subtype: 'Изменение расписания',
-        description: 'Встреча с руководством перенесена на 15:00',
+        subType: 'Изменение расписания',
         content: 'Встреча с руководством перенесена на 15:00',
         author: 'Система',
         date: '2024-01-15T09:00:00',
         read: true,
-        starred: false,
-        cardUrl: '/schedule/44444',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/schedule/44444',
         actions: [
             {
                 name: 'confirmSchedule',
@@ -242,18 +225,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 10,
+        id: "10",
         title: 'Запрос на отпуск',
         type: 'document',
-        subtype: 'Заявление',
-        description: 'Подано заявление на отпуск с 25 января по 5 февраля',
+        subType: 'Заявление',
         content: 'Подано заявление на отпуск с 25 января по 5 февраля',
         author: 'Анна Морозова',
         date: '2024-01-12T16:30:00',
         read: false,
-        starred: false,
-        cardUrl: '/documents/55555',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/55555',
         actions: [
             {
                 name: 'approveRequest',
@@ -268,18 +249,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 11,
+        id: "11",
         title: 'Техническая проблема',
         type: 'system',
-        subtype: 'Ошибка системы',
-        description: 'Обнаружена проблема с доступом к серверу баз данных',
+        subType: 'Ошибка системы',
         content: 'Обнаружена проблема с доступом к серверу баз данных',
         author: 'ИТ-отдел',
         date: '2024-01-15T08:45:00',
         read: false,
-        starred: true,
-        cardUrl: '/issues/66666',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/issues/66666',
         actions: [
             {
                 name: 'acknowledgeIssue',
@@ -289,18 +268,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 12,
+        id: "12",
         title: 'Счет на оплату',
         type: 'document',
-        subtype: 'Счет',
-        description: 'Поступил счет от поставщика "ПромТехника" на сумму 125 000 руб.',
+        subType: 'Счет',
         content: 'Поступил счет от поставщика "ПромТехника" на сумму 125 000 руб.',
         author: 'Бухгалтерия',
         date: '2024-01-14T11:20:00',
         read: false,
-        starred: false,
-        cardUrl: '/documents/77777',
-        delegate: true,
+        receiverId: 'user-764',
+        url: '/documents/77777',
         actions: [
             {
                 name: 'payInvoice',
@@ -315,18 +292,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 13,
+        id: "13",
         title: 'Обучение персонала',
         type: 'task',
-        subtype: 'Обучение',
-        description: 'Запланировано обучение по работе с новой системой документооборота',
+        subType: 'Обучение',
         content: 'Запланировано обучение по работе с новой системой документооборота',
         author: 'HR отдел',
         date: '2024-01-15T12:00:00',
         read: true,
-        starred: false,
-        cardUrl: '/training/88888',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/training/88888',
         actions: [
             {
                 name: 'registerTraining',
@@ -336,18 +311,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 14,
+        id: "14",
         title: 'Ежедневный отчет',
         type: 'other',
-        subtype: 'Напоминание',
-        description: 'Не забудьте отправить ежедневный отчет о проделанной работе',
+        subType: 'Напоминание',
         content: 'Не забудьте отправить ежедневный отчет о проделанной работе',
         author: 'Система',
         date: '2024-01-15T17:30:00',
         read: false,
-        starred: false,
-        cardUrl: '/reminders/99999',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/reminders/99999',
         actions: [
             {
                 name: 'sendReport',
@@ -357,18 +330,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 15,
+        id: "15",
         title: 'Проверка безопасности',
         type: 'system',
-        subtype: 'Безопасность',
-        description: 'Требуется смена пароля для доступа к системе',
+        subType: 'Безопасность',
         content: 'Требуется смена пароля для доступа к системе',
         author: 'Система безопасности',
         date: '2024-01-14T14:15:00',
         read: false,
-        starred: true,
-        cardUrl: '/security/10101',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/security/10101',
         actions: [
             {
                 name: 'changePassword',
@@ -378,18 +349,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 16,
+        id: "16",
         title: 'Новый заказ',
         type: 'document',
-        subtype: 'Заказ',
-        description: 'Поступил новый заказ от клиента "Альфа" на поставку продукции',
+        subType: 'Заказ',
         content: 'Поступил новый заказ от клиента "Альфа" на поставку продукции',
         author: 'Отдел продаж',
         date: '2024-01-15T10:00:00',
         read: false,
-        starred: false,
-        cardUrl: '/orders/20202',
-        delegate: true,
+        receiverId: 'user-764',
+        url: '/orders/20202',
         actions: [
             {
                 name: 'processOrder',
@@ -404,18 +373,16 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 17,
+        id: "17",
         title: 'Видео-конференция',
         type: 'other',
-        subtype: 'Онлайн-встреча',
-        description: 'Запланирована видео-конференция с партнерами из г. Санкт-Петербург',
+        subType: 'Онлайн-встреча',
         content: 'Запланирована видео-конференция с партнерами из г. Санкт-Петербург',
         author: 'Сергей Васильев',
         date: '2024-01-16T11:00:00',
         read: false,
-        starred: true,
-        cardUrl: '/meetings/30303',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/meetings/30303',
         actions: [
             {
                 name: 'joinMeeting',
@@ -430,33 +397,29 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 18,
+        id: "18",
         title: 'Резервное копирование',
         type: 'system',
-        subtype: 'Обслуживание',
-        description: 'Завершено резервное копирование данных за январь',
+        subType: 'Обслуживание',
         content: 'Завершено резервное копирование данных за январь',
         author: 'Система',
         date: '2024-01-15T20:00:00',
         read: true,
-        starred: false,
-        cardUrl: '/backup/40404',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/backup/40404',
         actions: []
     },
     {
-        id: 19,
+        id: "19",
         title: 'Отзыв о работе',
         type: 'document',
-        subtype: 'Отзыв',
-        description: 'Получен положительный отзыв от клиента ООО "ТехноСтрой" о выполненной работе',
+        subType: 'Отзыв',
         content: 'Получен положительный отзыв от клиента ООО "ТехноСтрой" о выполненной работе',
         author: 'Мария Иванова',
         date: '2024-01-14T09:30:00',
         read: false,
-        starred: true,
-        cardUrl: '/reviews/50505',
-        delegate: false,
+        receiverId: 'user-764',
+        url: '/reviews/50505',
         actions: [
             {
                 name: 'viewReview',

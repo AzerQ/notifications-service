@@ -7,8 +7,8 @@ import {NotificationAction} from '../types';
 export const ActionButton: React.FC<{
     action: NotificationAction;
     variant?: 'primary' | 'secondary';
-    notificationId: number;
-    onActionComplete: (id: number) => void;
+    notificationId: string;
+    onActionComplete: (id: string) => void;
     showToast: (toast: ToastConfig) => void;
 
 }> = ({action, variant = 'secondary', notificationId, onActionComplete, showToast}) => {

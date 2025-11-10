@@ -1,31 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { observer } from 'mobx-react-lite';
 import { Plus, Wifi } from 'lucide-react';
-import { NotificationCenter, NotificationCenterWithStore } from "./NotificationsBar";
-import { mockNotifications } from "./MockNotifications";
-import { InAppNotificationData } from "./NotificationsBar/types";
+import { NotificationCenterWithStore } from "./NotificationsBar";
 import { ToastProvider } from "./NotificationsBar/Toast/ToastProvider";
 import { CompactToastProvider } from "./NotificationsBar/Toast/CompactToastProvider";
 import { NotificationStoreProvider, signalRService, useNotificationStore } from "./store/NotificationStoreContext";
+import { loadServiceConfig } from "./config/serviceConfig";
 
 const AppContent: React.FC = observer(() => {
-    const [notifications, setNotifications] = useState<InAppNotificationData[]>(mockNotifications);
-    const [useNewStore, setUseNewStore] = useState(true);
     const store = useNotificationStore();
-
-    const handleNotificationUpdate = (updatedNotifications: InAppNotificationData[]) => {
-        setNotifications(updatedNotifications);
-    };
+    const config = loadServiceConfig();
 
     const testSignalRNotification = () => {
-        // Принудительно эмулируем SignalR уведомление
-        if (signalRService && 'simulateNewNotification' in signalRService) {
+        // Принудительно эмулируем SignalR уведомление (только для mock режима)
+        if (config.mode === 'mock' && signalRService && 'simulateNewNotification' in signalRService) {
             (signalRService as any).simulateNewNotification({
                 title: 'Тестовое SignalR уведомление',
                 type: 'system',
-                subtype: 'test',
-                author: 'Тестовая система'
+                subType: 'test',
+                content: 'Это тестовое уведомление из SignalR',
+                url: 'https://example.com',
+                author: 'Тестовая система',
+                date: new Date().toISOString(),
+                read: false,
+                receiverId: 'test-user'
             });
+        } else if (config.mode === 'real') {
+            console.log('SignalR test notification feature is only available in mock mode');
         }
     };
 
@@ -54,28 +55,21 @@ const AppContent: React.FC = observer(() => {
                                     </div>
                                     
                                     <div className="flex items-center space-x-4" data-testid="app-header-actions">
-                                        <label className="flex items-center space-x-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={useNewStore}
-                                                onChange={(e) => setUseNewStore(e.target.checked)}
-                                                className="rounded"
-                                            />
-                                            <span className="text-sm text-gray-700">
-                                                MobX + SignalR
-                                            </span>
-                                        </label>
+                                        <div className="text-sm text-gray-600 px-3 py-2 bg-gray-100 rounded-md">
+                                            Режим: <span className="font-semibold">{config.mode === 'real' ? 'Реальный' : 'Mock'}</span>
+                                        </div>
 
-                                                                                <button
-                                            onClick={testSignalRNotification}
-                                            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                                            data-testid="app-test-signalr-button"
-                                        >
-                                            <Wifi className="w-4 h-4" />
-                                            <span>Тест SignalR</span>
-                                        </button>
+                                        {config.mode === 'mock' && (
+                                            <button
+                                                onClick={testSignalRNotification}
+                                                className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                                                data-testid="app-test-signalr-button"
+                                            >
+                                                <Wifi className="w-4 h-4" />
+                                                <span>Тест SignalR</span>
+                                            </button>
+                                        )}
 
-                                        
                                         <button
                                             onClick={testToasts}
                                             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -92,14 +86,7 @@ const AppContent: React.FC = observer(() => {
                                             Позиция: {position === 'top' ? 'Сверху' : 'Снизу'}
                                         </button>
                                         
-                                        {useNewStore ? (
-                                            <NotificationCenterWithStore />
-                                        ) : (
-                                            <NotificationCenter 
-                                                notifications={notifications} 
-                                                onNotificationUpdate={handleNotificationUpdate}
-                                            />
-                                        )}
+                                        <NotificationCenterWithStore />
                                     </div>
                                 </div>
                             </div>
@@ -127,25 +114,25 @@ const AppContent: React.FC = observer(() => {
                                         </ul>
                                     </div>
                                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4" data-testid="app-stats-section">
-                                        <h4 className="font-medium text-gray-900 mb-2">Статистика уведомлений:</h4>
-                                        <div className="grid grid-cols-3 gap-4 text-center">
-                                            <div data-testid="app-stats-total">
-                                                <div className="text-2xl font-bold text-blue-600">
-                                                    {notifications.length}
-                                                </div>
-                                                <div className="text-sm text-gray-600">Всего</div>
+                                        <h4 className="font-medium text-gray-900 mb-2">Конфигурация приложения:</h4>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span className="text-gray-600">Режим работы:</span>
+                                                <div className="font-semibold text-gray-900">{config.mode === 'real' ? 'Реальный' : 'Mock'}</div>
                                             </div>
-                                            <div data-testid="app-stats-unread">
-                                                <div className="text-2xl font-bold text-red-600">
-                                                    {notifications.filter(n => !n.read).length}
-                                                </div>
-                                                <div className="text-sm text-gray-600">Непрочитанных</div>
+                                            <div>
+                                                <span className="text-gray-600">API URL:</span>
+                                                <div className="font-semibold text-gray-900 break-all">{config.apiBaseUrl}</div>
                                             </div>
-                                            <div data-testid="app-stats-starred">
-                                                <div className="text-2xl font-bold text-yellow-600">
-                                                    {notifications.filter(n => n.starred).length}
+                                            <div>
+                                                <span className="text-gray-600">SignalR Hub:</span>
+                                                <div className="font-semibold text-gray-900 break-all">{config.signalRHubUrl}</div>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-600">Статус SignalR:</span>
+                                                <div className={`font-semibold ${store.isSignalRConnected ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {store.isSignalRConnected ? 'Подключено' : 'Отключено'}
                                                 </div>
-                                                <div className="text-sm text-gray-600">Избранных</div>
                                             </div>
                                         </div>
                                     </div>

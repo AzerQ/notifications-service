@@ -4,13 +4,16 @@ import { CompactToastProvider } from '../../NotificationsBar/Toast/CompactToastP
 import { CompactNotificationData } from '../../services/contracts/ISignalRNotificationService';
 
 const mockNotification: CompactNotificationData = {
-  id: 1,
+  id: "1",
   title: 'Тестовое уведомление',
   type: 'document',
-  subtype: 'approval',
+  subType: 'approval',
+  content: 'Тестовое содержимое',
+  url: 'https://example.com',
   author: 'Тестовый пользователь',
   date: '2024-01-01T12:00:00Z',
-  read: false
+  read: false,
+  receiverId: 'test-user-id'
 };
 
 describe('CompactToastProvider', () => {
@@ -95,7 +98,7 @@ describe('CompactToastProvider', () => {
   it('может отображать несколько уведомлений одновременно', () => {
     const secondNotification: CompactNotificationData = {
       ...mockNotification,
-      id: 2,
+      id: "2",
       title: 'Второе уведомление'
     };
 

@@ -47,9 +47,9 @@ export const tryExecuteAppAction = (url: string): [boolean, string] => {
 // Execute action with automatic read marking
 export const executeNotificationAction = (
   url: string,
-  notificationId: number,
+  notificationId: string,
   markAsRead: boolean,
-  onActionComplete: (id: number) => void,
+  onActionComplete: (id: string) => void,
   showToast: (toast: ToastConfig) => void
 ) => {
   const [success, actionName] = tryExecuteAppAction(url);

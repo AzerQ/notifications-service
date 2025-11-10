@@ -9,4 +9,5 @@ export { Modal } from './Modal';
 export { CompactNotification } from './NotificationCard/CompactNotification';
 export { CompactToastProvider } from './Toast/CompactToastProvider';
 export { Pagination } from './Pagination';
+export { EmailAuthForm } from './Auth/EmailAuthForm';
 export * from './types';

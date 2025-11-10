@@ -9,10 +9,12 @@ import {
 
 describe('BaseNotification', () => {
   const sampleNotification: BaseNotification = {
-    id: 1,
+    id: "1",
+    receiverId: "user1",
     type: 'document',
     title: 'Test Notification',
     content: 'Test content',
+    url: '/test/1',
     date: '2024-01-15T10:30:00',
     read: false
   };
@@ -55,10 +57,12 @@ describe('BaseNotification', () => {
   describe('toBaseNotification', () => {
     it('должен конвертировать старый формат в новый', () => {
       const oldNotification = {
-        id: 1,
+        id: "1",
+        receiverId: "user1",
         type: 'document',
         title: 'Test',
-        description: 'Old description',
+        content: 'Old content',
+        url: '/test/1',
         date: '2024-01-15T10:30:00',
         read: false,
         author: 'Test Author',
@@ -67,17 +71,19 @@ describe('BaseNotification', () => {
       
       const result = toBaseNotification(oldNotification);
       
-      expect(result.id).toBe(1);
-      expect(result.content).toBe('Old description');
+      expect(result.id).toBe("1");
+      expect(result.content).toBe('Old content');
       expect(result.author).toBe('Test Author');
     });
 
-    it('должен использовать content если description отсутствует', () => {
+    it('должен использовать content если он присутствует', () => {
       const notification = {
-        id: 1,
+        id: "1",
+        receiverId: "user1",
         type: 'test',
         title: 'Test',
         content: 'Direct content',
+        url: '/test/1',
         date: '2024-01-15T10:30:00',
         read: false
       };
@@ -89,10 +95,12 @@ describe('BaseNotification', () => {
 
     it('должен сохранить hashtags и parameters', () => {
       const notification = {
-        id: 1,
+        id: "1",
+        receiverId: "user1",
         type: 'test',
         title: 'Test',
-        description: 'Test',
+        content: 'Test',
+        url: '/test/1',
         date: '2024-01-15T10:30:00',
         read: false,
         hashtags: ['tag1', 'tag2'],
@@ -107,25 +115,11 @@ describe('BaseNotification', () => {
   });
 
   describe('toExtendedNotification', () => {
-    it('должен добавить alias description для content', () => {
+    it('должен вернуть расширенное уведомление', () => {
       const result = toExtendedNotification(sampleNotification);
       
-      expect(result.description).toBe(sampleNotification.content);
       expect(result.content).toBe(sampleNotification.content);
-    });
-
-    it('должен добавить дополнительные поля', () => {
-      const additionalFields = {
-        starred: true,
-        delegate: true,
-        subtype: 'Test Subtype'
-      };
-      
-      const result = toExtendedNotification(sampleNotification, additionalFields);
-      
-      expect(result.starred).toBe(true);
-      expect(result.delegate).toBe(true);
-      expect(result.subtype).toBe('Test Subtype');
+      expect(result.id).toBe(sampleNotification.id);
     });
   });
 

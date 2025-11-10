@@ -46,12 +46,12 @@ export const NotificationFilters: React.FC<{
 
     const subtypeOptions = [
         {value: '', label: 'Все подвиды'},
-        ...notifications.map(n => ({value: n.subtype, label: n.subtype}))
+        ...(notifications || []).map(n => ({value: n.subType || '', label: n.subType || ''}))
     ];
 
     const authorOptions = [
         {value: '', label: 'Все авторы'},
-        ...notifications.map(n => ({value: n.author, label: n.author}))
+        ...(notifications || []).map(n => ({value: n.author || '', label: n.author || ''}))
     ];
 
     return (
@@ -67,7 +67,7 @@ export const NotificationFilters: React.FC<{
                         <label className="text-xs text-gray-500 mb-1">Тип</label>
                         <MaterialSelect
                             options={typeOptions}
-                            value={filters.type}
+                            value={filters.type || ''}
                             onChange={(value) => onFilterChange('type', value)}
                             className="min-w-[150px]"
                         />
@@ -77,7 +77,7 @@ export const NotificationFilters: React.FC<{
                         <label className="text-xs text-gray-500 mb-1">Подтип</label>
                         <MaterialSelect
                             options={subtypeOptions}
-                            value={filters.subtype}
+                            value={filters.subtype || ''}
                             onChange={(value) => onFilterChange('subtype', value)}
                             className="min-w-[180px]"
                         />
@@ -87,7 +87,7 @@ export const NotificationFilters: React.FC<{
                         <label className="text-xs text-gray-500 mb-1">Статус</label>
                         <MaterialSelect
                             options={statusOptions}
-                            value={filters.status}
+                            value={filters.status || ''}
                             onChange={(value) => onFilterChange('status', value)}
                             className="min-w-[150px]"
                         />
@@ -97,7 +97,7 @@ export const NotificationFilters: React.FC<{
                         <label className="text-xs text-gray-500 mb-1">Автор</label>
                         <MaterialSelect
                             options={authorOptions}
-                            value={filters.author}
+                            value={filters.author || ''}
                             onChange={(value) => onFilterChange('author', value)}
                             className="min-w-[150px]"
                         />

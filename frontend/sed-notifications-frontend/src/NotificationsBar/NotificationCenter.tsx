@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NotificationBell } from './NotificationBell';
 import { Modal } from './Modal';
 import { NotificationSidebar } from './NotificationSidebar';
@@ -10,30 +10,35 @@ interface NotificationCenterProps {
   onNotificationUpdate?: (notifications: InAppNotificationData[]) => void;
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({ 
-  notifications: initialNotifications, 
-  onNotificationUpdate 
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({
+  notifications: initialNotifications,
+  onNotificationUpdate
 }) => {
-  const [notifications, setNotifications] = useState<InAppNotificationData[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<InAppNotificationData[]>(initialNotifications || []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const unreadCount = notifications.filter(notification => !notification.read).length;
+  // Синхронизируем локальное состояние с пропсами
+  useEffect(() => {
+    setNotifications(initialNotifications || []);
+  }, [initialNotifications]);
+
+  const unreadCount = (notifications || []).filter(notification => !notification.read).length;
 
   const updateNotifications = (updatedNotifications: InAppNotificationData[]) => {
     setNotifications(updatedNotifications);
     onNotificationUpdate?.(updatedNotifications);
   };
 
-  const markNotificationAsRead = (id: number) => {
-    const updatedNotifications = notifications.map(notification =>
+  const markNotificationAsRead = (id: string) => {
+    const updatedNotifications = (notifications || []).map(notification =>
       notification.id === id ? { ...notification, read: true } : notification
     );
     updateNotifications(updatedNotifications);
   };
 
   const markAllAsRead = () => {
-    const updatedNotifications = notifications.map(notification => (
+    const updatedNotifications = (notifications || []).map(notification => (
         { ...notification, read: true }));
     updateNotifications(updatedNotifications);
   }
@@ -76,15 +81,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         onOpenSettings={() => {}}
       />
       
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={closeModal}
         title="Центр уведомлений"
         size="full"
       >
         <NotificationsBar
-          notifications={notifications}
-          onNotificationUpdate={updateNotifications}
+          showFilters={true}
+          showSearch={true}
+          showPagination={false}
         />
       </Modal>
     </div>

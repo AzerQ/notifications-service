@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { InAppNotificationData, UserNotificationSettings, ToastSettings, DEFAULT_TOAST_SETTINGS } from '../NotificationsBar/types';
+import { InAppNotificationData, DEFAULT_TOAST_SETTINGS, ToastSettings } from '../NotificationsBar/types';
 import { 
   INotificationService, 
   GetNotificationsParams, 
@@ -14,11 +14,9 @@ import {
 export interface NotificationStoreState {
   // Данные уведомлений
   notifications: InAppNotificationData[];
-  unreadNotifications: InAppNotificationData[];
   
   // Состояние загрузки
   isLoading: boolean;
-  isLoadingUnread: boolean;
   isConnectingSignalR: boolean;
   
   // Пагинация
@@ -41,17 +39,19 @@ export interface NotificationStoreState {
   isSidebarOpen: boolean;
   isModalOpen: boolean;
   
-  // Настройки тостов
-  toastSettings: ToastSettings;
+  // Состояние авторизации
+  isAuthenticated: boolean;
+  isAuthenticating: boolean;
+  authError: string | null;
+  authMethod: 'windows' | 'email' | null;
+  showAuthForm: boolean;
 }
 
 export class NotificationStore {
   // Состояние
   notifications: InAppNotificationData[] = [];
-  unreadNotifications: InAppNotificationData[] = [];
   
   isLoading = false;
-  isLoadingUnread = false;
   isConnectingSignalR = false;
   
   currentPage = 1;
@@ -70,19 +70,35 @@ export class NotificationStore {
   isSidebarOpen = false;
   isModalOpen = false;
   
-  // Настройки тостов
-  toastSettings: ToastSettings = { ...DEFAULT_TOAST_SETTINGS };
+  // Состояние авторизации
+  isAuthenticated = false;
+  isAuthenticating = false;
+  authError: string | null = null;
+  authMethod: 'windows' | 'email' | null = null;
+  showAuthForm = false;
+  
+  // Toast настройки
+  toastSettings: ToastSettings = DEFAULT_TOAST_SETTINGS;
 
   // Колбек для показа всплывающих уведомлений
   private showCompactToastCallback?: (notification: CompactNotificationData) => void;
+  
+  // Флаг инициализации
+  private isInitialized = false;
 
   constructor(
     private notificationService: INotificationService,
     private signalRService: ISignalRNotificationService
   ) {
+    // Ensure notifications is always initialized as an array
+    this.notifications = [];
+    
     makeAutoObservable(this);
-    this.initializeSignalR();
-    this.loadToastSettings();
+    
+    // Initialize SignalR asynchronously to avoid blocking constructor
+    setTimeout(() => {
+      this.initializeSignalR();
+    }, 0);
   }
 
   // Метод для установки колбека показа всплывающих уведомлений
@@ -92,7 +108,7 @@ export class NotificationStore {
 
   // Геттеры
   get unreadCount(): number {
-    return this.unreadNotifications.length;
+    return (this.notifications || []).filter(n => !n.read).length;
   }
 
   get hasUnreadNotifications(): boolean {
@@ -100,37 +116,11 @@ export class NotificationStore {
   }
 
   get isAnyLoading(): boolean {
-    return this.isLoading || this.isLoadingUnread || this.isConnectingSignalR;
+    return this.isLoading || this.isConnectingSignalR;
   }
 
   // Действия для загрузки данных
-  async loadUnreadNotifications(params?: Partial<GetNotificationsParams>): Promise<void> {
-    this.isLoadingUnread = true;
-    this.error = null;
-
-    try {
-      const requestParams: GetNotificationsParams = {
-        page: 1,
-        pageSize: 50, // Больше для боковой панели
-        filters: this.filters,
-        ...params
-      };
-
-      const response = await this.notificationService.getUnreadNotifications(requestParams);
-      
-      runInAction(() => {
-        this.unreadNotifications = response.data;
-        this.isLoadingUnread = false;
-      });
-    } catch (error) {
-      runInAction(() => {
-        this.error = error instanceof Error ? error.message : 'Ошибка загрузки непрочитанных уведомлений';
-        this.isLoadingUnread = false;
-      });
-    }
-  }
-
-  async loadAllNotifications(params?: Partial<GetNotificationsParams>): Promise<void> {
+  async loadNotifications(params?: Partial<GetNotificationsParams>): Promise<void> {
     this.isLoading = true;
     this.error = null;
 
@@ -142,13 +132,14 @@ export class NotificationStore {
         ...params
       };
 
-      const response = await this.notificationService.getAllNotifications(requestParams);
+      const response = await this.notificationService.getNotifications(requestParams);
       
       runInAction(() => {
-        this.notifications = response.data;
-        this.totalPages = response.totalPages;
-        this.totalNotifications = response.total;
-        this.currentPage = response.page;
+        this.notifications = response.notifications || [];
+        this.totalNotifications = response.totalItemsCount;
+        // Вычисляем totalPages на основе totalItemsCount и pageSize
+        this.totalPages = Math.ceil(response.totalItemsCount / this.pageSize);
+        this.currentPage = response.request.pageNumber;
         this.isLoading = false;
       });
     } catch (error) {
@@ -159,43 +150,120 @@ export class NotificationStore {
     }
   }
 
-  // Действия для работы с уведомлениями
-  async markAsRead(notificationId: number): Promise<void> {
+  // Загрузить последние 200 уведомлений при инициализации
+  async initializeNotifications(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+    
+    this.isLoading = true;
+    this.error = null;
+
     try {
-      await this.notificationService.markAsRead(notificationId);
+      const requestParams: GetNotificationsParams = {
+        page: 1,
+        pageSize: 200,
+        filters: {}
+      };
+
+      const response = await this.notificationService.getNotifications(requestParams);
       
       runInAction(() => {
-        // Обновляем в основном списке
-        const notification = this.notifications.find(n => n.id === notificationId);
+        this.notifications = response.notifications || [];
+        this.totalNotifications = response.totalItemsCount;
+        this.totalPages = Math.ceil(response.totalItemsCount / this.pageSize);
+        this.currentPage = 1;
+        this.isLoading = false;
+        this.isInitialized = true;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Ошибка загрузки уведомлений';
+        this.isLoading = false;
+      });
+    }
+  }
+
+  // Загрузить только непрочитанные уведомления
+  async loadUnreadNotifications(): Promise<void> {
+    this.isLoading = true;
+    this.error = null;
+
+    try {
+      const requestParams: GetNotificationsParams = {
+        page: 1,
+        pageSize: 200,
+        filters: { onlyUnread: true }
+      };
+
+      const response = await this.notificationService.getNotifications(requestParams);
+      
+      runInAction(() => {
+        this.notifications = response.notifications || [];
+        this.totalNotifications = response.totalItemsCount;
+        this.totalPages = Math.ceil(response.totalItemsCount / this.pageSize);
+        this.currentPage = 1;
+        this.isLoading = false;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Ошибка загрузки непрочитанных уведомлений';
+        this.isLoading = false;
+      });
+    }
+  }
+
+  // Перезагрузить последние уведомления
+  async reloadNotifications(): Promise<void> {
+    this.currentPage = 1;
+    await this.loadNotifications();
+  }
+
+  // Действия для работы с уведомлениями
+  async markAsRead(notificationId: string): Promise<void> {
+    try {
+      await this.notificationService.setReadFlag(notificationId, true);
+      
+      runInAction(() => {
+        const notification = (this.notifications || []).find(n => n.id === notificationId);
         if (notification) {
           notification.read = true;
         }
-        
-        // Удаляем из непрочитанных
-        this.unreadNotifications = this.unreadNotifications.filter(n => n.id !== notificationId);
       });
     } catch (error) {
       this.error = error instanceof Error ? error.message : 'Ошибка отметки уведомления как прочитанного';
     }
   }
 
-  async markAllAsRead(): Promise<void> {
-    if (this.unreadNotifications.length === 0) return;
-
+  async markAsUnread(notificationId: string): Promise<void> {
     try {
-      const unreadIds = this.unreadNotifications.map(n => n.id);
-      await this.notificationService.markMultipleAsRead(unreadIds);
+      await this.notificationService.setReadFlag(notificationId, false);
       
       runInAction(() => {
-        // Обновляем в основном списке
-        this.notifications.forEach(notification => {
-          if (unreadIds.includes(notification.id)) {
-            notification.read = true;
-          }
+        const notification = (this.notifications || []).find(n => n.id === notificationId);
+        if (notification) {
+          notification.read = false;
+        }
+      });
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : 'Ошибка отметки уведомления как непрочитанного';
+    }
+  }
+
+  async markAllAsRead(): Promise<void> {
+    const unreadNotifications = (this.notifications || []).filter(n => !n.read);
+    if (unreadNotifications.length === 0) return;
+
+    try {
+      // Отмечаем все непрочитанные уведомления как прочитанные
+      await Promise.all(
+        unreadNotifications.map(n => this.notificationService.setReadFlag(n.id, true))
+      );
+      
+      runInAction(() => {
+        (this.notifications || []).forEach(notification => {
+          notification.read = true;
         });
-        
-        // Очищаем непрочитанные
-        this.unreadNotifications = [];
       });
     } catch (error) {
       this.error = error instanceof Error ? error.message : 'Ошибка отметки всех уведомлений как прочитанных';
@@ -204,9 +272,9 @@ export class NotificationStore {
 
   // Действия для пагинации
   setPage(page: number): void {
-    if (page !== this.currentPage && page > 0) {
+    if (page !== this.currentPage && page > 0 && page <= this.totalPages) {
       this.currentPage = page;
-      this.loadAllNotifications();
+      this.loadNotifications();
     }
   }
 
@@ -214,7 +282,7 @@ export class NotificationStore {
     if (pageSize !== this.pageSize) {
       this.pageSize = pageSize;
       this.currentPage = 1; // Сбрасываем на первую страницу
-      this.loadAllNotifications();
+      this.loadNotifications();
     }
   }
 
@@ -222,15 +290,13 @@ export class NotificationStore {
   setFilters(filters: Partial<NotificationFilters>): void {
     this.filters = { ...this.filters, ...filters };
     this.currentPage = 1; // Сбрасываем на первую страницу
-    this.loadAllNotifications();
-    this.loadUnreadNotifications();
+    this.loadNotifications();
   }
 
   clearFilters(): void {
     this.filters = {};
     this.currentPage = 1;
-    this.loadAllNotifications();
-    this.loadUnreadNotifications();
+    this.loadNotifications();
   }
 
   // Действия для очистки ошибок
@@ -283,33 +349,22 @@ export class NotificationStore {
   }
 
   // Обработчики SignalR событий
-  private handleNewNotification(compactNotification: CompactNotificationData): void {
+  private handleNewNotification(notification: CompactNotificationData): void {
     // Показываем всплывающее уведомление только если не открыты sidebar или modal
     if (this.shouldShowToasts && this.showCompactToastCallback) {
-      this.showCompactToastCallback(compactNotification);
+      this.showCompactToastCallback(notification);
     }
 
-    // Конвертируем компактное уведомление в полное
-    const fullNotification: InAppNotificationData = {
-      id: compactNotification.id,
-      title: compactNotification.title,
-      type: compactNotification.type as any,
-      subtype: compactNotification.subtype || '',
-      description: '', // Будет загружено при открытии
-      content: '', // Будет загружено при открытии
-      author: compactNotification.author,
-      date: compactNotification.date,
-      read: compactNotification.read,
-      starred: false,
-      delegate: false,
-      actions: []
-    };
+    // CompactNotificationData теперь это полная модель Notification из бэкенда
+    // Используем её напрямую без преобразований
+    const fullNotification: InAppNotificationData = notification;
 
     runInAction(() => {
-      // Добавляем в начало списков
-      this.notifications.unshift(fullNotification);
-      if (!fullNotification.read) {
-        this.unreadNotifications.unshift(fullNotification);
+      // Добавляем в начало списка
+      if (this.notifications) {
+        this.notifications.unshift(fullNotification);
+      } else {
+        this.notifications = [fullNotification];
       }
       
       // Обновляем счетчики
@@ -317,22 +372,11 @@ export class NotificationStore {
     });
   }
 
-  private handleNotificationStatusUpdate(notificationId: number, isRead: boolean): void {
+  private handleNotificationStatusUpdate(notificationId: string, isRead: boolean): void {
     runInAction(() => {
-      // Обновляем в основном списке
-      const notification = this.notifications.find(n => n.id === notificationId);
+      const notification = (this.notifications || []).find(n => n.id === notificationId);
       if (notification) {
         notification.read = isRead;
-      }
-      
-      // Обновляем в непрочитанных
-      if (isRead) {
-        this.unreadNotifications = this.unreadNotifications.filter(n => n.id !== notificationId);
-      } else {
-        const unreadNotification = this.notifications.find(n => n.id === notificationId);
-        if (unreadNotification && !this.unreadNotifications.find(n => n.id === notificationId)) {
-          this.unreadNotifications.unshift(unreadNotification);
-        }
       }
     });
   }
@@ -341,15 +385,6 @@ export class NotificationStore {
   dispose(): void {
     this.signalRService.offAllEvents();
     this.signalRService.stopConnection();
-  }
-
-  // Методы для настроек уведомлений
-  async getUserNotificationSettings(): Promise<UserNotificationSettings> {
-    return await this.notificationService.getUserNotificationSettings();
-  }
-
-  async saveUserNotificationSettings(settings: UserNotificationSettings): Promise<void> {
-    return await this.notificationService.saveUserNotificationSettings(settings);
   }
 
   // Методы для UI состояния
@@ -367,32 +402,27 @@ export class NotificationStore {
     return !this.isSidebarOpen && !this.isModalOpen;
   }
 
-  // Методы для настроек тостов
-  async loadToastSettings(): Promise<void> {
-    try {
-      const settings = await this.notificationService.getToastSettings();
-      runInAction(() => {
-        this.toastSettings = settings;
-      });
-    } catch (error) {
-      console.error('Ошибка загрузки настроек тостов:', error);
-      // Оставляем настройки по умолчанию
-    }
+  // Методы для управления состоянием авторизации
+  setAuthenticating(isAuthenticating: boolean): void {
+    this.isAuthenticating = isAuthenticating;
   }
 
-  async getToastSettings(): Promise<ToastSettings> {
-    return await this.notificationService.getToastSettings();
+  setAuthenticated(isAuthenticated: boolean, authMethod?: 'windows' | 'email'): void {
+    this.isAuthenticated = isAuthenticated;
+    this.authMethod = authMethod || null;
+    this.authError = null;
+    this.showAuthForm = false;
   }
 
-  async saveToastSettings(settings: ToastSettings): Promise<void> {
-    try {
-      await this.notificationService.saveToastSettings(settings);
-      runInAction(() => {
-        this.toastSettings = settings;
-      });
-    } catch (error) {
-      console.error('Ошибка сохранения настроек тостов:', error);
-      throw error;
-    }
+  setAuthError(error: string | null): void {
+    this.authError = error;
+  }
+
+  setShowAuthForm(show: boolean): void {
+    this.showAuthForm = show;
+  }
+
+  clearAuthError(): void {
+    this.authError = null;
   }
 }

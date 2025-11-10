@@ -6,8 +6,8 @@ import {executeNotificationAction} from "../notificationsActions";
 
 export const NotificationActionsDropdown: React.FC<{
     actions: NotificationAction[];
-    notificationId: number;
-    onActionComplete: (id: number) => void;
+    notificationId: string;
+    onActionComplete: (id: string) => void;
     showToast: (toast: ToastConfig) => void;
 }> = ({actions, notificationId, onActionComplete, showToast}) => {
     const [isOpen, setIsOpen] = useState(false);

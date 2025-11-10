@@ -19,10 +19,12 @@ import {
 describe('NotificationFilter', () => {
   const sampleNotifications: BaseNotification[] = [
     {
-      id: 1,
+      id: "1",
+      receiverId: "user1",
       type: 'document',
       title: 'Document 1',
       content: 'Content for document 1',
+      url: '/documents/1',
       date: '2024-01-15T10:00:00',
       read: false,
       author: 'John Doe',
@@ -32,10 +34,12 @@ describe('NotificationFilter', () => {
       ]
     },
     {
-      id: 2,
+      id: "2",
+      receiverId: "user1",
       type: 'task',
       title: 'Task 1',
       content: 'Content for task 1',
+      url: '/tasks/2',
       date: '2024-01-16T10:00:00',
       read: true,
       author: 'Jane Smith',
@@ -45,10 +49,12 @@ describe('NotificationFilter', () => {
       ]
     },
     {
-      id: 3,
+      id: "3",
+      receiverId: "user1",
       type: 'document',
       title: 'Document 2',
       content: 'Another document content',
+      url: '/documents/3',
       date: '2024-01-17T10:00:00',
       read: false,
       author: 'John Doe',

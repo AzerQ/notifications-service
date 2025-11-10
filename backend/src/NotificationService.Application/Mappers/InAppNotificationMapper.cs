@@ -27,7 +27,7 @@ namespace NotificationService.Application.Mappers
                         Url = notification.Url,
                         Actions = notificationActions,
                         Parameters = notificationParameters,
-                        Read = false, // Assuming default value,
+                        Read = notification.NotificationWasRead,
                         Icon = routeConfiguration.Icon
                     };
                 }

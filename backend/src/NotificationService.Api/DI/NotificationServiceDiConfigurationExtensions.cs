@@ -65,7 +65,9 @@ public static class NotificationServiceDiConfigurationExtensions
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy.WithOrigins(configuration["CORS:AllowedOrigins"] ?? "*")
+                var originsSection = configuration.GetSection("CORS:AllowedOrigins");
+                var origins = originsSection.Get<string[]>() ?? ["*"];
+                policy.WithOrigins(origins)
                     .AllowAnyHeader()
                     .AllowAnyMethod();
 

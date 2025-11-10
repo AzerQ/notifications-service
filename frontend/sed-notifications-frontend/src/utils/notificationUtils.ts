@@ -14,6 +14,7 @@ import {
   Zap
 } from 'lucide-react';
 import { NotificationType } from '../NotificationsBar/types';
+import { Icon } from '../models/Notification';
 
 export interface IconConfig {
   icon: React.ComponentType<any>;
@@ -95,11 +96,13 @@ export const TYPE_COLOR_MAPPING: { [key in NotificationType]: string } = {
 
 /**
  * Получить иконку для типа и подтипа уведомления
+ * Поддерживает иконки с бэкенда (Icon.name и Icon.cssClass)
  */
 export const getNotificationIcon = (
   type: string, 
   subtype?: string, 
-  size: 'sm' | 'md' | 'lg' = 'md'
+  size: 'sm' | 'md' | 'lg' = 'md',
+  backendIcon?: Icon | null
 ): React.ReactElement => {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -107,6 +110,20 @@ export const getNotificationIcon = (
     lg: 'w-6 h-6'
   };
 
+  // If backend provides an icon, use it with custom CSS class if specified
+  if (backendIcon?.name) {
+    // For now, we'll render a span with the icon name and custom CSS class
+    // In a real implementation, you might want to use a different icon library
+    // or map icon names to Lucide icons
+    const className = `${sizeClasses[size]} ${backendIcon.cssClass || 'text-gray-500'} flex-shrink-0`;
+    
+    // Try to render as a custom icon or fallback to Bell
+    // You can extend this to map backend icon names to Lucide icons
+    const IconComponent = Bell; // Fallback to Bell if custom icon not supported
+    return React.createElement(IconComponent, { className });
+  }
+
+  // Fallback to existing icon mapping
   const mapping = ICON_MAPPING[type];
   if (!mapping) {
     const IconComponent = Bell;

@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react';
-import { Search} from 'lucide-react';
+import { Search, RefreshCw} from 'lucide-react';
+import { observer } from 'mobx-react-lite';
 import {NotificationFilters} from "./NotificationFilters";
 import {NotificationSort} from "./NotificationSort";
 import {Filters, Preset, ToastConfig, SortOption} from "./types";
@@ -7,82 +8,47 @@ import {ToastProvider} from "./Toast/ToastProvider";
 import {InAppNotificationData} from './types';
 import {NotificationCard} from "./NotificationCard/NotificationCard";
 import {Pagination} from "./Pagination";
+import { useNotificationStore } from '../store/NotificationStoreContext';
 
 export const NotificationsBar: React.FC<{
-  notifications: InAppNotificationData[];
-  onNotificationUpdate?: (notifications: InAppNotificationData[]) => void;
   showFilters?: boolean;
   showSearch?: boolean;
   showPagination?: boolean;
-  currentPage?: number;
-  totalPages?: number;
-  pageSize?: number;
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
-  isLoading?: boolean;
-}> = ({
-  notifications, 
-  onNotificationUpdate,
+}> = observer(({
   showFilters = true,
   showSearch = true,
-  showPagination = false,
-  currentPage = 1,
-  totalPages = 1,
-  pageSize = 20,
-  onPageChange,
-  onPageSizeChange,
-  isLoading = false
+  showPagination = true
 }) => {
+  const store = useNotificationStore();
+  
   return (
     <ToastProvider>
       {({ showToast }) => (
         <NotificationsBarContent
           showToast={showToast}
-          appNotifications={notifications}
-          onNotificationUpdate={onNotificationUpdate}
+          store={store}
           showFilters={showFilters}
           showSearch={showSearch}
           showPagination={showPagination}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-          isLoading={isLoading}
         />
       )}
     </ToastProvider>
   );
-};
+});
 
 const NotificationsBarContent: React.FC<{
   showToast: (toast: ToastConfig) => void;
-  appNotifications: InAppNotificationData[];
-  onNotificationUpdate?: (notifications: InAppNotificationData[]) => void;
+  store: any;
   showFilters?: boolean;
   showSearch?: boolean;
   showPagination?: boolean;
-  currentPage?: number;
-  totalPages?: number;
-  pageSize?: number;
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
-  isLoading?: boolean;
-}> = ({ 
-  showToast, 
-  appNotifications, 
-  onNotificationUpdate,
+}> = observer(({
+  showToast,
+  store,
   showFilters = true,
   showSearch = true,
-  showPagination = false,
-  currentPage = 1,
-  totalPages = 1,
-  pageSize = 20,
-  onPageChange,
-  onPageSizeChange,
-  isLoading = false
+  showPagination = true
 }) => {
-  const [notifications, setnotifications] = useState<InAppNotificationData[]>(appNotifications);
   const [filters, setFilters] = useState<Filters>({
     type: '',
     subtype: '',
@@ -96,32 +62,14 @@ const NotificationsBarContent: React.FC<{
   const [presets, setPresets] = useState<Preset[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
-  const updateNotifications = (updatedNotifications: InAppNotificationData[]) => {
-    setnotifications(updatedNotifications);
-    onNotificationUpdate?.(updatedNotifications);
+  const toggleRead = async (id: string) => {
+    await store.markAsRead(id);
   };
 
-  const toggleRead = (id: number) => {
-    const updatedNotifications = notifications.map(notif =>
-      notif.id === id ? { ...notif, read: !notif.read } : notif
-    );
-    updateNotifications(updatedNotifications);
-  };
-
-  const toggleStar = (id: number) => {
-    const updatedNotifications = notifications.map(notif =>
-      notif.id === id ? { ...notif, starred: !notif.starred } : notif
-    );
-    updateNotifications(updatedNotifications);
-  };
-
-  // New function to mark notification as read after action
-  const markNotificationAsRead = (id: number) => {
-    const updatedNotifications = notifications.map(notif =>
-      notif.id === id ? { ...notif, read: true } : notif
-    );
-    updateNotifications(updatedNotifications);
+  const markNotificationAsRead = async (id: string) => {
+    await store.markAsRead(id);
   };
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
@@ -144,6 +92,28 @@ const NotificationsBarContent: React.FC<{
     setIsModalOpen(false);
   };
 
+  const handleReload = async () => {
+    if (isReloading || !store.reloadNotifications) return;
+    
+    setIsReloading(true);
+    try {
+      await store.reloadNotifications();
+      showToast({
+        title: 'Успех',
+        message: 'Уведомления перезагружены',
+        type: 'success'
+      });
+    } catch (error) {
+      showToast({
+        title: 'Ошибка',
+        message: 'Ошибка при перезагрузке уведомлений',
+        type: 'error'
+      });
+    } finally {
+      setIsReloading(false);
+    }
+  };
+
   const savePreset = (presetName: string) => {
     const newPreset: Preset = { name: presetName, filters: { ...filters, search: searchTerm } };
     setPresets(prev => [...prev, newPreset]);
@@ -160,11 +130,13 @@ const NotificationsBarContent: React.FC<{
   };
 
   const filteredNotifications = useMemo(() => {
+    const notifications = store.notifications || [];
+    
     // Apply filters
-    const filtered = notifications.filter(notification => {
+    const filtered = notifications.filter((notification: InAppNotificationData) => {
       // Apply search filter
-      if (searchTerm && !notification.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
-          !notification.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (searchTerm && !notification.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !notification.content.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
       
@@ -174,7 +146,7 @@ const NotificationsBarContent: React.FC<{
       }
       
       // Apply subtype filter
-      if (filters.subtype && notification.subtype !== filters.subtype) {
+      if (filters.subtype && notification.subType !== filters.subtype) {
         return false;
       }
       
@@ -187,7 +159,7 @@ const NotificationsBarContent: React.FC<{
       }
       
       // Apply author filter
-      if (filters.author && notification.author !== filters.author) {
+      if (filters.author && (notification.author || '') !== filters.author) {
         return false;
       }
       
@@ -195,7 +167,7 @@ const NotificationsBarContent: React.FC<{
     });
 
     // Apply sorting
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: InAppNotificationData, b: InAppNotificationData) => {
       let aValue: string | number;
       let bValue: string | number;
 
@@ -209,12 +181,12 @@ const NotificationsBarContent: React.FC<{
           bValue = b.title.toLowerCase();
           break;
         case 'author':
-          aValue = a.author.toLowerCase();
-          bValue = b.author.toLowerCase();
+          aValue = (a.author || '').toLowerCase();
+          bValue = (b.author || '').toLowerCase();
           break;
         case 'type':
-          aValue = a.type;
-          bValue = b.type;
+          aValue = a.type || '';
+          bValue = b.type || '';
           break;
         default:
           aValue = new Date(a.date).getTime();
@@ -227,13 +199,9 @@ const NotificationsBarContent: React.FC<{
         return aValue < bValue ? 1 : -1;
       }
     });
-  }, [notifications, filters, searchTerm, sortOption]);
+  }, [store.notifications, filters, searchTerm, sortOption]);
 
-  // Separate starred and regular notifications
-  const starredNotifications = filteredNotifications.filter(notification => notification.starred);
-  const regularNotifications = filteredNotifications.filter(notification => !notification.starred);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = (store.notifications || []).filter((n: InAppNotificationData) => !n.read).length;
 
   // Component for rendering notifications list
   const NotificationsList: React.FC<{
@@ -263,7 +231,7 @@ const NotificationsBarContent: React.FC<{
               <NotificationCard
                 notification={notification}
                 onToggleRead={toggleRead}
-                onToggleStar={toggleStar}
+                onToggleStar={toggleRead}
                 onActionComplete={markNotificationAsRead}
                 showToast={showToast}
               />
@@ -301,6 +269,16 @@ const NotificationsBarContent: React.FC<{
               </span>
             )}
           </div>
+          <button
+            onClick={handleReload}
+            disabled={isReloading || store.isLoading}
+            className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+            data-testid="notifications-bar-reload-button"
+            title="Перезагрузить уведомления"
+          >
+            <RefreshCw className={`w-4 h-4 ${isReloading ? 'animate-spin' : ''}`} />
+            <span className="text-sm">Обновить</span>
+          </button>
         </div>
       </div>
 
@@ -308,7 +286,7 @@ const NotificationsBarContent: React.FC<{
       {showFilters && (
         <div className="p-6 border-b border-gray-200 bg-white flex-shrink-0">
           <NotificationFilters
-            notifications={notifications}
+            notifications={store.notifications || []}
             filters={filters}
             onFilterChange={handleFilterChange}
             onSavePreset={openModal}
@@ -329,7 +307,7 @@ const NotificationsBarContent: React.FC<{
 
       {/* Notifications Content */}
       <div className="flex-1 overflow-y-auto p-6" data-testid="notifications-bar-content">
-        {starredNotifications.length === 0 && regularNotifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <div className="text-center py-12" data-testid="notifications-bar-empty-state">
             <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Search className="w-8 h-8 text-gray-400" />
@@ -338,43 +316,24 @@ const NotificationsBarContent: React.FC<{
             <p className="text-gray-500">Попробуйте изменить фильтры или выполнить поиск</p>
           </div>
         ) : (
-          <>
-            {/* Starred Notifications Section */}
-            {starredNotifications.length > 0 && (
-              <NotificationsList
-                notifications={starredNotifications}
-                title="⭐ Избранные уведомления"
-              />
-            )}
-
-            {/* Regular Notifications Section */}
-            {regularNotifications.length > 0 && (
-              <>
-                {starredNotifications.length > 0 && (
-                  <hr className="border-gray-200 my-8" />
-                )}
-                <NotificationsList
-                  notifications={regularNotifications}
-                  title="📋 Все уведомления"
-                />
-              </>
-            )}
-          </>
+          <NotificationsList
+            notifications={filteredNotifications}
+            title="📋 Уведомления"
+          />
         )}
       </div>
 
       {/* Pagination */}
-      {showPagination && onPageChange && onPageSizeChange && (
+      {showPagination && (
         <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-          isLoading={isLoading}
+          currentPage={store.currentPage}
+          totalPages={store.totalPages}
+          pageSize={store.pageSize}
+          onPageChange={store.setPage.bind(store)}
+          onPageSizeChange={store.setPageSize.bind(store)}
+          isLoading={store.isLoading}
         />
       )}
     </div>
   );
-};
-
+});
