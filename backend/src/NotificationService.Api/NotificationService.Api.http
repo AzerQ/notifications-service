@@ -22,10 +22,9 @@
 @testUser3Id = 5773919a-49b8-49ff-907f-8dca50791f51
 
 # Динамические переменные (будут заполнены в процессе тестирования)
-@accessToken = 
-@refreshToken = 
-@challengeId = 
-@notificationId = 
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImI2MDZjZDIxLTcyNjAtNDViMy05ZTZmLTYwNTM2OTBhZGQ5YSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImFkbWluQGV4YW1sZS5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc2Mjc2MDA3MCwiaXNzIjoiTm90aWZpY2F0aW9uU2VydmljZSIsImF1ZCI6Ik5vdGlmaWNhdGlvblNlcnZpY2VDbGllbnRzIn0.VkibehUJcdJPj1Ycjbn14-aZZeNlspr2xVIQMapKs24
+@refreshToken = lwKh6KJ/zVjX6cPK3yKh41A+x5IGTggO1pAFn6Z84ws=
+@notificationId = Set notification ID
 
 ### ===================================================================
 ### 📧 АУТЕНТИФИКАЦИЯ - Authentication Controller
@@ -41,25 +40,16 @@ Content-Type: {{contentType}}
 POST {{baseUrl}}/api/Auth/email/sendCode?email={{testUserEmail}}
 Content-Type: {{contentType}}
 
-### 3. Авторизация по email и коду - ADMIN
-# @name loginAdmin
-# Замените "123456" на реальный код из email/логов
+### 3. Авторизация по email и коду
+# @name loginByEmail
+# @prompt challengeId Generated email verify challenge id
+# @prompt code Email challenge code (send to email inbox)
 POST {{baseUrl}}/api/Auth/email
 Content-Type: {{contentType}}
 
 {
   "id": "{{challengeId}}",
-  "code": "123456"
-}
-
-### 4. Авторизация по email и коду - TEST USER
-# @name loginTestUser
-POST {{baseUrl}}/api/Auth/email
-Content-Type: {{contentType}}
-
-{
-  "id": "{{challengeId}}",
-  "code": "123456"
+  "code": "{{code}}"
 }
 
 ### 5. Windows аутентификация (требует настройки IIS)
@@ -139,6 +129,7 @@ Content-Type: {{contentType}}
 
 ### 11. Получение уведомления по ID
 # @name getNotificationById
+# @prompt notificationId Id of random notification
 GET {{baseUrl}}/api/Notification/{{notificationId}}
 Authorization: Bearer {{accessToken}}
 Content-Type: {{contentType}}
