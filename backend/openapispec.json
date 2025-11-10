@@ -469,7 +469,7 @@
         }
       }
     },
-    "/api/Notification/by-user/{userId}": {
+    "/api/Notification/personal": {
       "get": {
         "tags": [
           "Notification"
@@ -477,14 +477,29 @@
         "summary": "Gets a list of notifications by user.\r\nRegular users can only retrieve their own notifications, administrators can retrieve any.",
         "parameters": [
           {
-            "name": "userId",
-            "in": "path",
-            "description": "User ID.",
-            "required": true,
-            "style": "simple",
+            "name": "OnlyUnread",
+            "in": "query",
+            "style": "form",
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -494,52 +509,23 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotificationResponseDto"
-                  }
+                  "$ref": "#/components/schemas/UserNotificationsResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotificationResponseDto"
-                  }
+                  "$ref": "#/components/schemas/UserNotificationsResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotificationResponseDto"
-                  }
+                  "$ref": "#/components/schemas/UserNotificationsResponse"
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
             "content": {
               "text/plain": {
                 "schema": {
@@ -739,17 +725,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/InAppNotification"
+                "$ref": "#/components/schemas/AppNotification"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/InAppNotification"
+                "$ref": "#/components/schemas/AppNotification"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/InAppNotification"
+                "$ref": "#/components/schemas/AppNotification"
               }
             }
           }
@@ -1337,6 +1323,76 @@
         },
         "additionalProperties": false
       },
+      "AppNotification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receiverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "subType": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "author": {
+            "type": "string",
+            "nullable": true
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationAction"
+            },
+            "nullable": true
+          },
+          "hashtags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationParameter"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreatedMailChallengeResponse": {
         "type": "object",
         "properties": {
@@ -1375,63 +1431,19 @@
         "type": "integer",
         "format": "int32"
       },
-      "InAppNotification": {
+      "GetUserNotificationsRequest": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "content": {
-            "type": "string",
-            "nullable": true
-          },
-          "contentShortTemplate": {
-            "type": "string",
-            "nullable": true
-          },
-          "data": {
-            "nullable": true
-          },
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "read": {
+          "onlyUnread": {
             "type": "boolean"
           },
-          "author": {
-            "type": "string",
-            "nullable": true
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
           },
-          "actions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/NotificationAction"
-            },
-            "nullable": true
-          },
-          "hashtags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "parameters": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/NotificationParameter"
-            },
-            "nullable": true
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -1493,14 +1505,26 @@
           "recipient": {
             "$ref": "#/components/schemas/User"
           },
+          "recipientId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "templateData": {
             "nullable": true
           },
           "template": {
             "$ref": "#/components/schemas/NotificationTemplate"
           },
+          "templateId": {
+            "type": "string",
+            "nullable": true
+          },
           "notificationWasRead": {
             "type": "boolean"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
           },
           "metadata": {
             "type": "array",
@@ -1540,8 +1564,6 @@
       "NotificationChannel": {
         "enum": [
           "Email",
-          "Sms",
-          "Push",
           "InApp"
         ],
         "type": "string"
@@ -1565,6 +1587,23 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotificationChannelTemplate": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/NotificationChannel"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "filePath": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1665,10 +1704,6 @@
       "NotificationTemplate": {
         "type": "object",
         "properties": {
-          "filePath": {
-            "type": "string",
-            "nullable": true
-          },
           "name": {
             "type": "string",
             "nullable": true
@@ -1677,16 +1712,9 @@
             "type": "string",
             "nullable": true
           },
-          "content": {
+          "commonContentTemplate": {
             "type": "string",
             "nullable": true
-          },
-          "contentShortTemplate": {
-            "type": "string",
-            "nullable": true
-          },
-          "channel": {
-            "$ref": "#/components/schemas/NotificationChannel"
           },
           "createdAt": {
             "type": "string",
@@ -1695,6 +1723,13 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          },
+          "channelsTemplates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationChannelTemplate"
+            },
             "nullable": true
           }
         },
@@ -1975,6 +2010,26 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserNotificationsResponse": {
+        "type": "object",
+        "properties": {
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppNotification"
+            },
+            "nullable": true
+          },
+          "request": {
+            "$ref": "#/components/schemas/GetUserNotificationsRequest"
+          },
+          "totalItemsCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
