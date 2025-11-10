@@ -82,6 +82,9 @@ export class NotificationStore {
 
   // Колбек для показа всплывающих уведомлений
   private showCompactToastCallback?: (notification: CompactNotificationData) => void;
+  
+  // Флаг инициализации
+  private isInitialized = false;
 
   constructor(
     private notificationService: INotificationService,
@@ -145,6 +148,75 @@ export class NotificationStore {
         this.isLoading = false;
       });
     }
+  }
+
+  // Загрузить последние 200 уведомлений при инициализации
+  async initializeNotifications(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+    
+    this.isLoading = true;
+    this.error = null;
+
+    try {
+      const requestParams: GetNotificationsParams = {
+        page: 1,
+        pageSize: 200,
+        filters: {}
+      };
+
+      const response = await this.notificationService.getNotifications(requestParams);
+      
+      runInAction(() => {
+        this.notifications = response.notifications || [];
+        this.totalNotifications = response.totalItemsCount;
+        this.totalPages = Math.ceil(response.totalItemsCount / this.pageSize);
+        this.currentPage = 1;
+        this.isLoading = false;
+        this.isInitialized = true;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Ошибка загрузки уведомлений';
+        this.isLoading = false;
+      });
+    }
+  }
+
+  // Загрузить только непрочитанные уведомления
+  async loadUnreadNotifications(): Promise<void> {
+    this.isLoading = true;
+    this.error = null;
+
+    try {
+      const requestParams: GetNotificationsParams = {
+        page: 1,
+        pageSize: 200,
+        filters: { onlyUnread: true }
+      };
+
+      const response = await this.notificationService.getNotifications(requestParams);
+      
+      runInAction(() => {
+        this.notifications = response.notifications || [];
+        this.totalNotifications = response.totalItemsCount;
+        this.totalPages = Math.ceil(response.totalItemsCount / this.pageSize);
+        this.currentPage = 1;
+        this.isLoading = false;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Ошибка загрузки непрочитанных уведомлений';
+        this.isLoading = false;
+      });
+    }
+  }
+
+  // Перезагрузить последние уведомления
+  async reloadNotifications(): Promise<void> {
+    this.currentPage = 1;
+    await this.loadNotifications();
   }
 
   // Действия для работы с уведомлениями
@@ -277,26 +349,15 @@ export class NotificationStore {
   }
 
   // Обработчики SignalR событий
-  private handleNewNotification(compactNotification: CompactNotificationData): void {
+  private handleNewNotification(notification: CompactNotificationData): void {
     // Показываем всплывающее уведомление только если не открыты sidebar или modal
     if (this.shouldShowToasts && this.showCompactToastCallback) {
-      this.showCompactToastCallback(compactNotification);
+      this.showCompactToastCallback(notification);
     }
 
-    // Конвертируем компактное уведомление в полное
-    const fullNotification: InAppNotificationData = {
-      id: compactNotification.id,
-      title: compactNotification.title,
-      type: compactNotification.type,
-      subType: compactNotification.subtype,
-      content: '', // Будет загружено при открытии
-      url: '',
-      author: compactNotification.author,
-      date: compactNotification.date,
-      read: compactNotification.read,
-      receiverId: '',
-      actions: []
-    };
+    // CompactNotificationData теперь это полная модель Notification из бэкенда
+    // Используем её напрямую без преобразований
+    const fullNotification: InAppNotificationData = notification;
 
     runInAction(() => {
       // Добавляем в начало списка

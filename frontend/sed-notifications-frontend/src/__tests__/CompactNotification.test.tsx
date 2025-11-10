@@ -73,9 +73,9 @@ describe('CompactNotification', () => {
     expect(timeElement).toHaveTextContent('только что');
   });
 
-  it('должен отображать ссылку "Открыть →" для уведомлений с cardUrl', () => {
+  it('должен отображать ссылку "Открыть →" для уведомлений с url', () => {
     const notification = createMockNotification({
-      cardUrl: '/test-url',
+      url: '/test-url',
     });
 
     render(<CompactNotification notification={notification} onRead={mockOnRead} />);
@@ -84,9 +84,9 @@ describe('CompactNotification', () => {
     expect(linkIndicator).toHaveTextContent('Открыть →');
   });
 
-  it('не должен отображать ссылку для уведомлений без cardUrl', () => {
+  it('не должен отображать ссылку для уведомлений без url', () => {
     const notification = createMockNotification({
-      cardUrl: undefined,
+      url: undefined,
     });
 
     render(<CompactNotification notification={notification} onRead={mockOnRead} />);
@@ -106,10 +106,10 @@ describe('CompactNotification', () => {
     expect(mockOnRead).toHaveBeenCalledWith(123);
   });
 
-  it('должен открывать ссылку в новой вкладке при клике на уведомление с cardUrl', async () => {
+  it('должен открывать ссылку в новой вкладке при клике на уведомление с url', async () => {
     const user = userEvent.setup();
     const notification = createMockNotification({
-      cardUrl: '/test-url',
+      url: '/test-url',
     });
 
     render(<CompactNotification notification={notification} onRead={mockOnRead} />);
@@ -121,9 +121,9 @@ describe('CompactNotification', () => {
     expect(mockOnRead).toHaveBeenCalled();
   });
 
-  it('должен иметь hover эффект для уведомлений с cardUrl', () => {
+  it('должен иметь hover эффект для уведомлений с url', () => {
     const notification = createMockNotification({
-      cardUrl: '/test-url',
+      url: '/test-url',
     });
 
     const { container } = render(
@@ -147,7 +147,7 @@ describe('CompactNotification', () => {
 
   it('должен обрезать длинное описание', () => {
     const notification = createMockNotification({
-      description: 'Very long description that should be truncated to two lines maximum. This text is intentionally very long to test the line clamping functionality.',
+      content: 'Very long description that should be truncated to two lines maximum. This text is intentionally very long to test the line clamping functionality.',
     });
 
     const { container } = render(

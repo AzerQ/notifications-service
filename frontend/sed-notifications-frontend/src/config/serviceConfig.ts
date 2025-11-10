@@ -44,10 +44,6 @@ export function loadServiceConfig(): ServiceConfig {
  * Create notification service based on configuration
  */
 export function createNotificationService(config: ServiceConfig): INotificationService {
-  if (config.debugMode) {
-    console.log('[ServiceConfig] Creating notification service in', config.mode, 'mode');
-  }
-
   if (config.mode === 'mock') {
     return new MockNotificationService();
   }
@@ -55,7 +51,6 @@ export function createNotificationService(config: ServiceConfig): INotificationS
   const apiClient = createApiClient({
     baseUrl: config.apiBaseUrl,
     onUnauthenticated: () => {
-      console.warn('[ServiceConfig] User is not authenticated');
       // You can dispatch an action to show login modal here
     }
   });

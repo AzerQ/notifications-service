@@ -61,10 +61,13 @@ export class MockSignalRNotificationService implements ISignalRNotificationServi
       id: (Date.now() + Math.floor(Math.random() * 1000)).toString(),
       title: 'Новое уведомление из SignalR',
       type: 'system',
-      subtype: 'update',
+      subType: 'update',
+      content: 'Новое уведомление',
+      url: 'https://example.com',
       author: 'Система',
       date: new Date().toISOString(),
       read: false,
+      receiverId: '',
       ...notification
     };
 
@@ -106,41 +109,56 @@ export class MockSignalRNotificationService implements ISignalRNotificationServi
   }
 
   private simulateRandomNotification(): void {
-    const mockNotifications = [
+    const mockNotifications: Partial<CompactNotificationData>[] = [
       {
         title: 'Новый документ на согласование',
         type: 'document',
-        subtype: 'Входящий документ',
+        subType: 'Входящий документ',
+        content: 'Документ требует вашего согласования',
         author: 'Петров И.И.',
-        cardUrl: 'https://example.com/document/123'
+        url: 'https://example.com/document/123',
+        icon: { name: 'file-text', cssClass: null },
+        hashtags: ['document', 'approval']
       },
       {
         title: 'Напоминание о встрече',
         type: 'other',
-        subtype: 'Напоминание',
+        subType: 'Напоминание',
+        content: 'Встреча начинается через 15 минут',
         author: 'Календарь',
-        cardUrl: 'https://example.com/meeting/456'
+        url: 'https://example.com/meeting/456',
+        icon: { name: 'calendar', cssClass: null },
+        hashtags: ['meeting', 'reminder']
       },
       {
         title: 'Обновление системы',
         type: 'system',
-        subtype: 'update',
+        subType: 'update',
+        content: 'Доступно новое обновление системы',
         author: 'Система',
-        cardUrl: 'https://example.com/updates'
+        url: 'https://example.com/updates',
+        icon: { name: 'refresh-cw', cssClass: null },
+        hashtags: ['system', 'update']
       },
       {
         title: 'Новая задача',
         type: 'task',
-        subtype: 'assignment',
+        subType: 'assignment',
+        content: 'Вам назначена новая задача',
         author: 'Сидорова М.П.',
-        cardUrl: 'https://example.com/task/789'
+        url: 'https://example.com/task/789',
+        icon: { name: 'bookmark-check', cssClass: null },
+        hashtags: ['task', 'assignment', 'work']
       },
       {
         title: 'Требуется подпись',
         type: 'task',
-        subtype: 'approval',
+        subType: 'approval',
+        content: 'Документ ожидает вашей подписи',
         author: 'Козлов А.В.',
-        cardUrl: 'https://example.com/approval/321'
+        url: 'https://example.com/approval/321',
+        icon: { name: 'pen-tool', cssClass: null },
+        hashtags: ['task', 'approval', 'signature']
       }
     ];
 
@@ -155,16 +173,8 @@ export class MockSignalRNotificationService implements ISignalRNotificationServi
 
 /**
  * Конвертер для преобразования полного уведомления в компактное
+ * Теперь это просто приведение типа, так как CompactNotificationData = Notification
  */
 export const convertToCompactNotification = (notification: InAppNotificationData): CompactNotificationData => {
-  return {
-    id: notification.id,
-    title: notification.title,
-    type: notification.type || 'other',
-    subtype: notification.subType,
-    author: notification.author || 'Unknown',
-    date: notification.date,
-    read: notification.read,
-    cardUrl: notification.url
-  };
+  return notification as CompactNotificationData;
 };

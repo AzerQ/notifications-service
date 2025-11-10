@@ -17,8 +17,13 @@ const AppContent: React.FC = observer(() => {
             (signalRService as any).simulateNewNotification({
                 title: 'Тестовое SignalR уведомление',
                 type: 'system',
-                subtype: 'test',
-                author: 'Тестовая система'
+                subType: 'test',
+                content: 'Это тестовое уведомление из SignalR',
+                url: 'https://example.com',
+                author: 'Тестовая система',
+                date: new Date().toISOString(),
+                read: false,
+                receiverId: 'test-user'
             });
         } else if (config.mode === 'real') {
             console.log('SignalR test notification feature is only available in mock mode');

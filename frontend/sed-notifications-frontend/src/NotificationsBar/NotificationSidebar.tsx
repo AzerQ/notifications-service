@@ -1,42 +1,36 @@
 import React, { useEffect } from 'react';
 import { X, Bell, History, Settings, Lock } from 'lucide-react';
+import { observer } from 'mobx-react-lite';
 import { InAppNotificationData, ToastSize } from './types';
 import { CompactNotification } from './NotificationCard/CompactNotification';
 import { EmailAuthForm } from './Auth/EmailAuthForm';
+import { useNotificationStore } from '../store/NotificationStoreContext';
 
 interface NotificationSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  notifications: InAppNotificationData[];
-  onNotificationRead: (id: string) => void;
   onOpenFullHistory: () => void;
   onOpenSettings?: () => void;
   onOpenToastSettings?: () => void;
-  markAllAsRead: () => void;
-  isLoading?: boolean; // Добавляем опциональный пропс для индикации загрузки
-  toastSize?: ToastSize; // Размер для компактных уведомлений
-  // Новые пропсы для авторизации
-  showAuthForm?: boolean;
+  toastSize?: ToastSize;
   onAuthSuccess?: (tokens: { accessToken: string; refreshToken: string }) => void;
   onAuthError?: (error: string) => void;
 }
 
-export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
+export const NotificationSidebar: React.FC<NotificationSidebarProps> = observer(({
   isOpen,
   onClose,
-  notifications,
-  onNotificationRead,
   onOpenFullHistory,
   onOpenSettings,
   onOpenToastSettings,
-  markAllAsRead,
-  isLoading = false,
   toastSize = 'medium',
-  showAuthForm = false,
   onAuthSuccess,
   onAuthError
 }) => {
-  const unreadNotifications = (notifications || []).filter(n => !n.read);
+  const store = useNotificationStore();
+  
+  // Получаем только непрочитанные уведомления из store
+  const unreadNotifications = (store.notifications || []).filter(n => !n.read);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -57,15 +51,23 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
   }, [isOpen, onClose]);
 
   const handleFullHistoryClick = () => {
-    onClose(); // Закрываем боковое меню
-    onOpenFullHistory(); // Открываем полную историю
+    onClose();
+    onOpenFullHistory();
+  };
+
+  const handleNotificationRead = async (id: string) => {
+    await store.markAsRead(id);
+  };
+
+  const handleMarkAllAsRead = async () => {
+    await store.markAllAsRead();
   };
 
   // Определяем ширину сайдбара в зависимости от размера
   const sidebarWidths = {
-    small: 'w-64',   // 256px - компактный
-    medium: 'w-80',  // 320px - стандартный
-    large: 'w-96'    // 384px - широкий
+    small: 'w-64',
+    medium: 'w-80',
+    large: 'w-96'
   };
 
   // Определяем размеры текста и элементов
@@ -118,15 +120,15 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
         {/* Header */}
         <div className={`flex items-center justify-between ${styles.padding} border-b border-gray-200 bg-gray-50 flex-shrink-0`} data-testid="notification-sidebar-header">
           <div className="flex items-center space-x-2">
-            {showAuthForm ? (
+            {store.showAuthForm ? (
               <Lock className={`${styles.headerIcon} text-blue-600`} />
             ) : (
               <Bell className={`${styles.headerIcon} text-gray-700`} />
             )}
             <h2 className={`${styles.headerTitle} font-semibold text-gray-900`} data-testid="notification-sidebar-title">
-              {showAuthForm ? 'Авторизация' : 'Новые уведомления'}
+              {store.showAuthForm ? 'Авторизация' : 'Новые уведомления'}
             </h2>
-            {!showAuthForm && unreadNotifications.length > 0 && (
+            {!store.showAuthForm && unreadNotifications.length > 0 && (
               <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full" data-testid="notification-sidebar-unread-count">
                 {unreadNotifications.length}
               </span>
@@ -143,7 +145,7 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
         </div>
 
         {/* Action Buttons - Compact Icons with Tooltips */}
-        {!showAuthForm && (
+        {!store.showAuthForm && (
           <div className={`${styles.padding} border-b border-gray-200 flex-shrink-0`} data-testid="notification-sidebar-actions-section">
             <div className="flex items-center justify-center gap-2">
               {/* Full History Button */}
@@ -213,7 +215,7 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin" data-testid="notification-sidebar-content">
-          {showAuthForm ? (
+          {store.showAuthForm ? (
             /* Авторизация */
             <EmailAuthForm
               onSuccess={onAuthSuccess}
@@ -223,7 +225,7 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
           ) : (
             /* Уведомления */
             <>
-              {isLoading ? (
+              {store.isLoading ? (
                 <div className={`flex flex-col items-center justify-center h-full text-center ${styles.padding} py-8`} data-testid="notification-sidebar-loading">
                   <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                   <p className={`text-gray-500 ${styles.buttonText}`}>Загрузка уведомлений...</p>
@@ -246,7 +248,7 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
                     <CompactNotification
                       key={notification.id}
                       notification={notification}
-                      onRead={onNotificationRead}
+                      onRead={handleNotificationRead}
                       size={toastSize}
                     />
                   ))}
@@ -257,12 +259,10 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
         </div>
 
         {/* Footer */}
-        {!showAuthForm && unreadNotifications.length > 0 && (
+        {!store.showAuthForm && unreadNotifications.length > 0 && (
           <div className={`${styles.padding} border-t border-gray-200 bg-gray-50 flex-shrink-0`} data-testid="notification-sidebar-footer">
             <button
-              onClick={() => {
-                markAllAsRead();
-              }}
+              onClick={handleMarkAllAsRead}
               className={`w-full ${styles.buttonText} text-gray-600 hover:text-gray-800 transition-colors`}
               data-testid="notification-sidebar-mark-all-read-button"
             >
@@ -273,4 +273,4 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
       </div>
     </div>
   );
-};
+});

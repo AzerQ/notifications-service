@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NotificationBell } from './NotificationBell';
 import { Modal } from './Modal';
 import { NotificationSidebar } from './NotificationSidebar';
@@ -17,6 +17,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [notifications, setNotifications] = useState<InAppNotificationData[]>(initialNotifications || []);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Синхронизируем локальное состояние с пропсами
+  useEffect(() => {
+    setNotifications(initialNotifications || []);
+  }, [initialNotifications]);
 
   const unreadCount = (notifications || []).filter(notification => !notification.read).length;
 
@@ -76,15 +81,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         onOpenSettings={() => {}}
       />
       
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={closeModal}
         title="Центр уведомлений"
         size="full"
       >
         <NotificationsBar
-          notifications={notifications}
-          onNotificationUpdate={updateNotifications}
+          showFilters={true}
+          showSearch={true}
+          showPagination={false}
         />
       </Modal>
     </div>

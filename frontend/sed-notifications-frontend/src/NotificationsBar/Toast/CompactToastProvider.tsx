@@ -163,8 +163,8 @@ export const CompactToastProvider: React.FC<CompactToastProviderProps> = ({
       onReadRef.current(toast.id);
       
       // Открываем URL, если есть
-      if (toast.cardUrl) {
-        window.open(toast.cardUrl, '_blank');
+      if (toast.url) {
+        window.open(toast.url, '_blank');
       }
       
       // Помечаем как закрывающийся
@@ -173,26 +173,11 @@ export const CompactToastProvider: React.FC<CompactToastProviderProps> = ({
       animationTimerRef.current = setTimeout(() => {
         onRemoveRef.current(toast.toastId);
       }, 300);
-    }, [toast.id, toast.toastId, toast.cardUrl]);
+    }, [toast.id, toast.toastId, toast.url]);
 
-    // Преобразуем CompactNotificationData в InAppNotificationData для совместимости
-    const adaptedNotification: InAppNotificationData = {
-      id: toast.id,
-      title: toast.title,
-      type: toast.type as any,
-      subType: toast.subtype || '',
-      description: `От: ${toast.author}`,
-      content: `От: ${toast.author}`,
-      author: toast.author,
-      date: toast.date,
-      read: toast.read,
-      starred: false,
-      delegate: false,
-      actions: [],
-      cardUrl: toast.cardUrl,
-      receiverId: 'user-764',
-      url: toast.cardUrl || ''
-    };
+    // CompactNotificationData теперь это полная модель Notification
+    // Используем её напрямую как InAppNotificationData
+    const adaptedNotification: InAppNotificationData = toast as InAppNotificationData;
 
     // Определяем классы размера
     const sizeClasses = {

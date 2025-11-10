@@ -1,15 +1,10 @@
-import { InAppNotificationData } from '../../NotificationsBar/types';
+import { Notification } from '../../models';
 
-export interface CompactNotificationData {
-  id: string;
-  title: string;
-  type: string;
-  subtype?: string;
-  author: string;
-  date: string;
-  read: boolean;
-  cardUrl?: string;
-}
+/**
+ * CompactNotificationData is now an alias for the full Notification model
+ * since SignalR sends the complete AppNotification from the backend
+ */
+export type CompactNotificationData = Notification;
 
 export interface ISignalRNotificationService {
   /**

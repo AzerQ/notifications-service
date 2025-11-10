@@ -46,11 +46,9 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
 
   // Инициализация при первом рендере
   useEffect(() => {
-    // Проверяем статус авторизации перед загрузкой уведомлений
     if (auth.isAuthenticated) {
       store.setAuthenticated(true, auth.authMethod || undefined);
-      // Загружаем непрочитанные уведомления для боковой панели
-      store.loadNotifications({ filters: { onlyUnread: true } });
+      store.initializeNotifications();
     }
   }, [auth.isAuthenticated, auth.authMethod, store]);
 
@@ -83,7 +81,7 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
     setIsModalOpen(true);
     store.setModalOpen(true); // Уведомляем store
     // Загружаем все уведомления при открытии полной истории
-    store.loadNotifications({ filters: { onlyUnread: false } });
+    store.reloadNotifications();
   };
 
   const handleModalClose = () => {
@@ -91,19 +89,6 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
     store.setModalOpen(false); // Уведомляем store
   };
 
-  const handleNotificationRead = async (id: string) => {
-    await store.markAsRead(id);
-  };
-
-  const handleMarkAllAsRead = async () => {
-    await store.markAllAsRead();
-  };
-
-  const handleNotificationUpdate = (updatedNotifications: InAppNotificationData[]) => {
-    // Обновляем store (для обратной совместимости с NotificationsBar)
-    // В реальном приложении это будет делаться через API
-    onNotificationUpdate?.(updatedNotifications);
-  };
 
   return (
     <>
@@ -117,13 +102,8 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
       <NotificationSidebar
         isOpen={isSidebarOpen}
         onClose={handleSidebarClose}
-        notifications={(store.notifications || []).filter(n => !n.read)}
-        onNotificationRead={handleNotificationRead}
         onOpenFullHistory={handleOpenFullHistory}
-        markAllAsRead={handleMarkAllAsRead}
-        isLoading={store.isLoading}
         toastSize="medium"
-        showAuthForm={store.showAuthForm}
         onAuthSuccess={auth.handleEmailAuthSuccess}
         onAuthError={auth.handleEmailAuthError}
       />
@@ -131,17 +111,9 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
       {/* Модальное окно с полной историей */}
       <Modal size='full' isOpen={isModalOpen} onClose={handleModalClose}>
         <NotificationsBar
-          notifications={store.notifications || []}
-          onNotificationUpdate={handleNotificationUpdate}
           showFilters={true}
           showSearch={true}
           showPagination={true}
-          currentPage={store.currentPage}
-          totalPages={store.totalPages}
-          pageSize={store.pageSize}
-          onPageChange={store.setPage.bind(store)}
-          onPageSizeChange={store.setPageSize.bind(store)}
-          isLoading={store.isLoading}
         />
       </Modal>
 

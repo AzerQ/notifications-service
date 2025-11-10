@@ -54,13 +54,6 @@ export interface Notification {
   actions?: NotificationAction[];
   hashtags?: string[];
   parameters?: NotificationParameter[];
-  
-  // Additional fields for extended functionality
-  description?: string;
-  cardUrl?: string;
-  starred?: boolean;
-  delegate?: boolean;
-  subtype?: string; // Alias for subType for backward compatibility
 }
 
 // Type aliases for backward compatibility

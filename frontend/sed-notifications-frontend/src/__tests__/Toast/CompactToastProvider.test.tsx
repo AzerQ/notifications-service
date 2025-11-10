@@ -7,10 +7,13 @@ const mockNotification: CompactNotificationData = {
   id: "1",
   title: 'Тестовое уведомление',
   type: 'document',
-  subtype: 'approval',
+  subType: 'approval',
+  content: 'Тестовое содержимое',
+  url: 'https://example.com',
   author: 'Тестовый пользователь',
   date: '2024-01-01T12:00:00Z',
-  read: false
+  read: false,
+  receiverId: 'test-user-id'
 };
 
 describe('CompactToastProvider', () => {
