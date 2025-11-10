@@ -6,6 +6,8 @@ import { NotificationSidebar } from './NotificationSidebar';
 import { NotificationsBar } from './NotificationsBar';
 import { useNotificationStore } from '../store/NotificationStoreContext';
 import { InAppNotificationData } from './types';
+import { useAuth } from '../hooks/useAuth';
+import { loadServiceConfig } from '../config/serviceConfig';
 
 interface NotificationCenterProps {
   // Для обратной совместимости
@@ -13,19 +15,44 @@ interface NotificationCenterProps {
   onNotificationUpdate?: (notifications: InAppNotificationData[]) => void;
 }
 
-export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = observer(({ 
+export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = observer(({
   notifications: legacyNotifications,
-  onNotificationUpdate 
+  onNotificationUpdate
 }) => {
   const store = useNotificationStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const config = loadServiceConfig();
+  
+  // Инициализация хука авторизации
+  const auth = useAuth({
+    apiConfig: {
+      baseUrl: config.apiBaseUrl,
+      onUnauthenticated: () => {
+        store.setShowAuthForm(true);
+        store.setAuthError('Требуется авторизация');
+      }
+    },
+    onAuthSuccess: (tokens) => {
+      store.setAuthenticated(true, auth.authMethod || 'email');
+      // После успешной авторизации загружаем уведомления
+      store.loadNotifications({ filters: { onlyUnread: true } });
+    },
+    onAuthError: (error) => {
+      store.setAuthError(error);
+    }
+  });
 
   // Инициализация при первом рендере
   useEffect(() => {
-    // Загружаем непрочитанные уведомления для боковой панели
-    store.loadNotifications({ filters: { onlyUnread: true } });
-  }, [store]);
+    // Проверяем статус авторизации перед загрузкой уведомлений
+    if (auth.isAuthenticated) {
+      store.setAuthenticated(true, auth.authMethod || undefined);
+      // Загружаем непрочитанные уведомления для боковой панели
+      store.loadNotifications({ filters: { onlyUnread: true } });
+    }
+  }, [auth.isAuthenticated, auth.authMethod, store]);
 
   // Синхронизация с legacy props (для обратной совместимости)
   useEffect(() => {
@@ -38,6 +65,11 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
   const handleBellClick = () => {
     setIsSidebarOpen(true);
     store.setSidebarOpen(true); // Уведомляем store
+    
+    // Если пользователь не авторизован, показываем форму авторизации
+    if (!auth.isAuthenticated) {
+      store.setShowAuthForm(true);
+    }
   };
 
   const handleSidebarClose = () => {
@@ -85,18 +117,21 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
       <NotificationSidebar
         isOpen={isSidebarOpen}
         onClose={handleSidebarClose}
-        notifications={store.notifications.filter(n => !n.read)}
+        notifications={(store.notifications || []).filter(n => !n.read)}
         onNotificationRead={handleNotificationRead}
         onOpenFullHistory={handleOpenFullHistory}
         markAllAsRead={handleMarkAllAsRead}
         isLoading={store.isLoading}
         toastSize="medium"
+        showAuthForm={store.showAuthForm}
+        onAuthSuccess={auth.handleEmailAuthSuccess}
+        onAuthError={auth.handleEmailAuthError}
       />
 
       {/* Модальное окно с полной историей */}
       <Modal size='full' isOpen={isModalOpen} onClose={handleModalClose}>
         <NotificationsBar
-          notifications={store.notifications}
+          notifications={store.notifications || []}
           onNotificationUpdate={handleNotificationUpdate}
           showFilters={true}
           showSearch={true}

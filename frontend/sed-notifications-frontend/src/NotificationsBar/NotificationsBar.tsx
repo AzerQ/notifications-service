@@ -82,7 +82,7 @@ const NotificationsBarContent: React.FC<{
   onPageSizeChange,
   isLoading = false
 }) => {
-  const [notifications, setnotifications] = useState<InAppNotificationData[]>(appNotifications);
+  const [notifications, setnotifications] = useState<InAppNotificationData[]>(appNotifications || []);
   const [filters, setFilters] = useState<Filters>({
     type: '',
     subtype: '',
@@ -103,14 +103,14 @@ const NotificationsBarContent: React.FC<{
   };
 
   const toggleRead = (id: string) => {
-    const updatedNotifications = notifications.map(notif =>
+    const updatedNotifications = (notifications || []).map(notif =>
       notif.id === id ? { ...notif, read: !notif.read } : notif
     );
     updateNotifications(updatedNotifications);
   };
 
   const toggleStar = (id: string) => {
-    const updatedNotifications = notifications.map(notif =>
+    const updatedNotifications = (notifications || []).map(notif =>
       notif.id === id ? { ...notif, starred: !notif.starred } : notif
     );
     updateNotifications(updatedNotifications);
@@ -118,7 +118,7 @@ const NotificationsBarContent: React.FC<{
 
   // New function to mark notification as read after action
   const markNotificationAsRead = (id: string) => {
-    const updatedNotifications = notifications.map(notif =>
+    const updatedNotifications = (notifications || []).map(notif =>
       notif.id === id ? { ...notif, read: true } : notif
     );
     updateNotifications(updatedNotifications);
@@ -161,7 +161,7 @@ const NotificationsBarContent: React.FC<{
 
   const filteredNotifications = useMemo(() => {
     // Apply filters
-    const filtered = notifications.filter(notification => {
+    const filtered = (notifications || []).filter(notification => {
       // Apply search filter
       if (searchTerm && !notification.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !(notification.description || '').toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -233,7 +233,7 @@ const NotificationsBarContent: React.FC<{
   const starredNotifications = filteredNotifications.filter(notification => notification.starred);
   const regularNotifications = filteredNotifications.filter(notification => !notification.starred);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
 
   // Component for rendering notifications list
   const NotificationsList: React.FC<{

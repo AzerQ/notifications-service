@@ -30,9 +30,9 @@ export const NotificationFilterExample: React.FC<NotificationFilterExampleProps>
   } = useNotificationFilters();
 
   // Get unique types and hashtags for filter dropdowns
-  const uniqueTypes = Array.from(new Set(notifications.map(n => n.type)));
+  const uniqueTypes = Array.from(new Set((notifications || []).map(n => n.type)));
   const uniqueHashtags = Array.from(
-    new Set(notifications.flatMap(n => n.hashtags || []))
+    new Set((notifications || []).flatMap(n => n.hashtags || []))
   );
 
   // Handle type filter
@@ -93,7 +93,7 @@ export const NotificationFilterExample: React.FC<NotificationFilterExampleProps>
   };
 
   // Apply all filters
-  const filteredNotifications = applyFilters(notifications);
+  const filteredNotifications = applyFilters(notifications || []);
 
   return (
     <div className="notification-filter-example">
@@ -161,7 +161,7 @@ export const NotificationFilterExample: React.FC<NotificationFilterExampleProps>
       {/* Results */}
       <div className="results">
         <h3>
-          Results ({filteredNotifications.length} of {notifications.length})
+          Results ({filteredNotifications.length} of {(notifications || []).length})
         </h3>
         
         {filteredNotifications.length === 0 ? (

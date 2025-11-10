@@ -38,6 +38,13 @@ export interface NotificationStoreState {
   // UI состояние
   isSidebarOpen: boolean;
   isModalOpen: boolean;
+  
+  // Состояние авторизации
+  isAuthenticated: boolean;
+  isAuthenticating: boolean;
+  authError: string | null;
+  authMethod: 'windows' | 'email' | null;
+  showAuthForm: boolean;
 }
 
 export class NotificationStore {
@@ -63,6 +70,13 @@ export class NotificationStore {
   isSidebarOpen = false;
   isModalOpen = false;
   
+  // Состояние авторизации
+  isAuthenticated = false;
+  isAuthenticating = false;
+  authError: string | null = null;
+  authMethod: 'windows' | 'email' | null = null;
+  showAuthForm = false;
+  
   // Toast настройки
   toastSettings: ToastSettings = DEFAULT_TOAST_SETTINGS;
 
@@ -73,8 +87,15 @@ export class NotificationStore {
     private notificationService: INotificationService,
     private signalRService: ISignalRNotificationService
   ) {
+    // Ensure notifications is always initialized as an array
+    this.notifications = [];
+    
     makeAutoObservable(this);
-    this.initializeSignalR();
+    
+    // Initialize SignalR asynchronously to avoid blocking constructor
+    setTimeout(() => {
+      this.initializeSignalR();
+    }, 0);
   }
 
   // Метод для установки колбека показа всплывающих уведомлений
@@ -84,7 +105,7 @@ export class NotificationStore {
 
   // Геттеры
   get unreadCount(): number {
-    return this.notifications.filter(n => !n.read).length;
+    return (this.notifications || []).filter(n => !n.read).length;
   }
 
   get hasUnreadNotifications(): boolean {
@@ -111,7 +132,7 @@ export class NotificationStore {
       const response = await this.notificationService.getNotifications(requestParams);
       
       runInAction(() => {
-        this.notifications = response.notifications;
+        this.notifications = response.notifications || [];
         this.totalNotifications = response.totalItemsCount;
         // Вычисляем totalPages на основе totalItemsCount и pageSize
         this.totalPages = Math.ceil(response.totalItemsCount / this.pageSize);
@@ -132,7 +153,7 @@ export class NotificationStore {
       await this.notificationService.setReadFlag(notificationId, true);
       
       runInAction(() => {
-        const notification = this.notifications.find(n => n.id === notificationId);
+        const notification = (this.notifications || []).find(n => n.id === notificationId);
         if (notification) {
           notification.read = true;
         }
@@ -147,7 +168,7 @@ export class NotificationStore {
       await this.notificationService.setReadFlag(notificationId, false);
       
       runInAction(() => {
-        const notification = this.notifications.find(n => n.id === notificationId);
+        const notification = (this.notifications || []).find(n => n.id === notificationId);
         if (notification) {
           notification.read = false;
         }
@@ -158,7 +179,7 @@ export class NotificationStore {
   }
 
   async markAllAsRead(): Promise<void> {
-    const unreadNotifications = this.notifications.filter(n => !n.read);
+    const unreadNotifications = (this.notifications || []).filter(n => !n.read);
     if (unreadNotifications.length === 0) return;
 
     try {
@@ -168,7 +189,7 @@ export class NotificationStore {
       );
       
       runInAction(() => {
-        this.notifications.forEach(notification => {
+        (this.notifications || []).forEach(notification => {
           notification.read = true;
         });
       });
@@ -279,7 +300,11 @@ export class NotificationStore {
 
     runInAction(() => {
       // Добавляем в начало списка
-      this.notifications.unshift(fullNotification);
+      if (this.notifications) {
+        this.notifications.unshift(fullNotification);
+      } else {
+        this.notifications = [fullNotification];
+      }
       
       // Обновляем счетчики
       this.totalNotifications += 1;
@@ -288,7 +313,7 @@ export class NotificationStore {
 
   private handleNotificationStatusUpdate(notificationId: string, isRead: boolean): void {
     runInAction(() => {
-      const notification = this.notifications.find(n => n.id === notificationId);
+      const notification = (this.notifications || []).find(n => n.id === notificationId);
       if (notification) {
         notification.read = isRead;
       }
@@ -314,5 +339,29 @@ export class NotificationStore {
   get shouldShowToasts(): boolean {
     // Не показываем тосты, если открыт sidebar или modal
     return !this.isSidebarOpen && !this.isModalOpen;
+  }
+
+  // Методы для управления состоянием авторизации
+  setAuthenticating(isAuthenticating: boolean): void {
+    this.isAuthenticating = isAuthenticating;
+  }
+
+  setAuthenticated(isAuthenticated: boolean, authMethod?: 'windows' | 'email'): void {
+    this.isAuthenticated = isAuthenticated;
+    this.authMethod = authMethod || null;
+    this.authError = null;
+    this.showAuthForm = false;
+  }
+
+  setAuthError(error: string | null): void {
+    this.authError = error;
+  }
+
+  setShowAuthForm(show: boolean): void {
+    this.showAuthForm = show;
+  }
+
+  clearAuthError(): void {
+    this.authError = null;
   }
 }

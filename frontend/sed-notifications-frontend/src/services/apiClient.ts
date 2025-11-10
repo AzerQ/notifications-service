@@ -31,6 +31,14 @@ export interface AccessTokenResponse {
 }
 
 /**
+ * Email code request response
+ */
+export interface EmailCodeRequestResponse {
+  challengeId: string;
+  message: string;
+}
+
+/**
  * API Client with automatic token refresh interceptor
  * 
  * Authentication flow:
@@ -45,7 +53,7 @@ export class ApiClient {
     resolve: (value?: any) => void;
     reject: (reason?: any) => void;
   }> = [];
-  private config: ApiClientConfig;
+  public config: ApiClientConfig;
 
   constructor(config: ApiClientConfig) {
     this.config = config;
@@ -241,7 +249,7 @@ export class ApiClient {
    * Try Windows authentication
    * Uses credentials: 'include' to send Windows credentials
    */
-  private async tryWindowsAuthentication(): Promise<TokenResponse | null> {
+  public async tryWindowsAuthentication(): Promise<TokenResponse | null> {
     try {
       const response = await axios.post<TokenResponse>(
         `${this.config.baseUrl}/api/auth/windows`,
@@ -264,7 +272,7 @@ export class ApiClient {
   /**
    * Email authentication - send verification code
    */
-  public async sendEmailCode(email: string): Promise<{ id: string; message: string }> {
+  public async sendEmailCode(email: string): Promise<{ challengeId: string; message: string }> {
     const response = await axios.post(
       `${this.config.baseUrl}/api/auth/email/sendCode`,
       null,

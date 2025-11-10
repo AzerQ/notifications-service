@@ -46,12 +46,12 @@ export const NotificationFilters: React.FC<{
 
     const subtypeOptions = [
         {value: '', label: 'Все подвиды'},
-        ...notifications.map(n => ({value: n.subtype || '', label: n.subtype || ''}))
+        ...(notifications || []).map(n => ({value: n.subtype || '', label: n.subtype || ''}))
     ];
 
     const authorOptions = [
         {value: '', label: 'Все авторы'},
-        ...notifications.map(n => ({value: n.author || '', label: n.author || ''}))
+        ...(notifications || []).map(n => ({value: n.author || '', label: n.author || ''}))
     ];
 
     return (
