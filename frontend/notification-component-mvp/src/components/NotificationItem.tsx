@@ -2,6 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Bell, ExternalLink, Check, X } from 'lucide-react';
 import type { Notification } from '../types';
+import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -45,7 +46,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
       // Use backend-provided icon with custom class if available
       return (
         <div className={`w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 ${notification.icon.cssClass || ''}`}>
-          <span className="text-lg">{notification.icon.name}</span>
+              <DynamicIcon name={notification.icon.name as IconName}/>
         </div>
       );
     }
@@ -74,6 +75,11 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
     return date.toLocaleDateString();
   };
 
+  // Support both new (date, type) and legacy (createdAt, category) field names
+  const displayDate = notification.date || notification.createdAt || new Date().toISOString();
+  const displayType = notification.type || notification.category;
+  const displaySubType = notification.subType;
+
   return (
     <div
       onClick={handleClick}
@@ -92,9 +98,25 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="text-sm font-semibold text-gray-900 truncate">
-              {notification.title}
-            </h4>
+            <div className="flex-1 min-w-0">
+              {/* Type and Subtype badges */}
+              <div className="flex items-center gap-2 mb-1">
+                {displayType && (
+                  <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    {displayType}
+                  </span>
+                )}
+                {displaySubType && (
+                  <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                    {displaySubType}
+                  </span>
+                )}
+              </div>
+   
+              <h4 className="text-sm font-semibold text-gray-900 truncate">
+                {notification.title}
+              </h4>
+            </div>
             
             {/* Read/Unread toggle */}
             <button
@@ -115,20 +137,20 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
             {notification.content}
           </p>
 
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="text-xs text-gray-500">
-              {formatDate(notification.createdAt)}
+              {formatDate(displayDate)}
             </span>
             
-            {notification.category && (
+            {notification.author && (
               <>
                 <span className="text-xs text-gray-400">•</span>
                 <span className="text-xs text-gray-500">
-                  {notification.category}
+                  {notification.author}
                 </span>
               </>
             )}
-            
+        
             {notification.url && (
               <>
                 <span className="text-xs text-gray-400">•</span>
@@ -136,6 +158,20 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
               </>
             )}
           </div>
+
+          {/* Hashtags */}
+          {notification.hashtags && notification.hashtags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {notification.hashtags.slice(0, 3).map((tag, index) => (
+                <span 
+                  key={index}
+                  className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

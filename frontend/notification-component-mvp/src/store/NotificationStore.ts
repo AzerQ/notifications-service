@@ -27,11 +27,21 @@ export class NotificationStore {
   // Flag to prevent loading when not authenticated
   private canLoad = false;
 
+  // Callback for showing toast notifications
+  private showToastCallback?: (notification: Notification) => void;
+
   constructor(
     private apiClient: NotificationApiClient,
     private signalRService: SignalRNotificationService
   ) {
     makeAutoObservable(this);
+  }
+
+  /**
+   * Set callback for showing toast notifications
+   */
+  setShowToastCallback(callback?: (notification: Notification) => void): void {
+    this.showToastCallback = callback;
   }
 
   /**
@@ -55,27 +65,44 @@ export class NotificationStore {
       return;
     }
 
+    console.log('[NotificationStore] Starting to load notifications...', {
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      filters: this.filters
+  });
+
     this.isLoading = true;
     this.error = null;
 
     try {
-      const response = await this.apiClient.getNotifications({
+const response = await this.apiClient.getNotifications({
         page: this.currentPage,
-        pageSize: this.pageSize,
-        filters: this.filters
-      });
+pageSize: this.pageSize,
+ filters: this.filters
+   });
+
+      console.log('[NotificationStore] API response received:', {
+   notificationsCount: response.notifications.length,
+        totalCount: response.totalItemsCount,
+        firstNotification: response.notifications[0]
+ });
 
       runInAction(() => {
         this.notifications = response.notifications;
         this.totalCount = response.totalItemsCount;
-        this.isLoading = false;
+     this.isLoading = false;
       });
+
+      console.log('[NotificationStore] Notifications loaded successfully:', {
+     storeNotificationsCount: this.notifications.length,
+        storeTotalCount: this.totalCount
+    });
     } catch (error) {
+      console.error('[NotificationStore] Failed to load notifications:', error);
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : 'Failed to load notifications';
+     this.error = error instanceof Error ? error.message : 'Failed to load notifications';
         this.isLoading = false;
       });
-      console.error('Failed to load notifications:', error);
     }
   }
 
@@ -109,6 +136,19 @@ export class NotificationStore {
    * Handle new notification from SignalR
    */
   private handleNewNotification(notification: Notification): void {
+    console.log('[NotificationStore] New SignalR notification received:', notification);
+    
+    // Show toast notification if callback is set and dropdown is closed
+    if (this.showToastCallback && !this.isDropdownOpen) {
+      console.log('[NotificationStore] Showing toast notification');
+      this.showToastCallback(notification);
+    } else {
+      console.log('[NotificationStore] Toast not shown:', {
+        hasCallback: !!this.showToastCallback,
+        isDropdownOpen: this.isDropdownOpen
+      });
+    }
+
     runInAction(() => {
       // Add to beginning of list
       this.notifications.unshift(notification);
@@ -212,14 +252,14 @@ export class NotificationStore {
    * Computed: unread count
    */
   get unreadCount(): number {
-    return this.notifications.filter(n => !n.read).length;
+    return this.notifications?.filter(n => !n.read).length ?? 0;
   }
 
   /**
    * Computed: unread notifications
    */
   get unreadNotifications(): Notification[] {
-    return this.notifications.filter(n => !n.read);
+    return this.notifications?.filter(n => !n.read) ?? [];
   }
 
   /**
@@ -252,6 +292,7 @@ export class NotificationStore {
     this.totalCount = 0;
     this.filters = {};
     this.isDropdownOpen = false;
+    this.showToastCallback = undefined;
     
     // Disconnect SignalR
     if (this.isSignalRConnected) {

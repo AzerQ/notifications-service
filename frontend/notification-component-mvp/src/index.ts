@@ -14,6 +14,8 @@ export { NotificationComponent } from './components/NotificationComponent';
 export { NotificationBell } from './components/NotificationBell';
 export { NotificationDropdown } from './components/NotificationDropdown';
 export { NotificationItem } from './components/NotificationItem';
+export { Toast } from './components/Toast';
+export { ToastContainer } from './components/ToastContainer';
 
 // Store
 export { NotificationStore } from './store/NotificationStore';

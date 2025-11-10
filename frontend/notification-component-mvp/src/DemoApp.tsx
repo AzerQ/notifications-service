@@ -108,7 +108,7 @@ export const DemoApp: React.FC = () => {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">Notifications:</span>
-                <div className="font-semibold">{store.notifications.length}</div>
+                <div className="font-semibold">{store.notifications?.length ?? 0}</div>
               </div>
               <div>
                 <span className="text-gray-600">Unread:</span>

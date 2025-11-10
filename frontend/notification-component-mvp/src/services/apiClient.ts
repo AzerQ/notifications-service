@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import type { 
+  Notification,
   PaginatedNotifications, 
   GetNotificationsParams 
 } from '../types';
@@ -137,18 +138,29 @@ export class NotificationApiClient {
   ): Promise<PaginatedNotifications> {
     const { page = 1, pageSize = 50, filters } = params || {};
     
-    const response = await this.client.get<PaginatedNotifications>(
+    const response = await this.client.get<Notification[]>(
       `/api/notification/personal`, 
       {
-  params: {
-          pageNumber: page,
+ params: {
+    pageNumber: page,
           pageSize,
-          ...filters
+          onlyUnread: filters?.onlyUnread,
+  ...filters
    }
       }
     );
     
-    return response.data;
+  // Backend returns array directly, wrap it in PaginatedNotifications format
+    const notifications = response.data;
+    
+    return {
+  notifications,
+      totalItemsCount: notifications.length,
+      request: {
+        pageNumber: page,
+        pageSize
+      }
+};
   }
 
   /**

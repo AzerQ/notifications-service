@@ -3,19 +3,21 @@
  */
 
 /**
- * Base notification model matching backend AppNotification
+ * Action button in notification
  */
-export interface Notification {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  createdAt: string;
-  read: boolean;
-  receiverId: string;
-  icon?: NotificationIcon;
+export interface NotificationAction {
+  name: string;
+  label: string;
   url?: string;
-  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Parameter in notification
+ */
+export interface NotificationParameter {
+  key: string;
+  value: string;
+  description?: string;
 }
 
 /**
@@ -27,12 +29,37 @@ export interface NotificationIcon {
 }
 
 /**
+ * Base notification model matching backend API response
+ */
+export interface Notification {
+  id: string;
+  receiverId: string;
+  type: string;
+  subType?: string;
+  title: string;
+  content: string;
+  url?: string;
+  icon?: NotificationIcon;
+  date: string;
+  read: boolean;
+  author?: string;
+  actions?: NotificationAction[];
+  hashtags?: string[];
+  parameters?: NotificationParameter[];
+  
+  // Legacy fields for backward compatibility
+  category?: string;
+  createdAt?: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
  * Paginated response from API
  */
 export interface PaginatedNotifications {
   notifications: Notification[];
   totalItemsCount: number;
-  request: {
+  request?: {
     pageNumber: number;
     pageSize: number;
   };
