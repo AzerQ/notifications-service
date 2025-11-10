@@ -1,10 +1,11 @@
 /**
- * Base notification model for universal notification system
- * Following Backend for Frontend (BFF) paradigm
+ * Notification model matching backend AppNotification structure
+ * Backend is the source of truth
  */
 
 /**
  * Notification action link
+ * Matches backend NotificationAction record
  */
 export interface NotificationAction {
   name: string;
@@ -14,6 +15,7 @@ export interface NotificationAction {
 
 /**
  * Additional parameter for notification with key-value-description structure
+ * Matches backend NotificationParameter record
  */
 export interface NotificationParameter {
   key: string;
@@ -31,15 +33,19 @@ export interface Icon {
 }
 
 /**
- * Base notification interface with required and optional fields
+ * Notification model matching backend AppNotification
+ * This is the primary model used throughout the frontend
  */
-export interface BaseNotification {
+export interface Notification {
   // Required fields
-  id: number | string;
-  type: string;
+  id: string; // Guid from backend
+  receiverId: string;
+  type?: string;
+  subType?: string;
   title: string;
   content: string;
-  date: string;
+  url: string;
+  date: string; // DateTime from backend
   read: boolean;
 
   // Optional fields
@@ -48,64 +54,45 @@ export interface BaseNotification {
   actions?: NotificationAction[];
   hashtags?: string[];
   parameters?: NotificationParameter[];
-}
-
-/**
- * Extended notification with backward compatibility fields
- */
-export interface ExtendedNotification extends BaseNotification {
-  // Backward compatibility fields
-  subtype?: string;
-  description?: string; // Alias for content
-  starred?: boolean;
+  
+  // Additional fields for extended functionality
+  description?: string;
   cardUrl?: string;
+  starred?: boolean;
   delegate?: boolean;
+  subtype?: string; // Alias for subType for backward compatibility
+}
+
+// Type aliases for backward compatibility
+export type BaseNotification = Notification;
+export type ExtendedNotification = Notification;
+
+// Helper functions for backward compatibility
+export function isBaseNotification(obj: any): obj is Notification {
+  return isNotification(obj);
+}
+
+export function toBaseNotification(obj: any): Notification {
+  return obj as Notification;
+}
+
+export function toExtendedNotification(obj: any): Notification {
+  return obj as Notification;
 }
 
 /**
- * Type guard to check if a notification is BaseNotification
+ * Type guard to check if an object is a Notification
  */
-export function isBaseNotification(obj: any): obj is BaseNotification {
+export function isNotification(obj: any): obj is Notification {
   if (!obj || typeof obj !== 'object') {
     return false;
   }
-  
+
   return (
-    (typeof obj.id === 'number' || typeof obj.id === 'string') &&
-    typeof obj.type === 'string' &&
+    (typeof obj.id === 'string') &&
     typeof obj.title === 'string' &&
     typeof obj.content === 'string' &&
     typeof obj.date === 'string' &&
     typeof obj.read === 'boolean'
   );
-}
-
-/**
- * Helper to convert old notification format to new base format
- */
-export function toBaseNotification(oldNotification: any): BaseNotification {
-  return {
-    id: oldNotification.id,
-    type: oldNotification.type,
-    title: oldNotification.title,
-    content: oldNotification.description || oldNotification.content || '',
-    date: oldNotification.date,
-    read: oldNotification.read,
-    icon: oldNotification.icon,
-    author: oldNotification.author,
-    actions: oldNotification.actions,
-    hashtags: oldNotification.hashtags,
-    parameters: oldNotification.parameters
-  };
-}
-
-/**
- * Helper to convert base notification to extended format with backward compatibility
- */
-export function toExtendedNotification(baseNotification: BaseNotification, additionalFields?: Partial<ExtendedNotification>): ExtendedNotification {
-  return {
-    ...baseNotification,
-    description: baseNotification.content, // Alias for backward compatibility
-    ...additionalFields
-  };
 }

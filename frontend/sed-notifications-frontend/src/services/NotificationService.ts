@@ -3,138 +3,55 @@ import {
   PaginatedResponse, 
   GetNotificationsParams 
 } from './contracts/INotificationService';
-import { InAppNotificationData, UserNotificationSettings, ToastSettings } from '../NotificationsBar/types';
+import { InAppNotificationData } from '../NotificationsBar/types';
 import { ApiClient } from './apiClient';
 
 /**
  * Real Notification Service that communicates with the backend API
+ * Implements the actual backend API endpoints
  */
 export class NotificationService implements INotificationService {
   private apiClient: ApiClient;
   private baseUrl: string;
 
-  constructor(apiClient: ApiClient, baseUrl: string = '/api/notifications') {
+  constructor(apiClient: ApiClient, baseUrl: string = '/api/notification') {
     this.apiClient = apiClient;
     this.baseUrl = baseUrl;
   }
 
-  async getUnreadNotifications(params: GetNotificationsParams): Promise<PaginatedResponse<InAppNotificationData>> {
+  async getNotifications(params: GetNotificationsParams): Promise<PaginatedResponse<InAppNotificationData>> {
     try {
       const response = await this.apiClient.instance.get<PaginatedResponse<InAppNotificationData>>(
-        `${this.baseUrl}/unread`,
+        `${this.baseUrl}/personal`,
         {
           params: {
-            page: params.page,
+            onlyUnread: params.filters?.onlyUnread ?? false,
             pageSize: params.pageSize,
-            ...params.filters
+            pageNumber: params.page
           }
         }
       );
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch unread notifications:', error);
+      console.error('Failed to fetch notifications:', error);
       throw error;
     }
   }
 
-  async getAllNotifications(params: GetNotificationsParams): Promise<PaginatedResponse<InAppNotificationData>> {
+  async setReadFlag(notificationId: string, flagValue: boolean): Promise<void> {
     try {
-      const response = await this.apiClient.instance.get<PaginatedResponse<InAppNotificationData>>(
-        `${this.baseUrl}/all`,
+      await this.apiClient.instance.put(
+        `${this.baseUrl}/set-read-flag`,
+        null,
         {
           params: {
-            page: params.page,
-            pageSize: params.pageSize,
-            ...params.filters
+            notificationId,
+            flagValue
           }
         }
       );
-      return response.data;
     } catch (error) {
-      console.error('Failed to fetch all notifications:', error);
-      throw error;
-    }
-  }
-
-  async markAsRead(notificationId: number): Promise<void> {
-    try {
-      await this.apiClient.instance.post(
-        `${this.baseUrl}/${notificationId}/mark-as-read`
-      );
-    } catch (error) {
-      console.error(`Failed to mark notification ${notificationId} as read:`, error);
-      throw error;
-    }
-  }
-
-  async markMultipleAsRead(notificationIds: number[]): Promise<void> {
-    try {
-      await this.apiClient.instance.post(
-        `${this.baseUrl}/mark-multiple-as-read`,
-        { notificationIds }
-      );
-    } catch (error) {
-      console.error('Failed to mark multiple notifications as read:', error);
-      throw error;
-    }
-  }
-
-  async getUnreadCount(): Promise<number> {
-    try {
-      const response = await this.apiClient.instance.get<{ count: number }>(
-        `${this.baseUrl}/unread-count`
-      );
-      return response.data.count;
-    } catch (error) {
-      console.error('Failed to fetch unread count:', error);
-      throw error;
-    }
-  }
-
-  async getUserNotificationSettings(): Promise<UserNotificationSettings> {
-    try {
-      const response = await this.apiClient.instance.get<UserNotificationSettings>(
-        `${this.baseUrl}/settings`
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user notification settings:', error);
-      throw error;
-    }
-  }
-
-  async saveUserNotificationSettings(settings: UserNotificationSettings): Promise<void> {
-    try {
-      await this.apiClient.instance.post(
-        `${this.baseUrl}/settings`,
-        settings
-      );
-    } catch (error) {
-      console.error('Failed to save user notification settings:', error);
-      throw error;
-    }
-  }
-
-  async getToastSettings(): Promise<ToastSettings> {
-    try {
-      const response = await this.apiClient.instance.get<ToastSettings>(
-        `${this.baseUrl}/toast-settings`
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch toast settings:', error);
-      throw error;
-    }
-  }
-
-  async saveToastSettings(settings: ToastSettings): Promise<void> {
-    try {
-      await this.apiClient.instance.post(
-        `${this.baseUrl}/toast-settings`,
-        settings
-      );
-    } catch (error) {
-      console.error('Failed to save toast settings:', error);
+      console.error(`Failed to set read flag for notification ${notificationId}:`, error);
       throw error;
     }
   }

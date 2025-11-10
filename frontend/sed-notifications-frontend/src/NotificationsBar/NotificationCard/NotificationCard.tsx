@@ -8,11 +8,11 @@ import {formatNotificationDate, getNotificationTypeColorClass, getNotificationIc
 
 export const NotificationCard: React.FC<{
     notification: InAppNotificationData;
-    onToggleRead: (id: number) => void;
-    onToggleStar: (id: number) => void;
-    onActionComplete: (id: number) => void;
+    onToggleRead: (id: string) => void;
+    onToggleStar: (id: string) => void;
+    onActionComplete: (id: string) => void;
     showToast: (toast: ToastConfig) => void;
-    onNotificationClick?: (id: number) => void;
+    onNotificationClick?: (id: string) => void;
 }> = ({notification, onToggleRead, onToggleStar, onActionComplete, showToast, onNotificationClick}) => {
     const handleOpenCard = () => {
         if (notification.cardUrl) {
@@ -54,10 +54,10 @@ export const NotificationCard: React.FC<{
             <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3 flex-1">
                     <div
-                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${getNotificationTypeColorClass(notification.type)}`}
+                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${getNotificationTypeColorClass(notification.type || '')}`}
                         data-testid="notification-card-icon"
                     >
-                        {getNotificationIcon(notification.type, notification.subtype, 'md', notification.icon)}
+                        {getNotificationIcon(notification.type || '', notification.subtype || '', 'md', notification.icon)}
                     </div>
                     <div className="flex-1 min-w-0" data-testid="notification-card-content">
                         <div className="flex items-center justify-between mb-2" data-testid="notification-card-header">
@@ -87,7 +87,7 @@ export const NotificationCard: React.FC<{
                                 </button>
                                 {hasAdditionalActions && (
                                     <NotificationActionsDropdown
-                                        actions={notification.actions}
+                                        actions={notification.actions || []}
                                         notificationId={notification.id}
                                         onActionComplete={onActionComplete}
                                         showToast={showToast}
@@ -98,22 +98,22 @@ export const NotificationCard: React.FC<{
 
                         <div className="flex items-center space-x-2 mb-2" data-testid="notification-card-type">
               <span
-                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getNotificationTypeColorClass(notification.type)}`}
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getNotificationTypeColorClass(notification.type || '')}`}
                   data-testid="notification-card-subtype-badge"
               >
-                {notification.subtype}
+                {notification.subtype || ''}
               </span>
                         </div>
 
                         <p className="text-gray-600 text-sm mb-3 line-clamp-2" data-testid="notification-card-description">
-                            {notification.description}
+                            {notification.description || ''}
                         </p>
 
                         <div className="flex items-center justify-between text-xs text-gray-500" data-testid="notification-card-footer">
                             <div className="flex items-center space-x-4" data-testid="notification-card-metadata">
                                 <div className="flex items-center space-x-1" data-testid="notification-card-author">
                                     <User className="w-3 h-3"/>
-                                    <span>{notification.author}</span>
+                                    <span>{notification.author || ''}</span>
                                 </div>
                                 <div className="flex items-center space-x-1" data-testid="notification-card-date">
                                     <Calendar className="w-3 h-3"/>
@@ -138,7 +138,7 @@ export const NotificationCard: React.FC<{
                         {/* Additional action buttons for mobile/small screens */}
                         {hasAdditionalActions && (
                             <div className="mt-3 flex flex-wrap gap-2 md:hidden" data-testid="notification-card-mobile-actions">
-                                {notification.actions.slice(0, 2).map((action, index) => (
+                                {(notification.actions || []).slice(0, 2).map((action, index) => (
                                     <ActionButton
                                         key={index}
                                         action={action}
@@ -148,12 +148,12 @@ export const NotificationCard: React.FC<{
                                         showToast={showToast}
                                     />
                                 ))}
-                                {notification.actions.length > 2 && (
+                                {(notification.actions || []).length > 2 && (
                                     <button
                                         className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                                         data-testid="notification-card-more-actions-button"
                                     >
-                                        +{notification.actions.length - 2}
+                                        +{(notification.actions || []).length - 2}
                                     </button>
                                 )}
                             </div>
@@ -179,7 +179,7 @@ export const NotificationCard: React.FC<{
             {/* Additional action buttons for desktop */}
             {hasAdditionalActions && (
                 <div className="mt-4 hidden md:flex flex-wrap gap-2" data-testid="notification-card-desktop-actions">
-                    {notification.actions.map((action, index) => (
+                    {(notification.actions || []).map((action, index) => (
                         <ActionButton
                             key={index}
                             action={action}

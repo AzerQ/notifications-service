@@ -4,7 +4,7 @@ import {registerActionHandler} from "./NotificationsBar/notificationsActions";
 // Mock data with actions
 export const mockNotifications: InAppNotificationData[] = [
     {
-        id: 1,
+        id: "1",
         title: 'Новый входящий документ',
         type: 'document',
         subtype: 'Входящий документ',
@@ -16,6 +16,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/documents/12345',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/12345',
         actions: [
             {
                 name: 'approve',
@@ -43,7 +45,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 2,
+        id: "2",
         title: 'Задание на согласование',
         type: 'task',
         subtype: 'Задание на согласование',
@@ -55,6 +57,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/tasks/67890',
         delegate: true,
+        receiverId: 'user-764',
+        url: '/tasks/67890',
         actions: [
             {
                 name: 'completeTask',
@@ -82,7 +86,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 3,
+        id: "3",
         title: 'Системное обновление',
         type: 'system',
         subtype: 'Системное уведомление',
@@ -93,10 +97,12 @@ export const mockNotifications: InAppNotificationData[] = [
         read: false,
         starred: false,
         delegate: false,
+        receiverId: 'user-764',
+        url: '/system/maintenance',
         actions: []
     },
     {
-        id: 4,
+        id: "4",
         title: 'Служебная записка',
         type: 'document',
         subtype: 'Служебная записка',
@@ -108,6 +114,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/documents/54321',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/54321',
         actions: [
             {
                 name: 'signDocument',
@@ -122,7 +130,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 5,
+        id: "5",
         title: 'Встреча с клиентом',
         type: 'other',
         subtype: 'Плановая встреча',
@@ -134,6 +142,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/meetings/98765',
         delegate: true,
+        receiverId: 'user-764',
+        url: '/meetings/98765',
         actions: [
             {
                 name: 'acceptMeeting',
@@ -148,7 +158,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 6,
+        id: "6",
         title: 'Напоминание о дедлайне',
         type: 'other',
         subtype: 'Напоминание',
@@ -160,6 +170,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/reminders/11111',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/reminders/11111',
         actions: [
             {
                 name: 'postponeReminder',
@@ -169,7 +181,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 7,
+        id: "7",
         title: 'Новый проект',
         type: 'task',
         subtype: 'Проект',
@@ -181,6 +193,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/projects/22222',
         delegate: true,
+        receiverId: 'user-764',
+        url: '/projects/22222',
         actions: [
             {
                 name: 'acceptProject',
@@ -195,7 +209,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 8,
+        id: "8",
         title: 'Договор на подпись',
         type: 'document',
         subtype: 'Договор',
@@ -207,6 +221,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/documents/33333',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/33333',
         actions: [
             {
                 name: 'signDocument',
@@ -221,7 +237,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 9,
+        id: "9",
         title: 'Изменение в расписании',
         type: 'system',
         subtype: 'Изменение расписания',
@@ -233,6 +249,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/schedule/44444',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/schedule/44444',
         actions: [
             {
                 name: 'confirmSchedule',
@@ -242,7 +260,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 10,
+        id: "10",
         title: 'Запрос на отпуск',
         type: 'document',
         subtype: 'Заявление',
@@ -254,6 +272,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/documents/55555',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/documents/55555',
         actions: [
             {
                 name: 'approveRequest',
@@ -268,7 +288,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 11,
+        id: "11",
         title: 'Техническая проблема',
         type: 'system',
         subtype: 'Ошибка системы',
@@ -280,6 +300,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/issues/66666',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/issues/66666',
         actions: [
             {
                 name: 'acknowledgeIssue',
@@ -289,7 +311,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 12,
+        id: "12",
         title: 'Счет на оплату',
         type: 'document',
         subtype: 'Счет',
@@ -301,6 +323,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/documents/77777',
         delegate: true,
+        receiverId: 'user-764',
+        url: '/documents/77777',
         actions: [
             {
                 name: 'payInvoice',
@@ -315,7 +339,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 13,
+        id: "13",
         title: 'Обучение персонала',
         type: 'task',
         subtype: 'Обучение',
@@ -327,6 +351,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/training/88888',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/training/88888',
         actions: [
             {
                 name: 'registerTraining',
@@ -336,7 +362,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 14,
+        id: "14",
         title: 'Ежедневный отчет',
         type: 'other',
         subtype: 'Напоминание',
@@ -348,6 +374,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/reminders/99999',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/reminders/99999',
         actions: [
             {
                 name: 'sendReport',
@@ -357,7 +385,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 15,
+        id: "15",
         title: 'Проверка безопасности',
         type: 'system',
         subtype: 'Безопасность',
@@ -369,6 +397,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/security/10101',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/security/10101',
         actions: [
             {
                 name: 'changePassword',
@@ -378,7 +408,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 16,
+        id: "16",
         title: 'Новый заказ',
         type: 'document',
         subtype: 'Заказ',
@@ -390,6 +420,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/orders/20202',
         delegate: true,
+        receiverId: 'user-764',
+        url: '/orders/20202',
         actions: [
             {
                 name: 'processOrder',
@@ -404,7 +436,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 17,
+        id: "17",
         title: 'Видео-конференция',
         type: 'other',
         subtype: 'Онлайн-встреча',
@@ -416,6 +448,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/meetings/30303',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/meetings/30303',
         actions: [
             {
                 name: 'joinMeeting',
@@ -430,7 +464,7 @@ export const mockNotifications: InAppNotificationData[] = [
         ]
     },
     {
-        id: 18,
+        id: "18",
         title: 'Резервное копирование',
         type: 'system',
         subtype: 'Обслуживание',
@@ -442,10 +476,12 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: false,
         cardUrl: '/backup/40404',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/backup/40404',
         actions: []
     },
     {
-        id: 19,
+        id: "19",
         title: 'Отзыв о работе',
         type: 'document',
         subtype: 'Отзыв',
@@ -457,6 +493,8 @@ export const mockNotifications: InAppNotificationData[] = [
         starred: true,
         cardUrl: '/reviews/50505',
         delegate: false,
+        receiverId: 'user-764',
+        url: '/reviews/50505',
         actions: [
             {
                 name: 'viewReview',

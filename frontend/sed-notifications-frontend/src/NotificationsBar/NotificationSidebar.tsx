@@ -7,9 +7,9 @@ interface NotificationSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   notifications: InAppNotificationData[];
-  onNotificationRead: (id: number) => void;
+  onNotificationRead: (id: string) => void;
   onOpenFullHistory: () => void;
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
   onOpenToastSettings?: () => void;
   markAllAsRead: () => void;
   isLoading?: boolean; // Добавляем опциональный пропс для индикации загрузки
@@ -156,7 +156,7 @@ export const NotificationSidebar: React.FC<NotificationSidebarProps> = ({
               <button
                 onClick={() => {
                   onClose();
-                  onOpenSettings();
+                  onOpenSettings?.();
                 }}
                 className={`${styles.buttonPadding} bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors`}
                 data-testid="notification-sidebar-settings-button"

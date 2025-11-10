@@ -122,7 +122,7 @@ describe('NotificationCenter', () => {
     });
 
     const updatedNotifications = defaultProps.onNotificationUpdate.mock.calls[0][0];
-    expect(updatedNotifications.find((n: any) => n.id === 1).read).toBe(true);
+    expect(updatedNotifications.find((n: any) => n.id === "1").read).toBe(true);
   });
 
   it('должен отмечать все уведомления как прочитанные', async () => {
@@ -203,7 +203,7 @@ describe('NotificationCenter', () => {
   it('должен отображать корректное количество для большого числа уведомлений', () => {
     const manyNotifications = Array.from({ length: 150 }, (_, i) => ({
       ...mockNotifications[0],
-      id: i,
+      id: i.toString(),
       read: false,
     }));
 

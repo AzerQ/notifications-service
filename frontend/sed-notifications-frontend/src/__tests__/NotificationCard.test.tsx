@@ -27,9 +27,9 @@ describe('NotificationCard', () => {
   it('должен отображать основную информацию о уведомлении', () => {
     const notification = createMockNotification({
       title: 'Test Notification',
-      description: 'Test Description',
+      content: 'Test Description',
       author: 'Test Author',
-      subtype: 'Test Subtype',
+      subType: 'Test Subtype',
     });
 
     render(
@@ -89,7 +89,7 @@ describe('NotificationCard', () => {
   it('должен переключать статус избранного при клике на звездочку', async () => {
     const user = userEvent.setup();
     const notification = createMockNotification({
-      id: 123,
+      id: "123",
       starred: false,
       read: false,
     });
@@ -109,7 +109,7 @@ describe('NotificationCard', () => {
 
   it('должен переключать статус прочтения при клике на глаз', async () => {
     const user = userEvent.setup();
-    const notification = createMockNotification({ id: 123, read: false });
+    const notification = createMockNotification({ id: "123", read: false });
 
     render(
       <NotificationCard
@@ -196,7 +196,7 @@ describe('NotificationCard', () => {
 
   it('должен вызывать onNotificationClick при клике на непрочитанное уведомление', async () => {
     const user = userEvent.setup();
-    const notification = createMockNotification({ id: 123, read: false });
+    const notification = createMockNotification({ id: "123", read: false });
 
     render(
       <NotificationCard
@@ -255,7 +255,7 @@ describe('NotificationCard', () => {
   it('должен отмечать как прочитанное при открытии карточки непрочитанного уведомления', async () => {
     const user = userEvent.setup();
     const notification = createMockNotification({
-      id: 123,
+      id: "123",
       cardUrl: '/test-url',
       type: 'document',
       read: false,
@@ -292,7 +292,7 @@ describe('NotificationCard', () => {
   it('должен предотвращать всплытие событий при клике на интерактивные элементы', async () => {
     const user = userEvent.setup();
     const notification = createMockNotification({
-      id: 123,
+      id: "123",
       read: false,
       starred: false,
     });

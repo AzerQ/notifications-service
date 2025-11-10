@@ -6,29 +6,35 @@ import { createSimpleFilter } from '../../models/NotificationFilter';
 describe('useNotificationFilters', () => {
   const sampleNotifications: BaseNotification[] = [
     {
-      id: 1,
+      id: "1",
+      receiverId: "user1",
       type: 'document',
       title: 'Document 1',
       content: 'Content 1',
+      url: '/documents/1',
       date: '2024-01-15T10:00:00',
       read: false,
       author: 'John Doe',
       hashtags: ['urgent']
     },
     {
-      id: 2,
+      id: "2",
+      receiverId: "user1",
       type: 'task',
       title: 'Task 1',
       content: 'Content 2',
+      url: '/tasks/2',
       date: '2024-01-16T10:00:00',
       read: true,
       author: 'Jane Smith'
     },
     {
-      id: 3,
+      id: "3",
+      receiverId: "user1",
       type: 'document',
       title: 'Document 2',
       content: 'Content 3',
+      url: '/documents/3',
       date: '2024-01-17T10:00:00',
       read: false,
       author: 'John Doe',

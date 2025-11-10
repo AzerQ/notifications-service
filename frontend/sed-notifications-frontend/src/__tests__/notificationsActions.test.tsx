@@ -146,7 +146,7 @@ describe('notificationsActions', () => {
     it('должен показывать toast успеха при успешном выполнении', () => {
       executeNotificationAction(
         'appactions://successAction',
-        123,
+        "123",
         true,
         mockOnActionComplete,
         mockShowToast
@@ -162,7 +162,7 @@ describe('notificationsActions', () => {
     it('должен вызывать onActionComplete при успешном выполнении и markAsRead=true', () => {
       executeNotificationAction(
         'appactions://successAction',
-        123,
+        "123",
         true,
         mockOnActionComplete,
         mockShowToast
@@ -174,7 +174,7 @@ describe('notificationsActions', () => {
     it('не должен вызывать onActionComplete когда markAsRead=false', () => {
       executeNotificationAction(
         'appactions://successAction',
-        123,
+        "123",
         false,
         mockOnActionComplete,
         mockShowToast
@@ -186,7 +186,7 @@ describe('notificationsActions', () => {
     it('должен показывать toast ошибки при неуспешном выполнении', () => {
       executeNotificationAction(
         'appactions://unknownAction',
-        123,
+        "123",
         true,
         mockOnActionComplete,
         mockShowToast
@@ -202,7 +202,7 @@ describe('notificationsActions', () => {
     it('не должен вызывать onActionComplete при ошибке', () => {
       executeNotificationAction(
         'appactions://unknownAction',
-        123,
+        "123",
         true,
         mockOnActionComplete,
         mockShowToast
@@ -215,7 +215,7 @@ describe('notificationsActions', () => {
       expect(() => {
         executeNotificationAction(
           'appactions://successAction',
-          123,
+          "123",
           true,
           null as any,
           mockShowToast
@@ -228,7 +228,7 @@ describe('notificationsActions', () => {
       
       executeNotificationAction(
         'appactions://successAction',
-        testId,
+        testId.toString(),
         true,
         mockOnActionComplete,
         mockShowToast
@@ -242,7 +242,7 @@ describe('notificationsActions', () => {
       
       executeNotificationAction(
         'appactions://successAction',
-        123,
+        "123",
         true,
         mockOnActionComplete,
         testToast
@@ -269,7 +269,7 @@ describe('notificationsActions', () => {
       // Выполняем действие
       executeNotificationAction(
         `appactions://${actionName}?param=test`,
-        999,
+        "999",
         true,
         mockOnActionComplete,
         mockShowToast
@@ -292,7 +292,7 @@ describe('notificationsActions', () => {
       
       executeNotificationAction(
         'appactions://complexAction?docId=12345&userId=67890&action=approve&comment=Looks%20good',
-        111,
+        "111",
         true,
         mockOnActionComplete,
         mockShowToast

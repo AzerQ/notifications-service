@@ -1,13 +1,12 @@
-// Import base notification model
+// Import notification model
 import { 
-    BaseNotification, 
-    ExtendedNotification,
+    Notification,
     NotificationAction as BaseNotificationAction,
     NotificationParameter
 } from '../models';
 
 // Типы данных
-export type NotificationType = 'document' | 'task' | 'system' | 'other';
+export type NotificationType = string;
 export type NotificationSubtype = string;
 
 export interface ToastConfig {
@@ -23,10 +22,10 @@ export interface Toast extends ToastConfig {
 }
 
 export interface Filters {
-    type: string;
-    subtype: string;
-    status: string;
-    author: string;
+    type?: string;
+    subtype?: string;
+    status?: string;
+    author?: string;
 }
 
 export interface Preset {
@@ -45,29 +44,8 @@ export interface NotificationAction extends BaseNotificationAction {}
 // Export NotificationParameter for use in components
 export type { NotificationParameter };
 
-// InAppNotificationData now extends ExtendedNotification for full compatibility
-export interface InAppNotificationData extends ExtendedNotification {
-    // Override id to be number only (backward compatibility)
-    id: number;
-    // Override type to use the specific NotificationType
-    type: NotificationType;
-    // Make subtype required for backward compatibility
-    subtype: NotificationSubtype;
-    // Make description alias for content
-    description: string;
-    // Make content from base notification also available
-    content: string;
-    // Make author required for backward compatibility
-    author: string;
-    // Make actions required for backward compatibility
-    actions: NotificationAction[];
-    // Additional fields for backward compatibility
-    starred: boolean;
-    delegate: boolean;
-    // Optional new fields with defaults
-    hashtags?: string[];
-    parameters?: NotificationParameter[];
-}
+// InAppNotificationData is now an alias for Notification
+export type InAppNotificationData = Notification;
 
 // Типы для настроек уведомлений
 export type NotificationChannel = 'email' | 'sms' | 'push' | 'inApp';
@@ -107,4 +85,3 @@ export const DEFAULT_TOAST_SETTINGS: ToastSettings = {
     duration: 4,
     position: 'bottom'
 };
-

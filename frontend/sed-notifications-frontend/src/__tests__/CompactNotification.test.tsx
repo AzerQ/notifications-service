@@ -21,7 +21,8 @@ describe('CompactNotification', () => {
   it('должен отображать основную информацию о уведомлении', () => {
     const notification = createMockNotification({
       title: 'Test Title',
-      description: 'Test Description',
+      subType: 'Test Type',
+      content: 'Test Description',
     });
 
     render(<CompactNotification notification={notification} onRead={mockOnRead} />);
@@ -95,7 +96,7 @@ describe('CompactNotification', () => {
 
   it('должен вызывать onRead при клике', async () => {
     const user = userEvent.setup();
-    const notification = createMockNotification({ id: 123 });
+    const notification = createMockNotification({ id: "123" });
 
     render(<CompactNotification notification={notification} onRead={mockOnRead} />);
     
@@ -185,12 +186,12 @@ describe('CompactNotification', () => {
 
   it('должен отображать правильные цвета иконок для разных подтипов', () => {
     const { container, rerender } = render(
-      <CompactNotification 
-        notification={createMockNotification({ 
-          type: 'system', 
-          subtype: 'security' 
-        })} 
-        onRead={mockOnRead} 
+      <CompactNotification
+        notification={createMockNotification({
+          type: 'system',
+          subType: 'security'
+        })}
+        onRead={mockOnRead}
       />
     );
     
@@ -198,12 +199,12 @@ describe('CompactNotification', () => {
     expect(icon).toHaveClass('text-red-500');
     
     rerender(
-      <CompactNotification 
-        notification={createMockNotification({ 
-          type: 'task', 
-          subtype: 'deadline' 
-        })} 
-        onRead={mockOnRead} 
+      <CompactNotification
+        notification={createMockNotification({
+          type: 'task',
+          subType: 'deadline'
+        })}
+        onRead={mockOnRead}
       />
     );
     
@@ -214,7 +215,7 @@ describe('CompactNotification', () => {
   it('должен иметь правильную accessibility структуру', () => {
     const notification = createMockNotification({
       title: 'Accessible Title',
-      description: 'Accessible Description',
+      content: 'Accessible Description',
     });
 
     const { container } = render(<CompactNotification notification={notification} onRead={mockOnRead} />);

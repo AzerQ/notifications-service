@@ -102,14 +102,14 @@ const NotificationsBarContent: React.FC<{
     onNotificationUpdate?.(updatedNotifications);
   };
 
-  const toggleRead = (id: number) => {
+  const toggleRead = (id: string) => {
     const updatedNotifications = notifications.map(notif =>
       notif.id === id ? { ...notif, read: !notif.read } : notif
     );
     updateNotifications(updatedNotifications);
   };
 
-  const toggleStar = (id: number) => {
+  const toggleStar = (id: string) => {
     const updatedNotifications = notifications.map(notif =>
       notif.id === id ? { ...notif, starred: !notif.starred } : notif
     );
@@ -117,7 +117,7 @@ const NotificationsBarContent: React.FC<{
   };
 
   // New function to mark notification as read after action
-  const markNotificationAsRead = (id: number) => {
+  const markNotificationAsRead = (id: string) => {
     const updatedNotifications = notifications.map(notif =>
       notif.id === id ? { ...notif, read: true } : notif
     );
@@ -163,8 +163,8 @@ const NotificationsBarContent: React.FC<{
     // Apply filters
     const filtered = notifications.filter(notification => {
       // Apply search filter
-      if (searchTerm && !notification.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
-          !notification.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (searchTerm && !notification.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !(notification.description || '').toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
       
@@ -187,7 +187,7 @@ const NotificationsBarContent: React.FC<{
       }
       
       // Apply author filter
-      if (filters.author && notification.author !== filters.author) {
+      if (filters.author && (notification.author || '') !== filters.author) {
         return false;
       }
       
@@ -209,12 +209,12 @@ const NotificationsBarContent: React.FC<{
           bValue = b.title.toLowerCase();
           break;
         case 'author':
-          aValue = a.author.toLowerCase();
-          bValue = b.author.toLowerCase();
+          aValue = (a.author || '').toLowerCase();
+          bValue = (b.author || '').toLowerCase();
           break;
         case 'type':
-          aValue = a.type;
-          bValue = b.type;
+          aValue = a.type || '';
+          bValue = b.type || '';
           break;
         default:
           aValue = new Date(a.date).getTime();

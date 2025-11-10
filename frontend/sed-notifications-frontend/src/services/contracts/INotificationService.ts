@@ -1,4 +1,4 @@
-import { InAppNotificationData, UserNotificationSettings, ToastSettings } from '../../NotificationsBar/types';
+import { InAppNotificationData } from '../../NotificationsBar/types';
 
 export interface PaginationParams {
   page: number;
@@ -6,19 +6,17 @@ export interface PaginationParams {
 }
 
 export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  notifications: T[];
+  request: {
+    onlyUnread: boolean;
+    pageSize: number;
+    pageNumber: number;
+  };
+  totalItemsCount: number;
 }
 
 export interface NotificationFilters {
-  type?: string;
-  subtype?: string;
-  author?: string;
-  dateFrom?: string;
-  dateTo?: string;
+  onlyUnread?: boolean;
 }
 
 export interface GetNotificationsParams extends PaginationParams {
@@ -39,47 +37,13 @@ export const PAGE_SIZE_PRESETS: PageSizePreset[] = [
 
 export interface INotificationService {
   /**
-   * Получить новые непрочитанные уведомления с пагинацией
+   * Получить уведомления пользователя с пагинацией
+   * Поддерживает фильтр по непрочитанным уведомлениям
    */
-  getUnreadNotifications(params: GetNotificationsParams): Promise<PaginatedResponse<InAppNotificationData>>;
-  
-  /**
-   * Получить все уведомления пользователя с пагинацией
-   */
-  getAllNotifications(params: GetNotificationsParams): Promise<PaginatedResponse<InAppNotificationData>>;
+  getNotifications(params: GetNotificationsParams): Promise<PaginatedResponse<InAppNotificationData>>;
   
   /**
    * Отметить уведомление как прочитанное по идентификатору
    */
-  markAsRead(notificationId: number): Promise<void>;
-  
-  /**
-   * Отметить несколько уведомлений как прочитанные
-   */
-  markMultipleAsRead(notificationIds: number[]): Promise<void>;
-  
-  /**
-   * Получить количество непрочитанных уведомлений
-   */
-  getUnreadCount(): Promise<number>;
-
-  /**
-   * Получить настройки уведомлений пользователя
-   */
-  getUserNotificationSettings(): Promise<UserNotificationSettings>;
-
-  /**
-   * Сохранить настройки уведомлений пользователя
-   */
-  saveUserNotificationSettings(settings: UserNotificationSettings): Promise<void>;
-
-  /**
-   * Получить настройки всплывающих уведомлений (тостов)
-   */
-  getToastSettings(): Promise<ToastSettings>;
-
-  /**
-   * Сохранить настройки всплывающих уведомлений (тостов)
-   */
-  saveToastSettings(settings: ToastSettings): Promise<void>;
+  setReadFlag(notificationId: string, flagValue: boolean): Promise<void>;
 }

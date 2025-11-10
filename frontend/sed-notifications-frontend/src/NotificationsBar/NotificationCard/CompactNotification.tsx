@@ -4,7 +4,7 @@ import { getNotificationIcon, formatRelativeTime } from '../../utils/notificatio
 
 interface CompactNotificationProps {
   notification: InAppNotificationData;
-  onRead: (id: number) => void;
+  onRead: (id: string) => void;
   size?: ToastSize;
   disableClick?: boolean; // Отключить встроенный обработчик клика (для toast)
 }
@@ -22,8 +22,8 @@ export const CompactNotification: React.FC<CompactNotificationProps> = ({
     }
     
     // Если есть ссылка, открываем её
-    if (notification.cardUrl) {
-      window.open(notification.cardUrl, '_blank');
+    if (notification.url) {
+      window.open(notification.url, '_blank');
     }
     
     // Помечаем как прочитанное
@@ -67,18 +67,18 @@ export const CompactNotification: React.FC<CompactNotificationProps> = ({
       onClick={disableClick ? undefined : handleClick}
       className={`
         ${currentSize.padding} border-b border-gray-100 ${disableClick ? '' : 'hover:bg-gray-50 cursor-pointer'} transition-colors duration-150
-        ${!disableClick && notification.cardUrl ? 'hover:bg-blue-50' : ''}
+        ${!disableClick && notification.url ? 'hover:bg-blue-50' : ''}
       `}
       data-testid="compact-notification"
       data-notification-id={notification.id}
       data-notification-type={notification.type}
-      data-notification-subtype={notification.subtype}
+      data-notification-subtype={notification.subType}
       data-size={size}
     >
       <div className={`flex items-start ${currentSize.spacing}`}>
         {/* Иконка типа */}
         <div className="mt-0.5" data-testid="compact-notification-icon">
-          {getNotificationIcon(notification.type, notification.subtype, currentSize.iconSize, notification.icon)}
+          {getNotificationIcon(notification.type || '', notification.subType || '', currentSize.iconSize, notification.icon)}
         </div>
         
         {/* Содержимое */}
@@ -87,13 +87,13 @@ export const CompactNotification: React.FC<CompactNotificationProps> = ({
             {notification.title}
           </p>
           <p className={`${currentSize.description} text-gray-600 line-clamp-2 mt-1`} data-testid="compact-notification-description">
-            {notification.description}
+            {notification.content}
           </p>
           <div className={`flex items-center justify-between mt-2`} data-testid="compact-notification-footer">
             <span className={`${currentSize.footer} text-gray-500`} data-testid="compact-notification-time">
               {formatRelativeTime(notification.date)}
             </span>
-            {notification.cardUrl && (
+            {notification.url && (
               <span className={`${currentSize.footer} text-blue-600 font-medium`} data-testid="compact-notification-link-indicator">
                 Открыть →
               </span>

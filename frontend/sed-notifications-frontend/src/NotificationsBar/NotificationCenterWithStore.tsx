@@ -4,8 +4,6 @@ import { NotificationBell } from './NotificationBell';
 import { Modal } from './Modal';
 import { NotificationSidebar } from './NotificationSidebar';
 import { NotificationsBar } from './NotificationsBar';
-import { NotificationSettings } from './NotificationSettings';
-import { ToastSettingsModal } from './ToastSettingsModal';
 import { useNotificationStore } from '../store/NotificationStoreContext';
 import { InAppNotificationData } from './types';
 
@@ -22,26 +20,20 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
   const store = useNotificationStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isToastSettingsOpen, setIsToastSettingsOpen] = useState(false);
 
   // Инициализация при первом рендере
   useEffect(() => {
     // Загружаем непрочитанные уведомления для боковой панели
-    store.loadUnreadNotifications();
+    store.loadNotifications({ filters: { onlyUnread: true } });
   }, [store]);
 
   // Синхронизация с legacy props (для обратной совместимости)
   useEffect(() => {
     if (legacyNotifications && onNotificationUpdate) {
       // Если используются legacy props, обновляем внешнее состояние при изменениях в store
-      const allNotifications = [...store.unreadNotifications, ...store.notifications];
-      const uniqueNotifications = allNotifications.filter((notification, index, self) => 
-        index === self.findIndex(n => n.id === notification.id)
-      );
-      onNotificationUpdate(uniqueNotifications);
+      onNotificationUpdate(store.notifications);
     }
-  }, [store.notifications, store.unreadNotifications, legacyNotifications, onNotificationUpdate]);
+  }, [store.notifications, legacyNotifications, onNotificationUpdate]);
 
   const handleBellClick = () => {
     setIsSidebarOpen(true);
@@ -59,7 +51,7 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
     setIsModalOpen(true);
     store.setModalOpen(true); // Уведомляем store
     // Загружаем все уведомления при открытии полной истории
-    store.loadAllNotifications();
+    store.loadNotifications({ filters: { onlyUnread: false } });
   };
 
   const handleModalClose = () => {
@@ -67,25 +59,7 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
     store.setModalOpen(false); // Уведомляем store
   };
 
-  const handleOpenSettings = () => {
-    setIsSettingsOpen(true);
-  };
-
-  const handleSettingsClose = () => {
-    setIsSettingsOpen(false);
-  };
-
-  const handleOpenToastSettings = () => {
-    setIsToastSettingsOpen(true);
-  };
-
-  const handleToastSettingsClose = async () => {
-    setIsToastSettingsOpen(false);
-    // Перезагружаем настройки тостов после закрытия окна настроек
-    await store.loadToastSettings();
-  };
-
-  const handleNotificationRead = async (id: number) => {
+  const handleNotificationRead = async (id: string) => {
     await store.markAsRead(id);
   };
 
@@ -111,14 +85,12 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
       <NotificationSidebar
         isOpen={isSidebarOpen}
         onClose={handleSidebarClose}
-        notifications={store.unreadNotifications}
+        notifications={store.notifications.filter(n => !n.read)}
         onNotificationRead={handleNotificationRead}
         onOpenFullHistory={handleOpenFullHistory}
-        onOpenSettings={handleOpenSettings}
-        onOpenToastSettings={handleOpenToastSettings}
         markAllAsRead={handleMarkAllAsRead}
-        isLoading={store.isLoadingUnread}
-        toastSize={store.toastSettings.size}
+        isLoading={store.isLoading}
+        toastSize="medium"
       />
 
       {/* Модальное окно с полной историей */}
@@ -137,22 +109,6 @@ export const NotificationCenterWithStore: React.FC<NotificationCenterProps> = ob
           isLoading={store.isLoading}
         />
       </Modal>
-
-      {/* Модальное окно с настройками уведомлений */}
-      <NotificationSettings
-        isOpen={isSettingsOpen}
-        onClose={handleSettingsClose}
-        getUserSettings={store.getUserNotificationSettings.bind(store)}
-        saveUserSettings={store.saveUserNotificationSettings.bind(store)}
-      />
-
-      {/* Модальное окно с настройками всплывающих уведомлений */}
-      <ToastSettingsModal
-        isOpen={isToastSettingsOpen}
-        onClose={handleToastSettingsClose}
-        getSettings={store.getToastSettings.bind(store)}
-        saveSettings={store.saveToastSettings.bind(store)}
-      />
 
       {/* Индикатор состояния SignalR (для разработки) */}
       {process.env.NODE_ENV === 'development' && (

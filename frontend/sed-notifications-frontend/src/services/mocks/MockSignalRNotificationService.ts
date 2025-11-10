@@ -7,7 +7,7 @@ import { InAppNotificationData } from '../../NotificationsBar/types';
 export class MockSignalRNotificationService implements ISignalRNotificationService {
   private connected = false;
   private newNotificationCallbacks: ((notification: CompactNotificationData) => void)[] = [];
-  private statusUpdateCallbacks: ((notificationId: number, isRead: boolean) => void)[] = [];
+  private statusUpdateCallbacks: ((notificationId: string, isRead: boolean) => void)[] = [];
   private simulationInterval: NodeJS.Timeout | null = null;
 
   async startConnection(): Promise<void> {
@@ -36,7 +36,7 @@ export class MockSignalRNotificationService implements ISignalRNotificationServi
     this.newNotificationCallbacks.push(callback);
   }
 
-  onNotificationStatusUpdate(callback: (notificationId: number, isRead: boolean) => void): void {
+  onNotificationStatusUpdate(callback: (notificationId: string, isRead: boolean) => void): void {
     this.statusUpdateCallbacks.push(callback);
   }
 
@@ -58,7 +58,7 @@ export class MockSignalRNotificationService implements ISignalRNotificationServi
     if (!this.connected) return;
 
     const mockNotification: CompactNotificationData = {
-      id: Date.now() + Math.floor(Math.random() * 1000),
+      id: (Date.now() + Math.floor(Math.random() * 1000)).toString(),
       title: 'Новое уведомление из SignalR',
       type: 'system',
       subtype: 'update',
@@ -80,7 +80,7 @@ export class MockSignalRNotificationService implements ISignalRNotificationServi
   /**
    * Имитировать обновление статуса уведомления
    */
-  simulateStatusUpdate(notificationId: number, isRead: boolean): void {
+  simulateStatusUpdate(notificationId: string, isRead: boolean): void {
     if (!this.connected) return;
 
     this.statusUpdateCallbacks.forEach(callback => {
@@ -160,11 +160,11 @@ export const convertToCompactNotification = (notification: InAppNotificationData
   return {
     id: notification.id,
     title: notification.title,
-    type: notification.type,
-    subtype: notification.subtype,
-    author: notification.author,
+    type: notification.type || 'other',
+    subtype: notification.subType,
+    author: notification.author || 'Unknown',
     date: notification.date,
     read: notification.read,
-    cardUrl: notification.cardUrl
+    cardUrl: notification.url
   };
 };

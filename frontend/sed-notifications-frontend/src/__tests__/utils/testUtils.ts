@@ -12,7 +12,7 @@ describe('Test utilities', () => {
 // Тестовые данные для уведомлений
 export const mockNotifications: InAppNotificationData[] = [
   {
-    id: 1,
+    id: "1",
     title: 'Тест документ',
     type: 'document',
     subtype: 'Входящий документ',
@@ -24,6 +24,8 @@ export const mockNotifications: InAppNotificationData[] = [
     starred: true,
     cardUrl: '/documents/test',
     delegate: false,
+    receiverId: 'user-764',
+    url: '/documents/test',
     actions: [
       {
         name: 'approve',
@@ -33,7 +35,7 @@ export const mockNotifications: InAppNotificationData[] = [
     ]
   },
   {
-    id: 2,
+    id: "2",
     title: 'Тест задание',
     type: 'task',
     subtype: 'Задание на согласование',
@@ -44,10 +46,12 @@ export const mockNotifications: InAppNotificationData[] = [
     read: true,
     starred: false,
     delegate: true,
+    receiverId: 'user-764',
+    url: '/tasks/test',
     actions: []
   },
   {
-    id: 3,
+    id: "3",
     title: 'Системное уведомление',
     type: 'system',
     subtype: 'Системное уведомление',
@@ -58,12 +62,14 @@ export const mockNotifications: InAppNotificationData[] = [
     read: false,
     starred: false,
     delegate: false,
+    receiverId: 'user-764',
+    url: '/system/test',
     actions: []
   }
 ];
 
 export const createMockNotification = (overrides: Partial<InAppNotificationData> = {}): InAppNotificationData => ({
-  id: Math.floor(Math.random() * 1000),
+  id: Math.floor(Math.random() * 1000).toString(),
   title: 'Mock Notification',
   type: 'document',
   subtype: 'Test Type',
@@ -75,6 +81,8 @@ export const createMockNotification = (overrides: Partial<InAppNotificationData>
   starred: false,
   delegate: false,
   actions: [],
+  receiverId: 'user-764',
+  url: overrides.cardUrl || '',
   ...overrides,
 });
 

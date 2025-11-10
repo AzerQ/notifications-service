@@ -11,7 +11,7 @@ export class SignalRNotificationService implements ISignalRNotificationService {
   private connection: signalR.HubConnection | null = null;
   private hubUrl: string;
   private newNotificationCallbacks: ((notification: CompactNotificationData) => void)[] = [];
-  private statusUpdateCallbacks: ((notificationId: number, isRead: boolean) => void)[] = [];
+  private statusUpdateCallbacks: ((notificationId: string, isRead: boolean) => void)[] = [];
   private reconnectInterval: number;
   private maxReconnectAttempts: number;
   private reconnectAttempts: number = 0;
@@ -82,7 +82,7 @@ export class SignalRNotificationService implements ISignalRNotificationService {
     this.newNotificationCallbacks.push(callback);
   }
 
-  onNotificationStatusUpdate(callback: (notificationId: number, isRead: boolean) => void): void {
+  onNotificationStatusUpdate(callback: (notificationId: string, isRead: boolean) => void): void {
     this.statusUpdateCallbacks.push(callback);
   }
 
@@ -111,7 +111,7 @@ export class SignalRNotificationService implements ISignalRNotificationService {
     });
 
     // Handle notification status update
-    this.connection.on('NotificationStatusUpdated', (notificationId: number, isRead: boolean) => {
+    this.connection.on('NotificationStatusUpdated', (notificationId: string, isRead: boolean) => {
       console.log(`SignalR: Notification ${notificationId} status updated to ${isRead}`);
       this.statusUpdateCallbacks.forEach(callback => {
         try {

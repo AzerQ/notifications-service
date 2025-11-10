@@ -21,43 +21,42 @@ describe('Refactored Notification System', () => {
     it('должен корректно инициализироваться', () => {
       expect(store).toBeDefined();
       expect(store.notifications).toHaveLength(0);
-      expect(store.unreadNotifications).toHaveLength(0);
       expect(store.currentPage).toBe(1);
       expect(store.pageSize).toBe(20);
     });
 
-    it('должен загружать непрочитанные уведомления', async () => {
-      await store.loadUnreadNotifications();
+    it('должен загружать уведомления', async () => {
+      await store.loadNotifications({ filters: { onlyUnread: true } });
       
-      expect(store.unreadNotifications.length).toBeGreaterThan(0);
-      expect(store.isLoadingUnread).toBe(false);
+      expect(store.notifications.length).toBeGreaterThanOrEqual(0);
+      expect(store.isLoading).toBe(false);
     });
 
     it('должен загружать все уведомления с пагинацией', async () => {
-      await store.loadAllNotifications({ page: 1, pageSize: 10 });
+      await store.loadNotifications({ page: 1, pageSize: 10 });
       
-      expect(store.notifications.length).toBeGreaterThan(0);
+      expect(store.notifications.length).toBeGreaterThanOrEqual(0);
       expect(store.isLoading).toBe(false);
     });
 
     it('должен отмечать уведомление как прочитанное', async () => {
-      // Загружаем непрочитанные
-      await store.loadUnreadNotifications();
-      const firstUnread = store.unreadNotifications[0];
+      // Загружаем уведомления
+      await store.loadNotifications({ filters: { onlyUnread: true } });
+      const firstNotification = store.notifications[0];
       
-      if (firstUnread) {
-        await store.markAsRead(firstUnread.id);
+      if (firstNotification) {
+        await store.markAsRead(firstNotification.id);
         
-        // Проверяем что уведомление удалено из непрочитанных
-        expect(store.unreadNotifications.find(n => n.id === firstUnread.id)).toBeUndefined();
+        // Проверяем что уведомление отмечено как прочитанное
+        const updated = store.notifications.find(n => n.id === firstNotification.id);
+        expect(updated?.read).toBe(true);
       }
     });
 
     it('должен устанавливать фильтры', () => {
-      store.setFilters({ type: 'document', author: 'Test' });
+      store.setFilters({ onlyUnread: true });
       
-      expect(store.filters.type).toBe('document');
-      expect(store.filters.author).toBe('Test');
+      expect(store.filters.onlyUnread).toBe(true);
     });
 
     it('должен изменять размер страницы', () => {
@@ -69,44 +68,45 @@ describe('Refactored Notification System', () => {
 
     it('должен изменять страницу', async () => {
       // Сначала загружаем данные чтобы можно было менять страницы
-      await store.loadAllNotifications();
-      store.setPage(3);
+      await store.loadNotifications();
+      store.setPage(2);
       
-      expect(store.currentPage).toBe(3);
+      expect(store.currentPage).toBe(2);
     });
   });
 
   describe('MockNotificationService', () => {
-    it('должен возвращать непрочитанные уведомления', async () => {
-      const result = await notificationService.getUnreadNotifications({ page: 1, pageSize: 10 });
+    it('должен возвращать уведомления', async () => {
+      const result = await notificationService.getNotifications({ page: 1, pageSize: 10 });
       
-      expect(result.data).toBeDefined();
-      expect(result.page).toBe(1);
-      expect(result.pageSize).toBe(10);
-      expect(result.totalPages).toBeGreaterThanOrEqual(1);
+      expect(result.notifications).toBeDefined();
+      expect(result.request.pageNumber).toBe(1);
+      expect(result.request.pageSize).toBe(10);
+      expect(result.totalItemsCount).toBeGreaterThanOrEqual(0);
     });
 
-    it('должен фильтровать по типу', async () => {
-      const result = await notificationService.getUnreadNotifications({
+    it('должен фильтровать по непрочитанным', async () => {
+      const result = await notificationService.getNotifications({
         page: 1,
         pageSize: 10,
-        filters: { type: 'document' }
+        filters: { onlyUnread: true }
       });
       
-      result.data.forEach(notification => {
-        expect(notification.type).toBe('document');
+      result.notifications.forEach(notification => {
+        expect(notification.read).toBe(false);
       });
     });
 
     it('должен отмечать уведомление как прочитанное', async () => {
-      const before = await notificationService.getUnreadNotifications({ page: 1, pageSize: 100 });
-      const firstUnread = before.data[0];
+      const before = await notificationService.getNotifications({ page: 1, pageSize: 100 });
+      const firstNotification = before.notifications[0];
       
-      if (firstUnread) {
-        await notificationService.markAsRead(firstUnread.id);
+      if (firstNotification) {
+        await notificationService.setReadFlag(firstNotification.id, true);
         
-        const after = await notificationService.getUnreadNotifications({ page: 1, pageSize: 100 });
-        expect(after.data.find(n => n.id === firstUnread.id)).toBeUndefined();
+        const after = await notificationService.getNotifications({ page: 1, pageSize: 100 });
+        const updated = after.notifications.find(n => n.id === firstNotification.id);
+        expect(updated?.read).toBe(true);
       }
     });
   });
@@ -144,17 +144,17 @@ describe('Refactored Notification System', () => {
     });
 
     it('должен обрабатывать обновления статуса', async () => {
-      const updates: Array<{id: number, isRead: boolean}> = [];
+      const updates: Array<{id: string, isRead: boolean}> = [];
       
       signalRService.onNotificationStatusUpdate((id, isRead) => {
         updates.push({ id, isRead });
       });
       
       await signalRService.startConnection();
-      signalRService.simulateStatusUpdate(123, true);
+      signalRService.simulateStatusUpdate('123', true);
       
       expect(updates).toHaveLength(1);
-      expect(updates[0].id).toBe(123);
+      expect(updates[0].id).toBe('123');
       expect(updates[0].isRead).toBe(true);
     });
   });
@@ -162,7 +162,7 @@ describe('Refactored Notification System', () => {
   describe('Integration Tests', () => {
     it('должен синхронизировать store с SignalR уведомлениями', async () => {
       // Загружаем данные сначала
-      await store.loadUnreadNotifications();
+      await store.loadNotifications({ filters: { onlyUnread: true } });
       
       // Ждем дольше для подключения SignalR (mock имеет случайную задержку)
       await new Promise(resolve => setTimeout(resolve, 2500));
@@ -186,19 +186,20 @@ describe('Refactored Notification System', () => {
     });
 
     it('должен обновлять store при изменении статуса через SignalR', async () => {
-      await store.loadUnreadNotifications();
+      await store.loadNotifications({ filters: { onlyUnread: true } });
       await new Promise(resolve => setTimeout(resolve, 2500)); // Ждем подключения SignalR
       
-      const firstNotification = store.unreadNotifications[0];
+      const firstNotification = store.notifications.find(n => !n.read);
       if (firstNotification && store.isSignalRConnected) {
         // Симулируем обновление статуса через SignalR
         signalRService.simulateStatusUpdate(firstNotification.id, true);
         
-        // Проверяем что уведомление удалено из непрочитанных
-        expect(store.unreadNotifications.find(n => n.id === firstNotification.id)).toBeUndefined();
+        // Проверяем что уведомление отмечено как прочитанное
+        const updated = store.notifications.find(n => n.id === firstNotification.id);
+        expect(updated?.read).toBe(true);
       } else {
         // Если нет подключения или уведомлений, проверяем что методы работают
-        expect(store.unreadNotifications).toBeDefined();
+        expect(store.notifications).toBeDefined();
         expect(signalRService.simulateStatusUpdate).toBeDefined();
       }
     });

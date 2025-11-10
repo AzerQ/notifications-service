@@ -25,7 +25,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     onNotificationUpdate?.(updatedNotifications);
   };
 
-  const markNotificationAsRead = (id: number) => {
+  const markNotificationAsRead = (id: string) => {
     const updatedNotifications = notifications.map(notification =>
       notification.id === id ? { ...notification, read: true } : notification
     );

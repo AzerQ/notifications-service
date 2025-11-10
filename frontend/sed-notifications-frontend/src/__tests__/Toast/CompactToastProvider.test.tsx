@@ -4,7 +4,7 @@ import { CompactToastProvider } from '../../NotificationsBar/Toast/CompactToastP
 import { CompactNotificationData } from '../../services/contracts/ISignalRNotificationService';
 
 const mockNotification: CompactNotificationData = {
-  id: 1,
+  id: "1",
   title: 'Тестовое уведомление',
   type: 'document',
   subtype: 'approval',
@@ -95,7 +95,7 @@ describe('CompactToastProvider', () => {
   it('может отображать несколько уведомлений одновременно', () => {
     const secondNotification: CompactNotificationData = {
       ...mockNotification,
-      id: 2,
+      id: "2",
       title: 'Второе уведомление'
     };
 

@@ -1,7 +1,7 @@
 import { InAppNotificationData } from '../../NotificationsBar/types';
 
 export interface CompactNotificationData {
-  id: number;
+  id: string;
   title: string;
   type: string;
   subtype?: string;
@@ -30,7 +30,7 @@ export interface ISignalRNotificationService {
   /**
    * Подписаться на обновления статуса уведомлений
    */
-  onNotificationStatusUpdate(callback: (notificationId: number, isRead: boolean) => void): void;
+  onNotificationStatusUpdate(callback: (notificationId: string, isRead: boolean) => void): void;
   
   /**
    * Отписаться от всех событий

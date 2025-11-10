@@ -61,27 +61,27 @@ export const CompactToastProvider: React.FC<CompactToastProviderProps> = ({
     setToasts(prev => prev.filter(toast => toast.toastId !== toastId));
   }, []);
 
-  const handleNotificationRead = useCallback((notificationId: number) => {
+  const handleNotificationRead = useCallback((notificationId: string) => {
     // Обновляем статус прочтения для соответствующего уведомления
-    setToasts(prev => prev.map(toast => 
-      toast.id === notificationId 
+    setToasts(prev => prev.map(toast =>
+      toast.id === notificationId
         ? { ...toast, read: true }
         : toast
     ));
   }, []);
 
   // Компонент обертки для отдельного toast с логикой закрытия
-  const ToastWrapper = React.memo<{ 
-    toast: CompactToast; 
+  const ToastWrapper = React.memo<{
+    toast: CompactToast;
     onMarkAsClosing: (id: number) => void;
-    onRemove: (id: number) => void; 
-    onRead: (id: number) => void; 
-    size: ToastSize; 
-    duration: number 
-  }>(({ 
-    toast, 
+    onRemove: (id: number) => void;
+    onRead: (id: string) => void;
+    size: ToastSize;
+    duration: number
+  }>(({
+    toast,
     onMarkAsClosing,
-    onRemove, 
+    onRemove,
     onRead,
     size,
     duration
@@ -180,7 +180,7 @@ export const CompactToastProvider: React.FC<CompactToastProviderProps> = ({
       id: toast.id,
       title: toast.title,
       type: toast.type as any,
-      subtype: toast.subtype || '',
+      subType: toast.subtype || '',
       description: `От: ${toast.author}`,
       content: `От: ${toast.author}`,
       author: toast.author,
@@ -189,7 +189,9 @@ export const CompactToastProvider: React.FC<CompactToastProviderProps> = ({
       starred: false,
       delegate: false,
       actions: [],
-      cardUrl: toast.cardUrl
+      cardUrl: toast.cardUrl,
+      receiverId: 'user-764',
+      url: toast.cardUrl || ''
     };
 
     // Определяем классы размера
