@@ -11,4 +11,5 @@ public class TaskAssignedRouteConfig : INotificationRouteConfiguration
     public string Description => "Notification sent when a task is assigned to a user";
     public IEnumerable<string> Tags => new[] { "task", "assignment", "work" };
     public Type PayloadType => typeof(TaskAssignedRequestData);
+    public Icon? Icon => new ("bookmark-check");
 }

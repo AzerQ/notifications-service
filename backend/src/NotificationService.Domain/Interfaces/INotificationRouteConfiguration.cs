@@ -39,8 +39,16 @@ public interface INotificationRouteConfiguration
     /// Тип  полезной нагрузки
     /// </summary>
     public Type PayloadType { get; }
+
+    public Icon? Icon {get;}
     
 }
+
+
+/// <summary>
+/// Lucide icon refrence
+/// </summary>
+public record Icon (string Name, string? CssClass = null);
 
 /// <summary>
 /// Тип объекта по которому приходит оповещение

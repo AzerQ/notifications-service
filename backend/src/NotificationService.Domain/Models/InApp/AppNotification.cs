@@ -1,3 +1,5 @@
+using NotificationService.Domain.Interfaces;
+
 namespace NotificationService.Domain.Models.InApp
 {
     /// <summary>
@@ -49,7 +51,7 @@ namespace NotificationService.Domain.Models.InApp
 
             public required string Url {get; set;}
 
-            public string? Icon { get; set; }
+            public Icon? Icon { get; set; }
 
             /// <summary>
             /// The date and time the notification was created.

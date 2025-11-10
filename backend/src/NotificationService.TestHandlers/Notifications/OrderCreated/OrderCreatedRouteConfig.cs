@@ -11,4 +11,5 @@ public class OrderCreatedRouteConfig : INotificationRouteConfiguration
     public string Description => "Notification sent when a new order is created";
     public IEnumerable<string> Tags => new[] { "order", "purchase", "confirmation" };
     public Type PayloadType => typeof(OrderCreatedRequestData);
+    public Icon? Icon => new ("book-a","text-blue-500");
 }

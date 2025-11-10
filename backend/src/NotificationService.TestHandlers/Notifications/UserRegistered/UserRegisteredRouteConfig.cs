@@ -11,4 +11,5 @@ public class UserRegisteredRouteConfig : INotificationRouteConfiguration
     public string Description => "Notification sent when a new user registers";
     public IEnumerable<string> Tags => new[] { "user", "registration", "welcome" };
     public Type PayloadType => typeof(UserRegisteredRequestData);
+    public Icon? Icon => new ("user");
 }

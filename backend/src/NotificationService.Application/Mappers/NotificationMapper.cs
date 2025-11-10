@@ -55,7 +55,7 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
         var renderedContent = templateRenderer.Render(template.CommonContentTemplate, notificationData);
         var renderedSubject = string.IsNullOrWhiteSpace(template.Subject)
             ? request.Title ?? "Тема отсутсвует"
-            : templateRenderer.Render(template.Subject, notificationData);
+            : templateRenderer.Render(template.Subject, notificationData.Data);
         
         var notification = new Notification
         {
@@ -64,7 +64,8 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             Route = request.Route,
             Template = template,
             CreatedAt = DateTime.UtcNow,
-            TemplateData = notificationData
+            TemplateData = notificationData.Data,
+            Url = notificationData.Url
         };
 
         if (request.Channels is not null 
