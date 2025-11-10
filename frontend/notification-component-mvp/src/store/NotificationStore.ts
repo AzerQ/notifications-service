@@ -24,18 +24,22 @@ export class NotificationStore {
   // UI state
   isDropdownOpen = false;
 
+  // Flag to prevent loading when not authenticated
+  private canLoad = false;
+
   constructor(
     private apiClient: NotificationApiClient,
     private signalRService: SignalRNotificationService
   ) {
     makeAutoObservable(this);
-    this.initialize();
   }
 
   /**
    * Initialize store: load notifications and connect SignalR
+   * Call this after successful authentication
    */
-  private async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
+    this.canLoad = true;
     await Promise.all([
       this.loadNotifications(),
       this.connectSignalR()
@@ -46,6 +50,11 @@ export class NotificationStore {
    * Load notifications from API
    */
   async loadNotifications(): Promise<void> {
+    if (!this.canLoad) {
+      console.log('[NotificationStore] Skipping load - not authenticated');
+      return;
+    }
+
     this.isLoading = true;
     this.error = null;
 
@@ -74,6 +83,11 @@ export class NotificationStore {
    * Connect to SignalR for real-time updates
    */
   private async connectSignalR(): Promise<void> {
+    if (!this.canLoad) {
+      console.log('[NotificationStore] Skipping SignalR - not authenticated');
+      return;
+    }
+
     try {
       // Register callback before connecting
       this.signalRService.onNotification(this.handleNewNotification.bind(this));
@@ -219,13 +233,37 @@ export class NotificationStore {
    * Reload notifications
    */
   async reload(): Promise<void> {
+    if (!this.canLoad) {
+      console.log('[NotificationStore] Cannot reload - not authenticated');
+      return;
+    }
     await this.loadNotifications();
+  }
+
+  /**
+   * Reset store state (on logout)
+   */
+  reset(): void {
+    this.canLoad = false;
+    this.notifications = [];
+    this.isLoading = false;
+    this.error = null;
+    this.currentPage = 1;
+    this.totalCount = 0;
+    this.filters = {};
+    this.isDropdownOpen = false;
+    
+    // Disconnect SignalR
+    if (this.isSignalRConnected) {
+      this.signalRService.disconnect();
+      this.isSignalRConnected = false;
+    }
   }
 
   /**
    * Cleanup: disconnect SignalR
    */
   dispose(): void {
-    this.signalRService.disconnect();
+    this.reset();
   }
 }

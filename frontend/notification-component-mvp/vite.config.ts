@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
-      port: 3001,
+      port: 5094,
       open: true
     }
   };

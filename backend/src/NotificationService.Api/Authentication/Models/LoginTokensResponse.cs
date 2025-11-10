@@ -1,3 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace NotificationService.Api.Authentication.Models;
 
-public record LoginTokensResponse(string RefreshToken, string AccessToken);
+public record LoginTokensResponse(
+    [property: JsonPropertyName("refreshToken")] string RefreshToken, 
+    [property: JsonPropertyName("accessToken")] string AccessToken
+);

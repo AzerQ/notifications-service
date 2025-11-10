@@ -68,12 +68,14 @@ export interface SignalRConfig {
 
 /**
  * Notification component configuration
+ * Note: User ID is extracted from JWT token on backend, no need to pass it from frontend
  */
 export interface NotificationComponentConfig {
   apiBaseUrl: string;
   signalRHubUrl: string;
-  userId: string;
   accessToken?: string;
   onNotificationClick?: (notification: Notification) => void;
   maxNotifications?: number;
+  onEmailCodeRequired?: (email: string, challengeId: string) => void;
+  userEmail?: string; // Опциональный email пользователя для автоматической отправки кода
 }

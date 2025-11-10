@@ -1,16 +1,25 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import type { 
   PaginatedNotifications, 
   GetNotificationsParams 
 } from '../types';
+import type { AuthenticationService } from './authenticationService';
 
 /**
- * Simple API client for notification service
+ * API client for notification service with automatic authentication
  */
 export class NotificationApiClient {
   private client: AxiosInstance;
+  private authService?: AuthenticationService;
+  private isRefreshing = false;
+  private failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
+  }> = [];
 
-  constructor(baseURL: string, accessToken?: string) {
+  constructor(baseURL: string, accessToken?: string, authService?: AuthenticationService) {
+    this.authService = authService;
+    
     this.client = axios.create({
       baseURL,
       headers: {
@@ -18,6 +27,106 @@ export class NotificationApiClient {
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
       }
     });
+
+    this.setupInterceptors();
+  }
+
+  /**
+   * Setup request and response interceptors for automatic auth
+   */
+  private setupInterceptors(): void {
+    // Request interceptor - add access token to headers
+    this.client.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = this.authService?.getAccessToken();
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    // Response interceptor - handle 401 errors with automatic re-auth
+    this.client.interceptors.response.use(
+      (response) => response,
+      async (error: AxiosError) => {
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+        // If error is 401 and we have auth service and haven't retried yet
+        if (error.response?.status === 401 && this.authService && !originalRequest._retry) {
+          // Mark as retry BEFORE checking isRefreshing to prevent infinite loops
+          originalRequest._retry = true;
+
+          if (this.isRefreshing) {
+            // Queue this request while authentication is in progress
+            return new Promise((resolve, reject) => {
+              this.failedQueue.push({ resolve, reject });
+            })
+              .then(() => {
+                return this.client(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
+          }
+
+          this.isRefreshing = true;
+
+          try {
+            console.log('[ApiClient] 401 detected, starting automatic authentication...');
+      
+            // Try automatic authentication (refresh token -> Windows -> email)
+            const tokens = await this.authService.authenticate();
+         
+            if (tokens) {
+              console.log('[ApiClient] Authentication successful, retrying requests');
+      
+              // Process queued requests
+              this.processQueue(null);
+        
+              // Retry original request with new token
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
+              }
+              return this.client(originalRequest);
+            } else {
+              console.log('[ApiClient] Authentication failed, email code required');
+    
+               // Clear queue - authentication failed
+              const authError = new Error('Authentication required');
+              this.processQueue(authError);
+        
+              return Promise.reject(authError);
+            }
+          } catch (authError) {
+            console.error('[ApiClient] Authentication error:', authError);
+        
+            this.processQueue(authError);
+            return Promise.reject(authError);
+       } finally {
+            this.isRefreshing = false;
+          }
+        }
+
+      return Promise.reject(error);
+      }
+    );
+  }
+
+  /**
+   * Process queued requests after authentication
+   */
+  private processQueue(error: any): void {
+    this.failedQueue.forEach((prom) => {
+      if (error) {
+        prom.reject(error);
+      } else {
+        prom.resolve();
+      }
+    });
+
+    this.failedQueue = [];
   }
 
   /**
@@ -31,11 +140,11 @@ export class NotificationApiClient {
     const response = await this.client.get<PaginatedNotifications>(
       `/api/notification/personal`, 
       {
-        params: {
+  params: {
           pageNumber: page,
           pageSize,
           ...filters
-        }
+   }
       }
     );
     
@@ -80,7 +189,8 @@ export class NotificationApiClient {
  */
 export function createNotificationApiClient(
   baseURL: string, 
-  accessToken?: string
+  accessToken?: string,
+  authService?: AuthenticationService
 ): NotificationApiClient {
-  return new NotificationApiClient(baseURL, accessToken);
+  return new NotificationApiClient(baseURL, accessToken, authService);
 }
