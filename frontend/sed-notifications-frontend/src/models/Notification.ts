@@ -22,6 +22,15 @@ export interface NotificationParameter {
 }
 
 /**
+ * Icon for notification
+ * Matches backend Icon record: public record Icon (string Name, string? CssClass = null);
+ */
+export interface Icon {
+  name: string;
+  cssClass?: string | null;
+}
+
+/**
  * Base notification interface with required and optional fields
  */
 export interface BaseNotification {
@@ -34,6 +43,7 @@ export interface BaseNotification {
   read: boolean;
 
   // Optional fields
+  icon?: Icon;
   author?: string;
   actions?: NotificationAction[];
   hashtags?: string[];
@@ -81,6 +91,7 @@ export function toBaseNotification(oldNotification: any): BaseNotification {
     content: oldNotification.description || oldNotification.content || '',
     date: oldNotification.date,
     read: oldNotification.read,
+    icon: oldNotification.icon,
     author: oldNotification.author,
     actions: oldNotification.actions,
     hashtags: oldNotification.hashtags,

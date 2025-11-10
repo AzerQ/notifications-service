@@ -57,7 +57,7 @@ export const NotificationCard: React.FC<{
                         className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${getNotificationTypeColorClass(notification.type)}`}
                         data-testid="notification-card-icon"
                     >
-                        {getNotificationIcon(notification.type, notification.subtype, 'md')}
+                        {getNotificationIcon(notification.type, notification.subtype, 'md', notification.icon)}
                     </div>
                     <div className="flex-1 min-w-0" data-testid="notification-card-content">
                         <div className="flex items-center justify-between mb-2" data-testid="notification-card-header">

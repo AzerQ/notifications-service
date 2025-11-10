@@ -78,7 +78,7 @@ export const CompactNotification: React.FC<CompactNotificationProps> = ({
       <div className={`flex items-start ${currentSize.spacing}`}>
         {/* Иконка типа */}
         <div className="mt-0.5" data-testid="compact-notification-icon">
-          {getNotificationIcon(notification.type, notification.subtype, currentSize.iconSize)}
+          {getNotificationIcon(notification.type, notification.subtype, currentSize.iconSize, notification.icon)}
         </div>
         
         {/* Содержимое */}
