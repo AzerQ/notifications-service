@@ -74,14 +74,10 @@ public class NotificationController(
     }
 
 
-    /// <summary>
-    /// Gets a list of notifications by user.
-    /// Regular users can only retrieve their own notifications, administrators can retrieve any.
-    /// </summary>
     [HttpPut("personal/mark-all-read")]
-    [ProducesResponseType(typeof(UserNotificationsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> MarkAllUserNotificationsAsRead()
+    public async Task<ActionResult> MarkAllUserNotificationsAsRead()
     {
       var currentUserId = User.GetApplicationUser().Id;
       await commandService.MarkAllUserNotificationsAsRead(currentUserId);
