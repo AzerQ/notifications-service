@@ -49,6 +49,11 @@ public class NotificationCommandService
         return notificationMapper.MapToResponse(preparedNotifications);
         
     }
+
+    public async Task MarkAllUserNotificationsAsRead(Guid userId)
+    {
+        await notificationRepository.MarkAllUserNotificationsAsRead(userId);
+    }
 }
 
 /// <summary>

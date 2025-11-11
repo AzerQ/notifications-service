@@ -55,6 +55,13 @@ public class NotificationRepository : INotificationRepository
             .FirstOrDefaultAsync(n => n.Id == id);
     }
 
+    public async Task MarkAllUserNotificationsAsRead(Guid userId)
+    {
+         await _context.Notifications
+        .Where(n => n.RecipientId == userId)
+        .ExecuteUpdateAsync(notification => notification.SetProperty(n => n.NotificationWasRead,  true));
+    }
+
     public async Task UpdateNotificationsAsync(params Notification[] notifications)
     {
          _context.UpdateRange(notifications);
