@@ -163,22 +163,23 @@ export class NotificationApiClient {
 };
   }
 
+  async setReadFlag(notificationId: string, flagValue: boolean) {
+      const params = new URLSearchParams({notificationId, flagValue: flagValue.toString()});
+      await this.client.put(`/api/notification/set-read-flag?${params}`);
+  }
+
   /**
    * Mark notification as read
    */
   async markAsRead(notificationId: string): Promise<void> {
-    await this.client.put(`/api/notification/${notificationId}/read`, {
-      read: true
-    });
+      await this.setReadFlag(notificationId, true);
   }
 
   /**
    * Mark notification as unread
    */
   async markAsUnread(notificationId: string): Promise<void> {
-    await this.client.put(`/api/notification/${notificationId}/read`, {
-      read: false
-    });
+    await this.setReadFlag(notificationId, false);
   }
 
   /**
