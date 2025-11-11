@@ -33,6 +33,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      host: true,
+      allowedHosts: ["localhost", "code.azerqtech.pw", "dev-front.azerqtech.pw"],
       port: 5094,
       open: true
     }
