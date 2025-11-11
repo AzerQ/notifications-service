@@ -7,12 +7,11 @@ interface EmailCodeModalProps {
   challengeId: string;
   challengeMessage?: string;
   email?: string;
-  isVerifying: boolean;
   error?: string | null;
   onVerify: (verification: EmailCodeVerification) => Promise<void>;
   onResendCode: (email: string) => Promise<void>;
   onClose: () => void;
-  requiresEmailInput?: boolean; // Новый пропс - нужен ли ввод email
+  requiresEmailInput?: boolean; // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ email
 }
 
 /**
@@ -26,7 +25,6 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
   challengeId,
   challengeMessage,
   email,
-  isVerifying,
   error,
   onVerify,
   onResendCode,
@@ -36,6 +34,7 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
   const [code, setCode] = useState('');
   const [localEmail, setLocalEmail] = useState(email || '');
   const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [step, setStep] = useState<'email' | 'code'>(
     requiresEmailInput && !challengeId ? 'email' : 'code'
   );
@@ -87,6 +86,7 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setIsVerifying(true);
     e.preventDefault();
 
     if (step === 'email') {
@@ -96,6 +96,7 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
 
     if (code.trim().length === 6 && challengeId) {
       await onVerify({ id: challengeId, code: code.trim() });
+      setIsVerifying(false);
     }
   };
 

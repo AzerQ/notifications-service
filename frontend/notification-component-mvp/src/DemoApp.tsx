@@ -10,7 +10,7 @@ export const DemoApp: React.FC = () => {
   const config = {
     apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
     signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
-    // userId удален - информация о пользователе извлекается из access токена
+    // userId пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ access пїЅпїЅпїЅпїЅпїЅпїЅ
     accessToken: import.meta.env.VITE_ACCESS_TOKEN,
     onEmailCodeRequired: (email: string) => {
       console.log('[DemoApp] Email code required for:', email);
@@ -21,7 +21,7 @@ export const DemoApp: React.FC = () => {
 
   const { store, authentication } = useNotificationStore(config);
 
-  // Автоматически показываем modal если требуется email код или ввод email
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ modal пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ email пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ email
   useEffect(() => {
     if (authentication.authState.requiresEmailCode || authentication.authState.requiresEmailInput) {
       setShowEmailModal(true);
@@ -40,7 +40,7 @@ export const DemoApp: React.FC = () => {
       setShowEmailModal(false);
     } catch (error) {
       console.error('[DemoApp] Email verification failed:', error);
-      // Ошибка уже установлена в authState, просто логируем
+      // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ authState, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
   };
 
@@ -51,7 +51,7 @@ export const DemoApp: React.FC = () => {
       console.log('[DemoApp] Code resent successfully');
     } catch (error) {
       console.error('[DemoApp] Failed to resend code:', error);
-      // Ошибка уже установлена в authState
+      // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ authState
     }
   };
 
@@ -212,7 +212,6 @@ export const DemoApp: React.FC = () => {
         challengeId={authentication.authState.emailChallengeId || ''}
         challengeMessage={authentication.authState.emailChallengeMessage || undefined}
         email={currentEmail}
-        isVerifying={authentication.authState.isAuthenticating}
         error={authentication.authState.error}
         onVerify={handleVerifyEmailCode}
         onResendCode={handleResendCode}
