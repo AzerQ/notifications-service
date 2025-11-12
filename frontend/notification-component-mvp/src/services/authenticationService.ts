@@ -50,6 +50,7 @@ export class AuthenticationService {
   }> = [];
   private lastAuthAttempt = 0;
   private readonly AUTH_COOLDOWN_MS = 5000; // 5 seconds cooldown between auth attempts
+  private windowsAuthFailed = false; // Flag to skip Windows auth after first failure
 
   constructor(config: AuthServiceConfig) {
     this.config = config;
@@ -134,16 +135,22 @@ export class AuthenticationService {
       }
       console.log('[Auth] Level 1: ? Refresh token authentication failed');
 
-      // Level 2: Try Windows authentication
-      console.log('[Auth] Level 2: Attempting Windows authentication...');
-      const windowsTokens = await this.tryWindowsAuthentication();
-      if (windowsTokens) {
-        console.log('[Auth] Level 2: ? Windows authentication successful');
-        this.setTokens(windowsTokens);
-        this.processAuthQueue(windowsTokens);
-        return windowsTokens;
+      // Level 2: Try Windows authentication (skip if already failed once)
+      if (!this.windowsAuthFailed) {
+        console.log('[Auth] Level 2: Attempting Windows authentication...');
+        const windowsTokens = await this.tryWindowsAuthentication();
+        if (windowsTokens) {
+          console.log('[Auth] Level 2: ? Windows authentication successful');
+          this.setTokens(windowsTokens);
+          this.processAuthQueue(windowsTokens);
+          return windowsTokens;
+        }
+        console.log('[Auth] Level 2: ? Windows authentication failed');
+        // Mark Windows auth as failed to skip it in future attempts
+        this.windowsAuthFailed = true;
+      } else {
+        console.log('[Auth] Level 2: Skipping Windows authentication (already failed once)');
       }
-      console.log('[Auth] Level 2: ? Windows authentication failed');
 
       // Level 3: Email code required - notify caller
       console.log('[Auth] Level 3: Email code authentication required');
@@ -262,7 +269,7 @@ export class AuthenticationService {
     } catch (error) {
       console.error('[AuthService] Email code verification failed:', error);
       
-      // Подробное логирование ошибки
+      // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
       if (axios.isAxiosError(error)) {
     console.error('[AuthService] Axios error details:', {
        status: error.response?.status,
@@ -303,6 +310,7 @@ export class AuthenticationService {
   logout(): void {
     this.clearTokens();
     this.lastAuthAttempt = 0;
+    this.windowsAuthFailed = false; // Reset Windows auth flag on logout
     console.log('[Auth] User logged out');
   }
 }
