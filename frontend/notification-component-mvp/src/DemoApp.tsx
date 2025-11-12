@@ -10,7 +10,6 @@ export const DemoApp: React.FC = () => {
   const config = {
     apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
     signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
-    // userId ������ - ���������� � ������������ ����������� �� access ������
     accessToken: import.meta.env.VITE_ACCESS_TOKEN,
     onEmailCodeRequired: (email: string) => {
       console.log('[DemoApp] Email code required for:', email);
@@ -21,7 +20,6 @@ export const DemoApp: React.FC = () => {
 
   const { store, authentication } = useNotificationStore(config);
 
-  // ������������� ���������� modal ���� ��������� email ��� ��� ���� email
   useEffect(() => {
     if (authentication.authState.requiresEmailCode || authentication.authState.requiresEmailInput) {
       setShowEmailModal(true);
@@ -40,7 +38,6 @@ export const DemoApp: React.FC = () => {
       setShowEmailModal(false);
     } catch (error) {
       console.error('[DemoApp] Email verification failed:', error);
-      // ������ ��� ����������� � authState, ������ ��������
     }
   };
 
@@ -51,7 +48,6 @@ export const DemoApp: React.FC = () => {
       console.log('[DemoApp] Code resent successfully');
     } catch (error) {
       console.error('[DemoApp] Failed to resend code:', error);
-      // ������ ��� ����������� � authState
     }
   };
 

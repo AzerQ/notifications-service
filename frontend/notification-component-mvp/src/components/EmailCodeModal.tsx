@@ -11,7 +11,7 @@ interface EmailCodeModalProps {
   onVerify: (verification: EmailCodeVerification) => Promise<void>;
   onResendCode: (email: string) => Promise<void>;
   onClose: () => void;
-  requiresEmailInput?: boolean; // ����� ����� - ����� �� ���� email
+  requiresEmailInput?: boolean;
 }
 
 /**
