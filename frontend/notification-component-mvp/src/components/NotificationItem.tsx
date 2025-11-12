@@ -67,10 +67,10 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return 'Только что';
+    if (diffMins < 60) return `${diffMins}м назад`;
+    if (diffHours < 24) return `${diffHours}ч назад`;
+    if (diffDays < 7) return `${diffDays}д назад`;
     
     return date.toLocaleDateString();
   };
@@ -122,7 +122,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
             <button
               onClick={handleToggleRead}
               className="flex-shrink-0 p-1 rounded hover:bg-gray-200 transition-colors"
-              aria-label={notification.read ? 'Mark as unread' : 'Mark as read'}
+              aria-label={notification.read ? 'Отметить как непрочитанное' : 'Отметить как прочитанное'}
               data-testid="notification-toggle-read"
             >
               {notification.read ? (

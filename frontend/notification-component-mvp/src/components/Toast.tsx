@@ -91,7 +91,7 @@ export const Toast: React.FC<ToastProps> = ({ notification, onClose, duration = 
               handleClose();
             }}
             className="ml-4 flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Close notification"
+            aria-label="Закрыть уведомление"
             data-testid="toast-close-button"
           >
             <X className="w-4 h-4" />
@@ -117,7 +117,7 @@ export const Toast: React.FC<ToastProps> = ({ notification, onClose, duration = 
           {/* URL indicator */}
           {notification.url && (
             <span className="text-blue-600 dark:text-blue-400 font-medium">
-              Click to view ?
+              Нажмите для просмотра
             </span>
           )}
         </div>

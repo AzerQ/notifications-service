@@ -62,14 +62,14 @@ export const DemoApp: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-semibold text-gray-900">
-              Notification Component MVP
+              MVP компонента уведомлений
             </h1>
             <div className="flex items-center space-x-4">
               <div className="text-sm">
                 <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
                   authentication.authState.isAuthenticated ? 'bg-green-500' : 'bg-red-500'
                 }`} />
-                {authentication.authState.isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
+                {authentication.authState.isAuthenticated ? 'Аутентифицирован' : 'Не аутентифицирован'}
               </div>
               <NotificationComponent 
                 store={store}
@@ -82,60 +82,60 @@ export const DemoApp: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
-          <h2 className="text-2xl font-bold">Auto-Authentication Demo</h2>
-          
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <h3 className="font-semibold text-purple-900 mb-2">?? Authentication Strategy:</h3>
-            <ol className="text-sm text-purple-800 space-y-1 list-decimal list-inside">
-              <li><strong>Level 1:</strong> Try refresh token from localStorage</li>
-              <li><strong>Level 2:</strong> Try Windows authentication (automatic)</li>
-              <li><strong>Level 3:</strong> Request email and send verification code</li>
-            </ol>
-            <p className="text-xs text-purple-600 mt-2">
-              ? If Windows auth fails, email modal opens automatically!
-            </p>
-            <p className="text-xs text-purple-600 mt-1">
-              ?? User info is extracted from JWT token - no hardcoded IDs!
-            </p>
-          </div>
+         <h2 className="text-2xl font-bold">Демонстрация автоматической аутентификации</h2>
+         
+         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+           <h3 className="font-semibold text-purple-900 mb-2">🔐 Стратегия аутентификации:</h3>
+           <ol className="text-sm text-purple-800 space-y-1 list-decimal list-inside">
+             <li><strong>Уровень 1:</strong> Попытка использовать токен обновления из localStorage</li>
+             <li><strong>Уровень 2:</strong> Попытка аутентификации Windows (автоматически)</li>
+             <li><strong>Уровень 3:</strong> Запрос электронной почты и отправка кода проверки</li>
+           </ol>
+           <p className="text-xs text-purple-600 mt-2">
+             ✓ Если аутентификация Windows не удалась, модальное окно электронной почты открывается автоматически!
+           </p>
+           <p className="text-xs text-purple-600 mt-1">
+             🔑 Информация пользователя извлекается из токена JWT - не требуются жестко закодированные ID!
+           </p>
+         </div>
 
           <div className="bg-gray-50 border rounded-lg p-4">
-            <h4 className="font-medium mb-2">Status:</h4>
+            <h4 className="font-medium mb-2">Статус:</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-600">Notifications:</span>
+                <span className="text-gray-600">Уведомления:</span>
                 <div className="font-semibold">{store.notifications?.length ?? 0}</div>
               </div>
               <div>
-                <span className="text-gray-600">Unread:</span>
+                <span className="text-gray-600">Непрочитанные:</span>
                 <div className="font-semibold">{store.unreadCount}</div>
               </div>
               <div>
                 <span className="text-gray-600">SignalR:</span>
                 <div className={`font-semibold ${store.isSignalRConnected ? 'text-green-600' : 'text-red-600'}`}>
-                  {store.isSignalRConnected ? 'Connected' : 'Disconnected'}
+                  {store.isSignalRConnected ? 'Подключено' : 'Отключено'}
                 </div>
               </div>
               <div>
-                <span className="text-gray-600">Auth:</span>
+                <span className="text-gray-600">Аутентификация:</span>
                 <div className={`font-semibold ${
                   authentication.authState.isAuthenticated ? 'text-green-600' : 'text-orange-600'
                 }`}>
-                  {authentication.authState.isAuthenticated ? 'Authenticated' : 
-                   authentication.authState.isAuthenticating ? 'Authenticating...' : 'Not Authenticated'}
+                  {authentication.authState.isAuthenticated ? 'Аутентифицирован' :
+                   authentication.authState.isAuthenticating ? 'Аутентификация...' : 'Не аутентифицирован'}
                 </div>
               </div>
               <div>
-                <span className="text-gray-600">Requires Email:</span>
+                <span className="text-gray-600">Требуется электронная почта:</span>
                 <div className="font-semibold">
-                  {authentication.authState.requiresEmailInput ? 'Yes (enter email)' : 
-                   authentication.authState.requiresEmailCode ? 'Yes (enter code)' : 'No'}
+                  {authentication.authState.requiresEmailInput ? 'Да (введите почту)' :
+                   authentication.authState.requiresEmailCode ? 'Да (введите код)' : 'Нет'}
                 </div>
               </div>
               <div>
-                <span className="text-gray-600">Email Modal:</span>
+                <span className="text-gray-600">Модальное окно:</span>
                 <div className="font-semibold">
-                  {showEmailModal ? 'Open' : 'Closed'}
+                  {showEmailModal ? 'Открыто' : 'Закрыто'}
                 </div>
               </div>
             </div>
@@ -148,20 +148,20 @@ export const DemoApp: React.FC = () => {
           </div>
 
           <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-            <h4 className="font-medium text-indigo-900 mb-2">Test Actions:</h4>
+            <h4 className="font-medium text-indigo-900 mb-2">Тестовые действия:</h4>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => authentication.authenticate()}
                 disabled={authentication.authState.isAuthenticating}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
               >
-                {authentication.authState.isAuthenticating ? 'Authenticating...' : 'Re-Authenticate'}
+                {authentication.authState.isAuthenticating ? 'Аутентификация...' : 'Переаутентифицировать'}
               </button>
               <button
                 onClick={() => authentication.logout()}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
-                Logout
+                Выход
               </button>
               <button
                 onClick={() => {
@@ -170,7 +170,7 @@ export const DemoApp: React.FC = () => {
                 }}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
               >
-                Test Email Modal (with email input)
+                Тест модального окна (с вводом почты)
               </button>
               <button
                 onClick={async () => {
@@ -179,25 +179,25 @@ export const DemoApp: React.FC = () => {
                     setCurrentEmail('test@example.com');
                     setShowEmailModal(true);
                   } catch (error) {
-                    console.error('Failed to send code:', error);
+                    console.error('Ошибка отправки кода:', error);
                   }
                 }}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
-                Test Email Modal (code only)
+                Тест модального окна (только код)
               </button>
             </div>
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-2">?? How It Works:</h4>
+            <h4 className="font-medium text-yellow-900 mb-2">❓ Как это работает:</h4>
             <ol className="text-sm text-yellow-800 space-y-1 list-decimal list-inside">
-              <li>On mount, automatically tries Level 1 (refresh token)</li>
-              <li>If failed, tries Level 2 (Windows authentication)</li>
-              <li>If Windows auth fails, <strong>email modal opens automatically</strong></li>
-              <li>User enters email ? code sent ? user enters code ? authenticated!</li>
-              <li>On 401 error during work, same flow repeats automatically</li>
-              <li><strong>Backend extracts user info from JWT token</strong> - no hardcoded IDs needed!</li>
+              <li>При загрузке автоматически пытается использовать уровень 1 (токен обновления)</li>
+              <li>Если не удалось, пытается уровень 2 (аутентификация Windows)</li>
+              <li>Если аутентификация Windows не удалась, <strong>модальное окно электронной почты открывается автоматически</strong></li>
+              <li>Пользователь вводит почту → отправляется код → пользователь вводит код → аутентифицирован!</li>
+              <li>При ошибке 401 во время работы тот же процесс повторяется автоматически</li>
+              <li><strong>Бэкенд извлекает информацию пользователя из токена JWT</strong> - не требуются жестко закодированные ID!</li>
             </ol>
           </div>
         </div>

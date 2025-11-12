@@ -26,7 +26,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = observer(({
     <button
       onClick={handleClick}
       className={`relative p-2 rounded-full hover:bg-gray-100 transition-colors ${className}`}
-      aria-label="Notifications"
+      aria-label="Уведомления"
       data-testid="notification-bell"
     >
       <Bell className="w-6 h-6 text-gray-700" />

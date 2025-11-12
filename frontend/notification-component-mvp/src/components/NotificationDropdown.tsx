@@ -81,8 +81,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">
-          Notifications
-     </h3>
+           Уведомления
+      </h3>
          
  <div className="flex items-center gap-2">
          {/* Filter button */}
@@ -91,9 +91,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
         className={`p-2 rounded hover:bg-gray-100 transition-colors ${
          store.filters.onlyUnread ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
            }`}
-                aria-label="Filter unread"
+                aria-label="Фильтр непрочитанных"
       data-testid="notification-filter-unread"
-          title={store.filters.onlyUnread ? 'Show all' : 'Show unread only'}
+          title={store.filters.onlyUnread ? 'Показать все' : 'Показать только непрочитанные'}
               >
     <Filter className="w-4 h-4" />
      </button>
@@ -103,9 +103,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
 <button
            onClick={() => store.markAllAsRead()}
     className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-600"
-          aria-label="Mark all as read"
+          aria-label="Отметить все как прочитанные"
       data-testid="notification-mark-all-read"
-   title="Mark all as read"
+   title="Отметить все как прочитанные"
  >
 <CheckCheck className="w-4 h-4" />
                 </button>
@@ -115,7 +115,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
 
           {store.unreadCount > 0 && (
           <p className="text-sm text-gray-500 mt-1">
-              {store.unreadCount} unread notification{store.unreadCount !== 1 ? 's' : ''}
+              {store.unreadCount} непрочитанное уведомление{store.unreadCount !== 1 ? 'й' : ''}
     </p>
           )}
         </div>
@@ -133,9 +133,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
           ) : displayedNotifications.length === 0 ? (
             <div className="text-center py-8 px-4">
            <p className="text-gray-500">
-      {store.filters.onlyUnread 
-      ? 'No unread notifications' 
-      : 'No notifications yet'}
+      {store.filters.onlyUnread
+      ? 'Нет непрочитанных уведомлений'
+      : 'Уведомлений пока нет'}
               </p>
  </div>
           ) : (
@@ -162,7 +162,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
               className="text-sm text-blue-600 hover:text-blue-700 font-medium"
          data-testid="notification-view-all"
      >
-  View all notifications
+  Показать все уведомления
        </button>
         </div>
         )}
@@ -171,7 +171,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
         {!store.isSignalRConnected && (
         <div className="px-4 py-2 bg-yellow-50 border-t border-yellow-200">
          <p className="text-xs text-yellow-700">
-       Real-time updates disconnected
+       Соединение для обновлений в реальном времени разорвано
             </p>
       </div>
       )}
