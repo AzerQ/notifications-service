@@ -98,11 +98,9 @@ public class NotificationRoutesContext(IServiceProvider serviceProvider)
     /// <param name="route">Имя маршрута</param>
     /// <returns>Конфигурация маршрута</returns>
     /// <exception cref="KeyNotFoundException">Выбрасывается, если маршрут не зарегистрирован</exception>
-    public INotificationRouteConfiguration GetNotificationRouteConfiguration(string route)
+    public INotificationRouteConfiguration? GetNotificationRouteConfiguration(string route)
     {
         var routeConfig = _notificationRoutes[route];
-        if (routeConfig == null) 
-            throw new KeyNotFoundException("No notification route config found for route: " + route);
         return routeConfig;
     }
     

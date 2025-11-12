@@ -4,7 +4,7 @@ namespace NotificationService.Domain.Interfaces;
 
 public interface IUserRoutePreferenceRepository
 {
-    Task<IReadOnlyCollection<UserRoutePreference>> GetByUserAsync(Guid userId);
-    Task SetPreferencesAsync(Guid userId, IEnumerable<UserRoutePreference> preferences);
+    Task<IEnumerable<UserRoutePreferenceView>> GetByUserAsync(Guid userId);
+    Task SetPreferencesAsync(Guid userId, IEnumerable<UserPreferenceDto> preferences);
     Task<bool> IsRouteEnabledAsync(Guid userId, string route);
 }
