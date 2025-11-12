@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import type { Notification, NotificationFilters } from '../types';
+import type { Notification, NotificationFilters, UserRoutePreference, UserPreferenceDto } from '../types';
 import type { NotificationApiClient } from '../services/apiClient';
 import type { SignalRNotificationService } from '../services/signalRService';
 
@@ -23,6 +23,11 @@ export class NotificationStore {
   
   // UI state
   isDropdownOpen = false;
+  
+  // Preferences state
+  preferences: UserRoutePreference[] = [];
+  isPreferencesLoading = false;
+  isPreferencesModalOpen = false;
 
   // Flag to prevent loading when not authenticated
   private canLoad = false;
@@ -302,8 +307,94 @@ pageSize: this.pageSize,
   }
 
   /**
-   * Cleanup: disconnect SignalR
+    * Load user preferences
+    */
+  async loadPreferences(): Promise<void> {
+    if (!this.canLoad) {
+      console.log('[NotificationStore] Skipping preferences load - not authenticated');
+      return;
+    }
+
+    this.isPreferencesLoading = true;
+    this.error = null;
+
+    try {
+      const preferences = await this.apiClient.getUserPreferences();
+      
+      runInAction(() => {
+        this.preferences = preferences;
+        this.isPreferencesLoading = false;
+      });
+
+      console.log('[NotificationStore] Preferences loaded successfully:', preferences.length);
+    } catch (error) {
+      console.error('[NotificationStore] Failed to load preferences:', error);
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Failed to load preferences';
+        this.isPreferencesLoading = false;
+      });
+    }
+  }
+
+  /**
+   * Update user preferences
    */
+  async updatePreferences(preferences: UserPreferenceDto[]): Promise<void> {
+    if (!this.canLoad) {
+      throw new Error('Not authenticated');
+    }
+
+    try {
+      await this.apiClient.updateUserPreferences(preferences);
+      
+      // Reload preferences to get updated state
+      await this.loadPreferences();
+      
+      console.log('[NotificationStore] Preferences updated successfully');
+    } catch (error) {
+      console.error('[NotificationStore] Failed to update preferences:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Toggle preferences modal
+   */
+  togglePreferencesModal = () => {
+    const newState = !this.isPreferencesModalOpen;
+    
+    runInAction(() => {
+      this.isPreferencesModalOpen = newState;
+    });
+    
+    // Load preferences when opening modal
+    if (newState && this.preferences.length === 0) {
+      this.loadPreferences();
+    }
+  }
+
+  /**
+   * Close preferences modal
+   */
+  closePreferencesModal(): void {
+    this.isPreferencesModalOpen = false;
+  }
+
+  /**
+   * Open preferences modal
+   */
+  openPreferencesModal(): void {
+    this.isPreferencesModalOpen = true;
+    
+    // Load preferences when opening modal
+    if (this.preferences.length === 0) {
+      this.loadPreferences();
+    }
+  }
+
+  /**
+    * Cleanup: disconnect SignalR
+    */
   dispose(): void {
     this.reset();
   }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NotificationComponent } from './components/NotificationComponent';
 import { EmailCodeModal } from './components/EmailCodeModal';
 import { useNotificationStore } from './hooks/useNotificationStore';
+import { useRoutePreferences } from './hooks/useRoutePreferences';
 
 export const DemoApp: React.FC = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -19,6 +20,7 @@ export const DemoApp: React.FC = () => {
   };
 
   const { store, authentication } = useNotificationStore(config);
+  const preferences = useRoutePreferences(store);
 
   useEffect(() => {
     if (authentication.authState.requiresEmailCode || authentication.authState.requiresEmailInput) {
@@ -71,9 +73,10 @@ export const DemoApp: React.FC = () => {
                 }`} />
                 {authentication.authState.isAuthenticated ? 'Аутентифицирован' : 'Не аутентифицирован'}
               </div>
-              <NotificationComponent 
+              <NotificationComponent
                 store={store}
                 onNotificationClick={handleNotificationClick}
+                showPreferencesButton={true}
               />
             </div>
           </div>
@@ -138,6 +141,12 @@ export const DemoApp: React.FC = () => {
                   {showEmailModal ? 'Открыто' : 'Закрыто'}
                 </div>
               </div>
+              <div>
+                <span className="text-gray-600">Настройки:</span>
+                <div className="font-semibold">
+                  {preferences.isModalOpen ? 'Открыты' : 'Закрыты'}
+                </div>
+              </div>
             </div>
             
             {authentication.authState.error && (
@@ -186,6 +195,27 @@ export const DemoApp: React.FC = () => {
               >
                 Тест модального окна (только код)
               </button>
+              <button
+                onClick={() => preferences.openModal()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Открыть настройки уведомлений
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="font-medium text-green-900 mb-2">⚙️ Настройки уведомлений:</h4>
+            <div className="text-sm text-green-800 space-y-2">
+              <p>✨ <strong>Новая функция:</strong> Настройки маршрутов уведомлений</p>
+              <p>📝 Нажмите на кнопку настроек (шестеренка) рядом с колокольчиком</p>
+              <p>🔄 Включайте/выключайте уведомления для разных типов событий</p>
+              <p>💾 Изменения автоматически сохраняются на бэкенде</p>
+              <div className="mt-2 p-2 bg-green-100 rounded text-xs">
+                <strong>API endpoints:</strong><br/>
+                • GET /api/user-route-preferences<br/>
+                • PUT /api/user-route-preferences
+              </div>
             </div>
           </div>
 

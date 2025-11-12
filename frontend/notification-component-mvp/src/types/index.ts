@@ -104,5 +104,39 @@ export interface NotificationComponentConfig {
   onNotificationClick?: (notification: Notification) => void;
   maxNotifications?: number;
   onEmailCodeRequired?: (email: string, challengeId: string) => void;
-  userEmail?: string; // Опциональный email пользователя для автоматической отправки кода
+  userEmail?: string; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ email пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+}
+
+
+/**
+ * User route preference model matching backend API response
+ */
+export interface UserRoutePreference {
+  id: string;
+  userId: string;
+  route: string;
+  enabled: boolean;
+  routeDisplayName: string;
+  routeDescription: string;
+}
+
+/**
+ * Request DTO for updating user preferences
+ */
+export interface UserPreferenceDto {
+  route: string;
+  enabled: boolean;
+  id?: string | null;
+}
+
+/**
+ * User route preference view model (matches backend UserRoutePreferenceView)
+ */
+export interface UserRoutePreferenceView {
+  id?: string;
+  userId: string;
+  route: string;
+  enabled: boolean;
+  routeDisplayName: string;
+  routeDescription?: string;
 }

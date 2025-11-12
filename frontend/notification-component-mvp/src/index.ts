@@ -1,12 +1,15 @@
 // Types
-export type { 
+export type {
   Notification,
   NotificationIcon,
   PaginatedNotifications,
   NotificationFilters,
   GetNotificationsParams,
   SignalRConfig,
-  NotificationComponentConfig
+  NotificationComponentConfig,
+  UserRoutePreference,
+  UserPreferenceDto,
+  UserRoutePreferenceView
 } from './types';
 
 // Components
@@ -16,6 +19,7 @@ export { NotificationDropdown } from './components/NotificationDropdown';
 export { NotificationItem } from './components/NotificationItem';
 export { Toast } from './components/Toast';
 export { ToastContainer } from './components/ToastContainer';
+export { RoutePreferencesModal } from './components/RoutePreferencesModal';
 
 // Store
 export { NotificationStore } from './store/NotificationStore';
@@ -26,3 +30,4 @@ export { SignalRNotificationService, createSignalRService } from './services/sig
 
 // Hooks
 export { useNotificationStore } from './hooks/useNotificationStore';
+export { useRoutePreferences } from './hooks/useRoutePreferences';

@@ -1,8 +1,11 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import type { 
+import type {
   Notification,
-  PaginatedNotifications, 
-  GetNotificationsParams 
+  PaginatedNotifications,
+  GetNotificationsParams,
+  UserRoutePreference,
+  UserPreferenceDto,
+  UserRoutePreferenceView
 } from '../types';
 import type { AuthenticationService } from './authenticationService';
 
@@ -190,10 +193,49 @@ export class NotificationApiClient {
   }
 
   /**
-   * Update access token
-   */
+    * Update access token
+    */
   setAccessToken(token: string): void {
     this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
+  /**
+   * Get user route preferences
+   */
+  async getUserPreferences(): Promise<UserRoutePreference[]> {
+    const currentUser = this.authService?.getCurrentUser();
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+
+    const response = await this.client.get<UserRoutePreferenceView[]>(
+      `/api/users/${currentUser.userId}/routes`
+    );
+    
+    // Convert UserRoutePreferenceView to UserRoutePreference
+    return response.data.map(pref => ({
+      id: pref.id || '',
+      userId: pref.userId,
+      route: pref.route,
+      enabled: pref.enabled,
+      routeDisplayName: pref.routeDisplayName,
+      routeDescription: pref.routeDescription || ''
+    }));
+  }
+
+  /**
+   * Update user route preferences
+   */
+  async updateUserPreferences(preferences: UserPreferenceDto[]): Promise<void> {
+    const currentUser = this.authService?.getCurrentUser();
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+
+    await this.client.put(
+      `/api/users/${currentUser.userId}/routes`,
+      preferences
+    );
   }
 }
 

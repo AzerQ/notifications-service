@@ -16,6 +16,8 @@ A clean, simple, and production-ready React notification component with SignalR 
 - ✅ **Responsive Design** with Tailwind CSS
 - ✅ **TypeScript** fully typed
 - ✅ **MobX** for state management
+- ✅ **Route Preferences** - enable/disable notifications by route
+- ✅ **Settings Modal** with toggle switches for notification types
 - ✅ **Zero Bugs** clean implementation
 
 ## 📦 Installation
@@ -60,11 +62,12 @@ function App() {
   });
 
   return (
-    <NotificationComponent 
+    <NotificationComponent
       store={store}
       onNotificationClick={(notification) => {
         console.log('Clicked:', notification);
       }}
+      showPreferencesButton={true} // Show settings button
     />
   );
 }
@@ -138,6 +141,7 @@ interface NotificationComponentProps {
   onNotificationClick?: (notification: Notification) => void;
   bellClassName?: string;
   position?: 'left' | 'right';
+  showPreferencesButton?: boolean; // Show settings button for route preferences
 }
 ```
 
@@ -217,10 +221,43 @@ The component expects these endpoints:
 GET  /api/notification/personal?pageNumber=1&pageSize=50&onlyUnread=false
 PUT  /api/notification/{id}/read
 PUT  /api/notification/personal/mark-all-read
+GET  /api/user-route-preferences
+PUT  /api/user-route-preferences
 WS   /notificationHub (SignalR)
 ```
 
 SignalR event: `ReceiveNotification`
+
+### Route Preferences API
+
+The component supports user notification preferences:
+
+**GET /api/users/{userId}/routes**
+```json
+[
+  {
+    "id": "8dd481d0-e062-4fad-b1ff-7d07d2e2e721",
+    "userId": "9490fae9-2a4c-4545-8025-7dd3bf8397ec",
+    "route": "UserRegistered",
+    "enabled": false,
+    "routeDisplayName": "Регистрация пользователя",
+    "routeDescription": "Уведомление отправляется при регистрации нового пользователя"
+  }
+]
+```
+
+**PUT /api/users/{userId}/routes**
+```json
+[
+  {
+    "route": "UserRegistered",
+    "enabled": true,
+    "id": "8dd481d0-e062-4fad-b1ff-7d07d2e2e721"
+  }
+]
+```
+
+**Note**: User ID is automatically extracted from JWT token on the backend, so the frontend doesn't need to pass it explicitly.
 
 ## 🎯 Design Principles
 
