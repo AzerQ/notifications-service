@@ -25,6 +25,30 @@ export interface EmailCodeVerification {
 }
 
 /**
+ * Current user information extracted from JWT token
+ */
+export interface CurrentUser {
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
+  expiresAt: Date;
+}
+
+/**
+ * Raw JWT claims from token
+ */
+export interface JwtClaims {
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name': string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': string;
+  exp: number;
+  iss: string;
+  aud: string;
+}
+
+/**
  * Authentication service configuration
  */
 export interface AuthServiceConfig {
@@ -98,6 +122,66 @@ export class AuthenticationService {
    */
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
+  }
+
+  /**
+   * Decode JWT token and extract claims
+   * @param token JWT access token
+   * @returns Decoded JWT claims
+   */
+  private decodeJwt(token: string): JwtClaims {
+    try {
+      // JWT format: header.payload.signature
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+
+      // Decode payload (second part)
+      const payload = parts[1];
+      // Add padding if needed
+      const padded = payload + '='.repeat((4 - (payload.length % 4)) % 4);
+      const decoded = atob(padded);
+      const claims = JSON.parse(decoded);
+
+      return claims as JwtClaims;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to decode JWT';
+      console.error('[Auth] JWT decode error:', errorMessage);
+      throw new Error(`Failed to decode JWT token: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Get current authenticated user information from JWT token
+   * @returns Current user information or null if not authenticated
+   */
+  getCurrentUser(): CurrentUser | null {
+    const accessToken = this.getAccessToken();
+    
+    if (!accessToken) {
+      console.log('[Auth] No access token available');
+      return null;
+    }
+
+    try {
+      const claims = this.decodeJwt(accessToken);
+      
+      const user: CurrentUser = {
+        userId: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+        name: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        email: claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+        role: claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+        expiresAt: new Date(claims.exp * 1000), // Convert Unix timestamp to milliseconds
+      };
+
+      console.log('[Auth] Current user retrieved:', { userId: user.userId, name: user.name, email: user.email, role: user.role });
+      return user;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get current user';
+      console.error('[Auth] Get current user error:', errorMessage);
+      return null;
+    }
   }
 
   /**
