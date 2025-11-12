@@ -33,6 +33,7 @@ public class NotificationRepository : INotificationRepository
     {
         var query =  _context.Notifications
             .Include(n => n.Recipient)
+            .Include(n => n.DeliveryChannelsState)
             .Where(n => n.RecipientId == userId);
 
          if (userNotificationsRequest.OnlyUnread)
