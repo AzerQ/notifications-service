@@ -57,9 +57,16 @@ public class NotificationRepository : INotificationRepository
 
     public async Task MarkAllUserNotificationsAsRead(Guid userId)
     {
-         await _context.Notifications
-        .Where(n => n.RecipientId == userId)
-        .ExecuteUpdateAsync(notification => notification.SetProperty(n => n.NotificationWasRead,  true));
+        var allUserUnreadNotifications = await _context.Notifications
+        .Where(n => n.RecipientId == userId && n.NotificationWasRead == false)
+        .ToListAsync();
+        
+        foreach (var notification in allUserUnreadNotifications)
+        {
+            notification.NotificationWasRead = true;
+        }
+        _context.UpdateRange(allUserUnreadNotifications);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateNotificationsAsync(params Notification[] notifications)
