@@ -10,6 +10,7 @@ using NotificationService.Domain.Interfaces;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Providers.Email;
 using NotificationService.Infrastructure.Repositories;
+using NotificationService.Infrastructure.Services;
 using NotificationService.Infrastructure.Templates;
 
 namespace NotificationService.Api.DI;
@@ -113,6 +114,7 @@ public static class NotificationServiceDiConfigurationExtensions
             .AddScoped<IInAppNotificationSender, SignalRNotificationSender>()
             .AddScoped<INotificationCommandService, NotificationCommandService>()
             .AddScoped<INotificationQueryService, NotificationQueryService>()
+            .AddScoped<INotificationCleanupService, NotificationCleanupService>()
             .AddScoped<InAppNotificationProcessor>()
             .AddSingleton<IEmailProvider, SmtpEmailProvider>()
             .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
