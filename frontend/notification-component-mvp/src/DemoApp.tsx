@@ -71,7 +71,14 @@ export const DemoApp: React.FC = () => {
                 <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
                   authentication.authState.isAuthenticated ? 'bg-green-500' : 'bg-red-500'
                 }`} />
-                {authentication.authState.isAuthenticated ? 'Аутентифицирован' : 'Не аутентифицирован'}
+                {authentication.authState.isAuthenticated ? 
+                <>
+                  Аутентифицирован 
+                  <span className="text-gray-500"> ({authentication.authService.getCurrentUser()?.email})</span>
+                </>
+                 : 
+                 <>'Не аутентифицирован'</>
+                }
               </div>
               <NotificationComponent
                 store={store}
