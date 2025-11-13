@@ -17,7 +17,7 @@ interface AuthState {
   emailChallengeId: string | null;
   emailChallengeMessage: string | null;
   requiresEmailCode: boolean;
-  requiresEmailInput: boolean; // NEW: для запроса email адреса
+  requiresEmailInput: boolean; // NEW: пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ email пїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
 /**
@@ -25,13 +25,13 @@ interface AuthState {
  */
 interface UseAuthenticationOptions extends AuthServiceConfig {
   autoAuthenticate?: boolean;
-  userEmail?: string; // Опциональный email пользователя
+  userEmail?: string; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ email пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
 /**
  * Hook return type
  */
-interface UseAuthenticationReturn {
+export interface UseAuthenticationReturn {
   // State
   authState: AuthState;
   authService: AuthenticationService;
@@ -104,7 +104,7 @@ export function useAuthentication(options: UseAuthenticationOptions): UseAuthent
         ...prev,
           requiresEmailCode: true,
           emailChallengeId: challengeId,
-    requiresEmailInput: false, // Уже есть challenge, только код нужен
+    requiresEmailInput: false, // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ challenge, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 }));
         serviceConfig.onEmailCodeRequired?.(email, challengeId);
    },
@@ -118,7 +118,7 @@ export function useAuthentication(options: UseAuthenticationOptions): UseAuthent
     try {
       const tokens = await authService.authenticate();
       
-      // Если токенов нет и нужен email код, автоматически запрашиваем email
+      // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ email пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ email
       if (!tokens && userEmail) {
         console.log('[useAuthentication] Auto-requesting email code for:', userEmail);
    try {
@@ -181,7 +181,7 @@ requiresEmailInput: false,
       const tokens = await authService.verifyEmailCode(verification);
     console.log('[useAuthentication] Verification successful, tokens received');
       
-      // Успех - обновляем состояние
+      // пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
       setAuthState(prev => {
     console.log('[useAuthentication] Setting success state: isAuthenticating = false, isAuthenticated = true');
         return {
@@ -202,7 +202,7 @@ requiresEmailInput: false,
       const errorMessage = error instanceof Error ? error.message : 'Email code verification failed';
       console.error('[useAuthentication] Verification failed:', errorMessage);
       
-      // Ошибка - сбрасываем isAuthenticating и устанавливаем ошибку
+      // пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ isAuthenticating пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
       setAuthState(prev => {
         console.log('[useAuthentication] Setting error state: isAuthenticating = false, error =', errorMessage);
         return {
@@ -213,7 +213,7 @@ requiresEmailInput: false,
       });
       
 console.log('[useAuthentication] Returning rejected promise');
-      // Возвращаем rejected promise вместо throw, чтобы состояние успело обновиться
+      // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ rejected promise пїЅпїЅпїЅпїЅпїЅпїЅ throw, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
       return Promise.reject(new Error(errorMessage));
     }
   }, [authService]);

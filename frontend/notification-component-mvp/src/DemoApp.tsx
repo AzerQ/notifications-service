@@ -1,61 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { NotificationComponent } from './components/NotificationComponent';
-import { EmailCodeModal } from './components/EmailCodeModal';
+import { EmailAuthWrapper } from './components/EmailAuthWrapper';
 import { useNotificationStore } from './hooks/useNotificationStore';
 import { useRoutePreferences } from './hooks/useRoutePreferences';
 
 export const DemoApp: React.FC = () => {
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [currentEmail, setCurrentEmail] = useState('');
 
   const config = {
     apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
     signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
     accessToken: import.meta.env.VITE_ACCESS_TOKEN,
-    onEmailCodeRequired: (email: string) => {
-      console.log('[DemoApp] Email code required for:', email);
-      setCurrentEmail(email);
-      setShowEmailModal(true);
-    },
   };
 
   const { store, authentication } = useNotificationStore(config);
   const preferences = useRoutePreferences(store);
 
-  useEffect(() => {
-    if (authentication.authState.requiresEmailCode || authentication.authState.requiresEmailInput) {
-      setShowEmailModal(true);
-    }
-  }, [authentication.authState.requiresEmailCode, authentication.authState.requiresEmailInput]);
 
   const handleNotificationClick = (notification: any) => {
     console.log('Notification clicked:', notification);
-  };
-
-  const handleVerifyEmailCode = async (verification: { id: string; code: string }) => {
-    try {
-      console.log('[DemoApp] Verifying email code...');
-      await authentication.verifyEmailCode(verification);
-      console.log('[DemoApp] Verification successful!');
-      setShowEmailModal(false);
-    } catch (error) {
-      console.error('[DemoApp] Email verification failed:', error);
-    }
-  };
-
-  const handleResendCode = async (email: string) => {
-    try {
-      setCurrentEmail(email);
-      await authentication.sendEmailCode(email);
-      console.log('[DemoApp] Code resent successfully');
-    } catch (error) {
-      console.error('[DemoApp] Failed to resend code:', error);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setShowEmailModal(false);
-    authentication.clearError();
   };
 
   return (
@@ -145,7 +107,7 @@ export const DemoApp: React.FC = () => {
               <div>
                 <span className="text-gray-600">Модальное окно:</span>
                 <div className="font-semibold">
-                  {showEmailModal ? 'Открыто' : 'Закрыто'}
+                  Автоматически управляется
                 </div>
               </div>
               <div>
@@ -182,7 +144,6 @@ export const DemoApp: React.FC = () => {
               <button
                 onClick={() => {
                   authentication.setRequiresEmailInput(true);
-                  setShowEmailModal(true);
                 }}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
               >
@@ -192,8 +153,6 @@ export const DemoApp: React.FC = () => {
                 onClick={async () => {
                   try {
                     await authentication.sendEmailCode('test@example.com');
-                    setCurrentEmail('test@example.com');
-                    setShowEmailModal(true);
                   } catch (error) {
                     console.error('Ошибка отправки кода:', error);
                   }
@@ -240,17 +199,7 @@ export const DemoApp: React.FC = () => {
         </div>
       </main>
 
-      <EmailCodeModal
-        isOpen={showEmailModal}
-        challengeId={authentication.authState.emailChallengeId || ''}
-        challengeMessage={authentication.authState.emailChallengeMessage || undefined}
-        email={currentEmail}
-        error={authentication.authState.error}
-        onVerify={handleVerifyEmailCode}
-        onResendCode={handleResendCode}
-        onClose={handleCloseModal}
-        requiresEmailInput={authentication.authState.requiresEmailInput}
-      />
+      <EmailAuthWrapper authentication={authentication} />
     </div>
   );
 };
