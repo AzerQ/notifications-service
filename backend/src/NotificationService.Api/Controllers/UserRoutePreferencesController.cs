@@ -10,7 +10,7 @@ namespace NotificationService.Api.Controllers;
 [ApiController]
 [Route("api/users/{userId:guid}/routes")]
 [Authorize(Policy = AuthConfig.JwtAuthPolicyName)]
-public partial class UserRoutePreferencesController : ControllerBase
+public class UserRoutePreferencesController : ControllerBase
 {
     private readonly IUserRoutePreferenceRepository _repo;
 
