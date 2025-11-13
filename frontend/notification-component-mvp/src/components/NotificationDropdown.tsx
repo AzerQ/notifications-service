@@ -4,6 +4,7 @@ import { CheckCheck, Filter, Loader2 } from 'lucide-react';
 import type { NotificationStore } from '../store/NotificationStore';
 import { NotificationItem } from './NotificationItem';
 import { ToastContainer } from './ToastContainer';
+import { num_decline } from '../utils/numDecline';
 
 interface NotificationDropdownProps {
   store: NotificationStore;
@@ -55,7 +56,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
     return (
       <>
         <ToastContainer />
-</>
+      </>
     );
   }
 
@@ -66,6 +67,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
       store.setFilters({ onlyUnread: true });
     }
   };
+
+  const unreadNotificationsLabel = num_decline(store.unreadCount, ["непрочитанное","непрочитанных"]) + 
+  " " +  num_decline(store.unreadCount, ["уведомление","уведомлений"], false);
 
   const displayedNotifications = (store.filters.onlyUnread ? store.unreadNotifications : store.notifications) ?? []; // Show max 20 in dropdown
 
@@ -115,8 +119,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = observe
 
           {store.unreadCount > 0 && (
           <p className="text-sm text-gray-500 mt-1">
-              {store.unreadCount} непрочитанное уведомление{store.unreadCount !== 1 ? 'й' : ''}
-    </p>
+             У вас {unreadNotificationsLabel}
+          </p>
           )}
         </div>
 
