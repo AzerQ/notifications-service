@@ -9,6 +9,7 @@ This MVP includes:
 - ✅ **SignalR Integration** - Real-time notifications to connected clients
 - ✅ **JWT Authentication** - Secure user authentication and authorization
 - ✅ **Targeted Notifications** - SignalR notifications delivered only to specific users
+- ✅ **Scheduled Cleanup Service** - Automatic deletion of old notifications with configurable retention period
 - ✅ **Showcase Application** - Full-featured demo with React + TypeScript + MobX + Tailwind
 - ✅ **Test Application** - Ready-to-use demo application
 - ✅ **InApp Frontend Component** - React/TypeScript notification UI
@@ -291,7 +292,12 @@ notifications-service/
 │   └── start.bat                     # Windows startup script
 ├── tests/                            # Unit tests
 └── docs/                             # Documentation
+    └── NOTIFICATION_CLEANUP.md       # Cleanup service documentation
 ```
+
+## Documentation
+
+- [Notification Cleanup Service](./docs/NOTIFICATION_CLEANUP.md) - Automatic cleanup of old notifications with configurable retention period and scheduling
 
 ## Project Goals
 
