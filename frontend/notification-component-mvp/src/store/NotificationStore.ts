@@ -3,6 +3,10 @@ import type { Notification, NotificationFilters, UserRoutePreference, UserPrefer
 import type { NotificationApiClient } from '../services/apiClient';
 import type { SignalRNotificationService } from '../services/signalRService';
 
+const getDefaultFilters: () => NotificationFilters = () => ({
+  onlyUnread: true
+});
+
 /**
  * MobX store for managing notification state
  */
@@ -19,7 +23,7 @@ export class NotificationStore {
   totalCount = 0;
   
   // Filters
-  filters: NotificationFilters = {};
+  filters: NotificationFilters = getDefaultFilters();
   
   // UI state
   isDropdownOpen = false;
@@ -295,7 +299,7 @@ pageSize: this.pageSize,
     this.error = null;
     this.currentPage = 1;
     this.totalCount = 0;
-    this.filters = {};
+    this.filters = getDefaultFilters();
     this.isDropdownOpen = false;
     this.showToastCallback = undefined;
     
