@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
-import { CheckCheck, Filter, Loader2 } from "lucide-react";
+import { CheckCheck, Eye, EyeClosed, Filter, Loader2 } from "lucide-react";
 import type { NotificationStore } from "../store/NotificationStore";
 import { NotificationItem } from "./NotificationItem";
 import { ToastContainer } from "./ToastContainer";
@@ -111,7 +111,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                       : "Показать только непрочитанные"
                   }
                 >
-                  <Filter className="w-4 h-4" />
+                {store.filters.onlyUnread ? <Eye className="w-4 h-4" /> : <EyeClosed className="w-6 h-6" /> }  
                 </button>
 
                 {/* Mark all as read */}
@@ -123,7 +123,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                     data-testid="notification-mark-all-read"
                     title="Отметить все как прочитанные"
                   >
-                    <CheckCheck className="w-4 h-4" />
+                    <CheckCheck className="w-6 h-6" />
                   </button>
                 )}
               </div>

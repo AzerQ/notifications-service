@@ -29,7 +29,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = observer(({
       aria-label="Уведомления"
       data-testid="notification-bell"
     >
-      <Bell className="w-6 h-6 text-gray-700" />
+      <Bell className="w-8 h-8 text-gray-700" />
       
       {store.hasUnread && (
         <span 

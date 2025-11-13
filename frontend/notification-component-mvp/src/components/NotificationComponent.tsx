@@ -60,7 +60,7 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Настройки уведомлений"
           >
-            <Settings className="w-5 h-5 text-gray-600" />
+            <Settings className="w-8 h-8 text-gray-600" />
           </button>
         )}
       </div>
