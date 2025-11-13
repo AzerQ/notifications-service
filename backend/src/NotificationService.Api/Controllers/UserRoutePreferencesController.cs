@@ -24,10 +24,10 @@ public class UserRoutePreferencesController : ControllerBase
     /// Regular users can only retrieve their own preferences, administrators can retrieve any.
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<UserRoutePreference>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<UserRoutePreferenceView>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<UserRoutePreference>>> Get(Guid userId)
+    public async Task<ActionResult<IEnumerable<UserRoutePreferenceView>>> Get(Guid userId)
     {
         var currentUserId = User.GetApplicationUser().Id;
 
@@ -41,8 +41,6 @@ public class UserRoutePreferencesController : ControllerBase
         return Ok(prefs);
     }
 
-    public record PreferenceDto(string Route, bool Enabled);
-
     /// <summary>
     /// Updates route notification preferences for a user.
     /// Regular users can only update their own preferences, administrators can update any.
@@ -52,7 +50,7 @@ public class UserRoutePreferencesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> Put(Guid userId, [FromBody] IEnumerable<PreferenceDto> prefs)
+    public async Task<IActionResult> Put(Guid userId, [FromBody] IEnumerable<UserPreferenceDto> prefs)
     {
         var currentUserId = User.GetApplicationUser().Id;
 
@@ -70,7 +68,7 @@ public class UserRoutePreferencesController : ControllerBase
             Enabled = p.Enabled
         });
 
-        await _repo.SetPreferencesAsync(userId, entities);
+        await _repo.SetPreferencesAsync(userId, prefs);
         return NoContent();
     }
 }

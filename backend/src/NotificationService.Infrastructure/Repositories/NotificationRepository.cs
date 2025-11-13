@@ -33,6 +33,7 @@ public class NotificationRepository : INotificationRepository
     {
         var query =  _context.Notifications
             .Include(n => n.Recipient)
+            .Include(n => n.DeliveryChannelsState)
             .Where(n => n.RecipientId == userId);
 
          if (userNotificationsRequest.OnlyUnread)
@@ -53,6 +54,20 @@ public class NotificationRepository : INotificationRepository
             .Include(n => n.Recipient)
             .Include(n => n.Template)
             .FirstOrDefaultAsync(n => n.Id == id);
+    }
+
+    public async Task MarkAllUserNotificationsAsRead(Guid userId)
+    {
+        var allUserUnreadNotifications = await _context.Notifications
+        .Where(n => n.RecipientId == userId && n.NotificationWasRead == false)
+        .ToListAsync();
+        
+        foreach (var notification in allUserUnreadNotifications)
+        {
+            notification.NotificationWasRead = true;
+        }
+        _context.UpdateRange(allUserUnreadNotifications);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateNotificationsAsync(params Notification[] notifications)

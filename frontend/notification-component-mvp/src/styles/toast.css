@@ -1,0 +1,152 @@
+/* Toast Notifications Animations and Styles */
+
+/* Keyframes */
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+  opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+  opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Toast container positioning */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  max-width: 24rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+/* Individual toast wrapper */
+.toast-wrapper {
+  pointer-events: auto;
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Toast exit animation */
+.toast-wrapper.exiting {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+/* Progress bar animation */
+.toast-progress {
+  animation: shrink var(--duration, 5000ms) linear;
+}
+
+/* Hover effects */
+.toast-notification {
+  transition: all 0.2s ease;
+}
+
+.toast-notification:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Stack effect for multiple toasts */
+.toast-wrapper:nth-child(1) {
+  z-index: 100;
+}
+
+.toast-wrapper:nth-child(2) {
+  z-index: 99;
+}
+
+.toast-wrapper:nth-child(3) {
+  z-index: 98;
+}
+
+.toast-wrapper:nth-child(4) {
+  z-index: 97;
+}
+
+.toast-wrapper:nth-child(5) {
+  z-index: 96;
+}
+
+/* Fade in badges */
+.toast-badge {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .toast-container {
+ left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+  
+  .toast-notification {
+    max-width: none;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .toast-notification {
+    background-color: rgb(31 41 55);
+    border-color: rgb(55 65 81);
+  }
+  
+  .toast-progress {
+    background-color: rgb(59 130 246);
+  }
+}
+
+/* Accessibility - reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .toast-wrapper,
+  .toast-notification,
+  .toast-progress {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Print styles - hide toasts */
+@media print {
+  .toast-container {
+    display: none;
+  }
+}

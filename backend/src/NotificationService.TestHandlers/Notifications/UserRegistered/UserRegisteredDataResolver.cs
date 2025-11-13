@@ -35,14 +35,14 @@ public class UserRegisteredDataResolver : INotificationDataResolver
         var parameters = notificationRequest.GetData<UserRegisteredRequestData>();
         if (parameters?.UserId == null)
         {
-            throw new ArgumentException("UserId is required");
+            throw new ArgumentException("Требуется UserId");
         }
 
         var user = await _userRepository.GetUserByIdAsync(parameters.UserId);
         
         if (user == null)
         {
-            throw new ArgumentException($"User with ID {parameters.UserId} not found");
+            throw new ArgumentException($"Пользователь с ID {parameters.UserId} не найден");
         }
 
         return new NotificationFullData(new UserRegisteredTemplateModel
@@ -50,7 +50,7 @@ public class UserRegisteredDataResolver : INotificationDataResolver
             UserName = user.Name,
             UserEmail = user.Email,
             RegistrationDate = DateTime.UtcNow,
-            WelcomeMessage = parameters.WelcomeMessage ?? "Welcome to our service!"
+            WelcomeMessage = parameters.WelcomeMessage ?? "Добро пожаловать в наш сервис!"
         }, "https://example.com");
     }
 }

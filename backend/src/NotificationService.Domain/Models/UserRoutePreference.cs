@@ -6,4 +6,5 @@ public class UserRoutePreference
     public Guid UserId { get; set; }
     public string Route { get; set; } = string.Empty; // семантический идентификатор маршрута
     public bool Enabled { get; set; } = true;
+    
 }

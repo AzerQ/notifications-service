@@ -36,7 +36,7 @@ public class TaskAssignedDataResolver : INotificationDataResolver
         
         if (parameters?.AssigneeId == null || parameters?.AssignerId == null)
         {
-            throw new ArgumentException("AssigneeId and AssignerId are required");
+            throw new ArgumentException("Требуются AssigneeId и AssignerId");
         }
 
         var assignee = await _userRepository.GetUserByIdAsync(parameters.AssigneeId);
@@ -44,14 +44,14 @@ public class TaskAssignedDataResolver : INotificationDataResolver
         
         if (assignee == null)
         {
-            throw new ArgumentException($"Assignee with ID {parameters.AssigneeId} not found");
+            throw new ArgumentException($"Исполнитель с ID {parameters.AssigneeId} не найден");
         }
 
         return new NotificationFullData(new TaskAssignedTemplateModel
         {
             AssigneeName = assignee.Name,
-            AssignerName = assigner?.Name ?? "System",
-            TaskTitle = parameters.TaskTitle ?? "Unnamed Task",
+            AssignerName = assigner?.Name ?? "Система",
+            TaskTitle = parameters.TaskTitle ?? "Задача без названия",
             TaskDescription = parameters.TaskDescription ?? "",
             Priority = parameters.Priority ?? "Normal",
             DueDate = parameters.DueDate ?? DateTime.UtcNow.AddDays(7),

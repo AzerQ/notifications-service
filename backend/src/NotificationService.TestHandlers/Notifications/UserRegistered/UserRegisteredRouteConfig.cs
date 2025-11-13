@@ -7,9 +7,9 @@ public class UserRegisteredRouteConfig : INotificationRouteConfiguration
     public string Name => "UserRegistered";
     public NotificationObjectKind NotificationObjectKind => NotificationObjectKinds.User;
     public string TemplateName => "UserRegistered";
-    public string DisplayName => "User Registration";
-    public string Description => "Notification sent when a new user registers";
-    public IEnumerable<string> Tags => new[] { "user", "registration", "welcome" };
+    public string DisplayName => "Регистрация пользователя";
+    public string Description => "Уведомление отправляется при регистрации нового пользователя";
+    public IEnumerable<string> Tags => new[] { "пользователь", "регистрация", "добро пожаловать" };
     public Type PayloadType => typeof(UserRegisteredRequestData);
     public Icon? Icon => new ("user");
 }

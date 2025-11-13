@@ -36,14 +36,14 @@ public class OrderCreatedDataResolver : INotificationDataResolver
         
         if (parameters?.CustomerId == null)
         {
-            throw new ArgumentException("CustomerId is required");
+            throw new ArgumentException("Требуется CustomerId");
         }
 
         var user = await _userRepository.GetUserByIdAsync(parameters.CustomerId);
         
         if (user == null)
         {
-            throw new ArgumentException($"Customer with ID {parameters.CustomerId} not found");
+            throw new ArgumentException($"Покупатель с ID {parameters.CustomerId} не найден");
         }
 
         return new NotificationFullData(new OrderCreatedTemplateModel

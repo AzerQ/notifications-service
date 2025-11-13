@@ -73,6 +73,18 @@ public class NotificationController(
       return Ok(result);
     }
 
+
+    [HttpPut("personal/mark-all-read")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> MarkAllUserNotificationsAsRead()
+    {
+      var currentUserId = User.GetApplicationUser().Id;
+      await commandService.MarkAllUserNotificationsAsRead(currentUserId);
+      return Ok();
+    }
+
+
     [HttpPost("search")]
     [ProducesResponseType(typeof(IReadOnlyCollection<Notification>), StatusCodes.Status200OK)]
     [Authorize(Roles = UserRoles.Admin)]

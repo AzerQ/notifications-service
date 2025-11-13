@@ -49,6 +49,11 @@ public class NotificationCommandService
         return notificationMapper.MapToResponse(preparedNotifications);
         
     }
+
+    public async Task MarkAllUserNotificationsAsRead(Guid userId)
+    {
+        await notificationRepository.MarkAllUserNotificationsAsRead(userId);
+    }
 }
 
 /// <summary>
@@ -73,6 +78,13 @@ public class NotificationQueryService(
         return notification is null ? null : notificationMapper.MapToResponse([notification]);
     }
 
+    private List<Notification> GetOnlyInAppSentNotifications(IEnumerable<Notification> notifications)
+    {
+        return notifications
+            .Where(n => n.DeliveryChannelsState.Any(c => c is { NotificationChannel: NotificationChannel.InApp, DeliveryStatus: NotificationDeliveryStatus.Sent }))
+            .ToList();
+    }
+
     /// <summary>
     /// Получает все уведомления для указанного пользователя.
     /// </summary>
@@ -81,7 +93,7 @@ public class NotificationQueryService(
     public async Task<IReadOnlyCollection<AppNotification>> GetUserNotifications(Guid userId,
         GetUserNotificationsRequest userNotificationsRequest)
     {
-        var notifications = (await notificationRepository.GetUserNotifications(userId, userNotificationsRequest)).ToList();
+        var notifications = GetOnlyInAppSentNotifications(await notificationRepository.GetUserNotifications(userId, userNotificationsRequest));
 
         var distinctRoutesConfigurations = notifications
                             .Select(n => n.Route)

@@ -10,4 +10,5 @@ public interface INotificationRepository
 
     Task<IEnumerable<Notification>> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
     Task<Notification?> GetNotificationByIdAsync(Guid id);
+    Task MarkAllUserNotificationsAsRead(Guid userId);
 }
