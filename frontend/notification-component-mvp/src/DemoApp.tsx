@@ -1,24 +1,32 @@
 import React from 'react';
 import { NotificationComponent } from './components/NotificationComponent';
-import { EmailAuthWrapper } from './components/EmailAuthWrapper';
+import { NotificationProvider, useNotificationContext } from './components/NotificationContext';
 import { useNotificationStore } from './hooks/useNotificationStore';
 import { useRoutePreferences } from './hooks/useRoutePreferences';
+import { config } from '.';
 
 export const DemoApp: React.FC = () => {
-
-  const config = {
-    apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
-    signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
-    accessToken: import.meta.env.VITE_ACCESS_TOKEN,
-  };
-
-  const { store, authentication } = useNotificationStore(config);
-  const preferences = useRoutePreferences(store);
-
+  const { store, authentication, isStoreInitialized } = useNotificationStore(config);
 
   const handleNotificationClick = (notification: any) => {
     console.log('Notification clicked:', notification);
   };
+
+  return (
+    <NotificationProvider value={{ store, authentication, isStoreInitialized }}>
+      <NotificationAppContent onNotificationClick={handleNotificationClick} />
+    </NotificationProvider>
+  );
+};
+
+/**
+ * Internal component that uses the notification context
+ */
+const NotificationAppContent: React.FC<{ onNotificationClick: (notification: any) => void }> = ({
+  onNotificationClick
+}) => {
+  const { store, authentication } = useNotificationContext();
+  const preferences = useRoutePreferences(store);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -33,18 +41,17 @@ export const DemoApp: React.FC = () => {
                 <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
                   authentication.authState.isAuthenticated ? 'bg-green-500' : 'bg-red-500'
                 }`} />
-                {authentication.authState.isAuthenticated ? 
+                {authentication.authState.isAuthenticated ?
                 <>
-                  Аутентифицирован 
+                  Аутентифицирован
                   <span className="text-gray-500"> ({authentication.authService.getCurrentUser()?.email})</span>
                 </>
-                 : 
+                 :
                  <>'Не аутентифицирован'</>
                 }
               </div>
               <NotificationComponent
-                store={store}
-                onNotificationClick={handleNotificationClick}
+                onNotificationClick={onNotificationClick}
                 showPreferencesButton={true}
               />
             </div>
@@ -55,23 +62,23 @@ export const DemoApp: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
          <h2 className="text-2xl font-bold">Демонстрация автоматической аутентификации</h2>
-         
-         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-           <h3 className="font-semibold text-purple-900 mb-2">🔐 Стратегия аутентификации:</h3>
-           <ol className="text-sm text-purple-800 space-y-1 list-decimal list-inside">
-             <li><strong>Уровень 1:</strong> Попытка использовать токен обновления из localStorage</li>
-             <li><strong>Уровень 2:</strong> Попытка аутентификации Windows (автоматически)</li>
-             <li><strong>Уровень 3:</strong> Запрос электронной почты и отправка кода проверки</li>
-           </ol>
-           <p className="text-xs text-purple-600 mt-2">
-             ✓ Если аутентификация Windows не удалась, модальное окно электронной почты открывается автоматически!
-           </p>
-           <p className="text-xs text-purple-600 mt-1">
-             🔑 Информация пользователя извлекается из токена JWT - не требуются жестко закодированные ID!
-           </p>
-         </div>
 
-          <div className="bg-gray-50 border rounded-lg p-4">
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <h3 className="font-semibold text-purple-900 mb-2">🔐 Стратегия аутентификации:</h3>
+            <ol className="text-sm text-purple-800 space-y-1 list-decimal list-inside">
+              <li><strong>Уровень 1:</strong> Попытка использовать токен обновления из localStorage</li>
+              <li><strong>Уровень 2:</strong> Попытка аутентификации Windows (автоматически)</li>
+              <li><strong>Уровень 3:</strong> Запрос электронной почты и отправка кода проверки</li>
+            </ol>
+            <p className="text-xs text-purple-600 mt-2">
+              ✓ Если аутентификация Windows не удалась, модальное окно электронной почты открывается автоматически!
+            </p>
+            <p className="text-xs text-purple-600 mt-1">
+              🔑 Информация пользователя извлекается из токена JWT - не требуются жестко закодированные ID!
+            </p>
+          </div>
+
+           <div className="bg-gray-50 border rounded-lg p-4">
             <h4 className="font-medium mb-2">Статус:</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -117,7 +124,7 @@ export const DemoApp: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {authentication.authState.error && (
               <div className="mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                 <p className="text-sm text-red-800">{authentication.authState.error}</p>
@@ -125,7 +132,7 @@ export const DemoApp: React.FC = () => {
             )}
           </div>
 
-          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+           <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
             <h4 className="font-medium text-indigo-900 mb-2">Тестовые действия:</h4>
             <div className="flex flex-wrap gap-3">
               <button
@@ -170,7 +177,7 @@ export const DemoApp: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h4 className="font-medium text-green-900 mb-2">⚙️ Настройки уведомлений:</h4>
             <div className="text-sm text-green-800 space-y-2">
               <p>✨ <strong>Новая функция:</strong> Настройки маршрутов уведомлений</p>
@@ -185,7 +192,7 @@ export const DemoApp: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h4 className="font-medium text-yellow-900 mb-2">❓ Как это работает:</h4>
             <ol className="text-sm text-yellow-800 space-y-1 list-decimal list-inside">
               <li>При загрузке автоматически пытается использовать уровень 1 (токен обновления)</li>
@@ -199,7 +206,7 @@ export const DemoApp: React.FC = () => {
         </div>
       </main>
 
-      <EmailAuthWrapper authentication={authentication} />
+
     </div>
   );
 };

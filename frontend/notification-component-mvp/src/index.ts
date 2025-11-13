@@ -12,6 +12,12 @@ export type {
   UserRoutePreferenceView
 } from './types';
 
+export const config = {
+    apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
+    signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
+    accessToken: import.meta.env.VITE_ACCESS_TOKEN,
+  };
+
 // Components
 export { NotificationComponent } from './components/NotificationComponent';
 export { NotificationBell } from './components/NotificationBell';

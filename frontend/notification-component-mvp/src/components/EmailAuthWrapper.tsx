@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { EmailCodeModal } from './EmailCodeModal';
-import type { UseAuthenticationReturn } from '../hooks/useAuthentication';
-
-interface EmailAuthWrapperProps {
-  authentication: UseAuthenticationReturn;
-}
+import { useNotificationContext } from './NotificationContext';
 
 /**
  * Wrapper component that encapsulates email authentication modal logic
  * Automatically shows/hides the modal based on authentication state
  * No props required - just drop it into your component tree
  */
-export const EmailAuthWrapper: React.FC<EmailAuthWrapperProps> = ({
-  authentication
-}) => {
+export const EmailAuthWrapper: React.FC = () => {
+  const { authentication } = useNotificationContext();
   const [showModal, setShowModal] = useState(false);
   const [currentEmail, setCurrentEmail] = useState('');
 

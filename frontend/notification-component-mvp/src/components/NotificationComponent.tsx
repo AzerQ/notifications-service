@@ -5,11 +5,11 @@ import { NotificationBell } from './NotificationBell';
 import { NotificationDropdown } from './NotificationDropdown';
 import { RoutePreferencesModal } from './RoutePreferencesModal';
 import { useRoutePreferences } from '../hooks/useRoutePreferences';
-import type { NotificationStore } from '../store/NotificationStore';
 import type { Notification } from '../types';
+import { EmailAuthWrapper } from './EmailAuthWrapper';
+import { useNotificationContext } from './NotificationContext';
 
 interface NotificationComponentProps {
-  store: NotificationStore;
   onNotificationClick?: (notification: Notification) => void;
   bellClassName?: string;
   position?: 'left' | 'right';
@@ -20,14 +20,14 @@ interface NotificationComponentProps {
  * Main notification component combining bell and dropdown
  */
 export const NotificationComponent: React.FC<NotificationComponentProps> = observer(({
-  store,
   onNotificationClick,
   bellClassName,
   position = 'right',
   showPreferencesButton = true
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+  const { store } = useNotificationContext();
+
   const {
     preferences,
     isLoading: isPreferencesLoading,
@@ -35,7 +35,6 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
     savePreferences,
     closeModal
   } = useRoutePreferences(store);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -81,6 +80,7 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
         onSave={savePreferences}
         isLoading={isPreferencesLoading}
       />
+      <EmailAuthWrapper />
     </div>
   );
 });
