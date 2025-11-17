@@ -16,12 +16,13 @@ A fully-featured demonstration application with authentication and targeted noti
 
 **Quick Start:**
 ```bash
+# If showcase directory exists
 cd showcase
 ./start.sh    # Linux/Mac
 start.bat     # Windows
 ```
 
-For more details, see [showcase/README.md](../../showcase/README.md)
+For more details, check if `showcase/` directory exists in your repository.
 
 ## 📚 Table of Contents
 
@@ -125,7 +126,6 @@ Open http://localhost:8080 in your browser.
 ### Examples
 - [API Usage Examples](./04-API.md#examples)
 - [Notification Handler Examples](../../backend/src/NotificationService.TestHandlers/Notifications/)
-- [Test Application](../../testapp/README.md)
 
 ## 🌍 Available Languages
 
