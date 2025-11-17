@@ -154,15 +154,27 @@ See the [Showcase Application](./showcase/README.md) for a complete example.
 
 ## Documentation
 
-Полная документация проекта доступна в разделе [docs/](./docs/README.md):
+Complete project documentation is available in the [docs/](./docs/README.md) folder in both **English** and **Russian**:
 
-1. [**Обзор и цели системы**](./docs/01-Overview.md) — назначение, возможности, технологический стек
-2. [**Архитектура системы**](./docs/02-Architecture.md) — структура, слои, компоненты, диаграммы
-3. [**Ключевые компоненты**](./docs/03-Components.md) — детальное описание всех компонентов
-4. [**Справочник API**](./docs/04-API.md) — полная документация REST API и SignalR Hub
-5. [**Frontend компоненты**](./docs/05-Frontend.md) — документация React компонентов
-6. [**Руководство разработчика**](./docs/06-Development-Guide.md) — добавление новых обработчиков и каналов
-7. [**Руководство по интеграции**](./docs/07-Integration-Guide.md) — встраивание в существующие приложения
+**📖 English Documentation:**
+- [Overview and Goals](./docs/en/01-Overview.md) — purpose, features, technology stack
+- [System Architecture](./docs/en/02-Architecture.md) — structure, layers, components, diagrams
+- [Key Components](./docs/en/03-Components.md) — detailed description of all components
+- [API Reference](./docs/en/04-API.md) — complete REST API and SignalR Hub documentation
+- [Frontend Components](./docs/en/05-Frontend.md) — React component documentation
+- [Developer Guide](./docs/en/06-Development-Guide.md) — adding new handlers and channels
+- [Integration Guide](./docs/en/07-Integration-Guide.md) — embedding into existing applications
+- [Showcase Application](./docs/en/08-Showcase-Application.md) — demo application guide
+
+**📖 Русская документация:**
+- [Обзор и цели системы](./docs/ru/01-Overview.md) — назначение, возможности, технологический стек
+- [Архитектура системы](./docs/ru/02-Architecture.md) — структура, слои, компоненты, диаграммы
+- [Ключевые компоненты](./docs/ru/03-Components.md) — детальное описание всех компонентов
+- [Справочник API](./docs/ru/04-API.md) — полная документация REST API и SignalR Hub
+- [Frontend компоненты](./docs/ru/05-Frontend.md) — документация React компонентов
+- [Руководство разработчика](./docs/ru/06-Development-Guide.md) — добавление новых обработчиков и каналов
+- [Руководство по интеграции](./docs/ru/07-Integration-Guide.md) — встраивание в существующие приложения
+- [Showcase приложение](./docs/ru/08-Showcase-Application.md) — руководство по демо-приложению
 
 ## Example API Requests
 
