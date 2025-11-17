@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.SignalR;
 using NotificationService.Api;
 using NotificationService.Api.Authentication;
+using NotificationService.Api.Configuration;
 using NotificationService.Api.DI;
 using NotificationService.Api.Hubs;
+using NotificationService.Api.Jobs;
 using NotificationService.Api.Providers;
 using NotificationService.Application.Extensions;
 using NotificationService.Infrastructure.Data.Init;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,31 @@ builder.Services.AddSwaggerWithXmlDocumentation();
 builder.Services.AddNotificationApplicationServices(builder.Configuration);
 
 builder.Services.ConfigureServiceAuthentication(builder.Configuration);
+
+// Configure notification cleanup options
+builder.Services.Configure<NotificationCleanupOptions>(
+    builder.Configuration.GetSection("NotificationCleanup"));
+
+// Configure Quartz for scheduled jobs
+builder.Services.AddQuartz(q =>
+{
+    var cleanupOptions = builder.Configuration.GetSection("NotificationCleanup").Get<NotificationCleanupOptions>() 
+        ?? new NotificationCleanupOptions();
+    
+    if (cleanupOptions.Enabled)
+    {
+        var jobKey = new JobKey("NotificationCleanupJob");
+        q.AddJob<NotificationCleanupJob>(opts => opts.WithIdentity(jobKey));
+        
+        q.AddTrigger(opts => opts
+            .ForJob(jobKey)
+            .WithIdentity("NotificationCleanupJob-trigger")
+            .WithCronSchedule(cleanupOptions.Schedule)
+            .WithDescription($"Cleans up notifications older than {cleanupOptions.RetentionDays} days"));
+    }
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 // Configure SignalR with custom UserIdProvider for targeted notifications
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
