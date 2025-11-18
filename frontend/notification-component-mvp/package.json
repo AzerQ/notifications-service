@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "@notifications-service/inapp-component-mvp",
   "version": "1.0.0",
   "description": "Clean MVP InApp Notification Component for React",

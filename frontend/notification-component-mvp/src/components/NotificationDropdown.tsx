@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
-import { CheckCheck, Eye, EyeClosed, Filter, Loader2 } from "lucide-react";
+import { CheckCheck, Eye, EyeClosed, Loader2 } from "lucide-react";
 import type { NotificationStore } from "../store/NotificationStore";
 import { NotificationItem } from "./NotificationItem";
 import { ToastContainer } from "./ToastContainer";
