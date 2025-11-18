@@ -15,16 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService.Api", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "documentation", "documentation", "{3295AF9E-2C2E-448D-93F4-CDA9549FA992}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-		docs\guides\DeveloperGuide.md = docs\guides\DeveloperGuide.md
-		docs\Plan.md = docs\Plan.md
-		docs\reference\API.md = docs\reference\API.md
-		docs\reference\Architecture.md = docs\reference\Architecture.md
-		docs\reference\Configuration.md = docs\reference\Configuration.md
-		docs\reference\Database.md = docs\reference\Database.md
-		docs\reference\Templates.md = docs\reference\Templates.md
-		docs\tasks\task-plan.md = docs\tasks\task-plan.md
-		docs\tasks\task-structure.md = docs\tasks\task-structure.md
+		..\docs\README.md = ..\docs\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService.TestHandlers", "src\NotificationService.TestHandlers\NotificationService.TestHandlers.csproj", "{212B1AA1-ABDE-4A83-BDFB-14299810DF73}"
