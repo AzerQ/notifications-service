@@ -9,7 +9,7 @@ namespace NotificationService.Application.Extensions;
 public static class NotificationsModuleExtension
 {
     public static IServiceCollection AddNotificationsServiceModule(this IServiceCollection serviceCollection, 
-        IConfiguration configuration,
+        ConfigurationManager configuration,
         params Assembly[] notificationAssemblies)
     {
 
