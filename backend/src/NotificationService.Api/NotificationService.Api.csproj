@@ -37,10 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <_ContentIncludedByDefault Remove="Notifications\OrderCreated\template.json" />
     <_ContentIncludedByDefault Remove="Notifications\TaskAssigned\template.json" />
     <_ContentIncludedByDefault Remove="Notifications\UserRegistered\template.json" />
