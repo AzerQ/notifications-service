@@ -1,8 +1,21 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Bell, ExternalLink, Check, X } from 'lucide-react';
+import {Bell, ExternalLink, Check, X, LucideProps} from 'lucide-react';
 import type { Notification } from '../types';
-import { DynamicIcon, IconName } from 'lucide-react/dynamic';
+import * as LucideIcons from 'lucide-react';
+
+interface CustomIconProps extends LucideProps {
+  name: string;
+}
+
+const DynamicIcon = ({name, ...props} : CustomIconProps) => {
+  const IconComponent = (LucideIcons as any)[name];
+  if (!IconComponent) {
+    console.warn(`Icon "${name}" not found`);
+    return null;
+  }
+  return <IconComponent {...props}/>
+}
 
 interface NotificationItemProps {
   notification: Notification;
@@ -46,7 +59,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
       // Use backend-provided icon with custom class if available
       return (
         <div className={`w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 ${notification.icon.cssClass || ''}`}>
-              <DynamicIcon name={notification.icon.name as IconName}/>
+              <DynamicIcon name={notification.icon.name}/>
         </div>
       );
     }
