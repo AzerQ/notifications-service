@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { X, Settings, Bell, BellOff } from 'lucide-react';
 import type { UserRoutePreference, UserPreferenceDto } from '../types';
+import styles from './RoutePreferencesModal.module.css';
 
 interface RoutePreferencesModalProps {
   isOpen: boolean;
@@ -68,49 +69,49 @@ export const RoutePreferencesModal: React.FC<RoutePreferencesModalProps> = obser
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className={styles.overlay}>
       <div 
-        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden"
+        className={styles.modal}
         onKeyDown={handleKeyDown}
         tabIndex={-1}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <Settings className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className={styles.header}>
+          <div className={styles.headerContent}>
+            <Settings className={styles.headerIcon} />
+            <h2 className={styles.title}>
               Настройки уведомлений
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className={styles.closeButton}
             disabled={isSaving}
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className={styles.closeIcon} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
-          <div className="space-y-4">
+        <div className={styles.content}>
+          <div className={styles.preferencesList}>
             {preferences.map((preference) => (
               <div 
                 key={preference.route}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className={styles.preferenceItem}
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                <div className={styles.preferenceContent}>
+                  <div className={styles.preferenceHeader}>
                     {preference.enabled ? (
-                      <Bell className="w-5 h-5 text-green-600" />
+                      <Bell className={`${styles.preferenceIcon} ${styles.preferenceIconEnabled}`} />
                     ) : (
-                      <BellOff className="w-5 h-5 text-gray-400" />
+                      <BellOff className={`${styles.preferenceIcon} ${styles.preferenceIconDisabled}`} />
                     )}
-                    <h3 className="font-medium text-gray-900">
+                    <h3 className={styles.preferenceName}>
                       {preference.routeDisplayName}
                     </h3>
                   </div>
-                  <p className="text-sm text-gray-600 ml-8">
+                  <p className={styles.preferenceDescription}>
                     {preference.routeDescription}
                   </p>
                 </div>
@@ -118,20 +119,11 @@ export const RoutePreferencesModal: React.FC<RoutePreferencesModalProps> = obser
                 {/* Toggle Switch */}
                 <button
                   onClick={() => handleToggle(preference.route)}
-                  className={`
-                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                    ${preference.enabled 
-                      ? 'bg-blue-600 hover:bg-blue-700' 
-                      : 'bg-gray-200 hover:bg-gray-300'
-                    }
-                  `}
+                  className={`${styles.toggle} ${preference.enabled ? styles.toggleEnabled : styles.toggleDisabled}`}
                   disabled={isSaving}
                 >
                   <span
-                    className={`
-                      inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                      ${preference.enabled ? 'translate-x-6' : 'translate-x-1'}
-                    `}
+                    className={`${styles.toggleThumb} ${preference.enabled ? styles.toggleThumbEnabled : ''}`}
                   />
                 </button>
               </div>
@@ -140,10 +132,10 @@ export const RoutePreferencesModal: React.FC<RoutePreferencesModalProps> = obser
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+        <div className={styles.footer}>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+            className={styles.cancelButton}
             disabled={isSaving}
           >
             Отмена
@@ -151,10 +143,10 @@ export const RoutePreferencesModal: React.FC<RoutePreferencesModalProps> = obser
           <button
             onClick={handleSave}
             disabled={isSaving || isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className={styles.saveButton}
           >
             {isSaving && (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className={styles.spinner} />
             )}
             Сохранить
           </button>

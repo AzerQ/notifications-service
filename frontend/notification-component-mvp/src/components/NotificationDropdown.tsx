@@ -5,6 +5,7 @@ import type { NotificationStore } from "../store/NotificationStore";
 import { NotificationItem } from "./NotificationItem";
 import { ToastContainer } from "./ToastContainer";
 import { num_decline } from "../utils/numDecline";
+import styles from './NotificationDropdown.module.css';
 
 interface NotificationDropdownProps {
   store: NotificationStore;
@@ -84,25 +85,21 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
         <ToastContainer />
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+          className={styles.dropdown}
           data-testid="notification-dropdown"
         >
           {/* Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className={styles.header}>
+            <div className={styles.headerTop}>
+              <h3 className={styles.title}>
                 Уведомления
               </h3>
 
-              <div className="flex items-center gap-2">
+              <div className={styles.actions}>
                 {/* Filter button */}
                 <button
                   onClick={handleFilterUnread}
-                  className={`p-2 rounded hover:bg-gray-100 transition-colors ${
-                    store.filters.onlyUnread
-                      ? "bg-blue-100 text-blue-600"
-                      : "text-gray-600"
-                  }`}
+                  className={`${styles.actionButton} ${store.filters.onlyUnread ? styles.active : ''}`}
                   aria-label="Фильтр непрочитанных"
                   data-testid="notification-filter-unread"
                   title={
@@ -118,7 +115,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                 {store.hasUnread && (
                   <button
                     onClick={() => store.markAllAsRead()}
-                    className="p-2 rounded hover:bg-gray-100 transition-colors text-gray-600"
+                    className={styles.actionButton}
                     aria-label="Отметить все как прочитанные"
                     data-testid="notification-mark-all-read"
                     title="Отметить все как прочитанные"
@@ -130,7 +127,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
             </div>
 
             {store.unreadCount > 0 && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className={styles.subtitle}>
                 У вас {unreadNotificationsLabel}
               </p>
             )}
@@ -138,17 +135,17 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
 
           {/* Content */}
           <div
-            className="overflow-y-auto"
+            className={styles.content}
             style={{ maxHeight }}
             data-testid="notification-list"
           >
             {store.isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+              <div className={styles.loading}>
+                <Loader2 className={styles.spinner} />
               </div>
             ) : displayedNotifications.length === 0 ? (
-              <div className="text-center py-8 px-4">
-                <p className="text-gray-500">
+              <div className={styles.empty}>
+                <p className={styles.emptyText}>
                   {store.filters.onlyUnread
                     ? "Нет непрочитанных уведомлений"
                     : "Уведомлений пока нет"}
@@ -169,13 +166,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
 
           {/* Footer */}
           {!store.isLoading && displayedNotifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 text-center">
+            <div className={styles.footer}>
               <button
                 onClick={() => {
                   store.closeDropdown();
                   // Could navigate to full notifications page here
                 }}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className={styles.viewAllButton}
                 data-testid="notification-view-all"
               >
                 Показать все уведомления
@@ -185,8 +182,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
 
           {/* SignalR connection status */}
           {!store.isSignalRConnected && (
-            <div className="px-4 py-2 bg-yellow-50 border-t border-yellow-200">
-              <p className="text-xs text-yellow-700">
+            <div className={styles.connectionStatus}>
+              <p className={styles.connectionStatusText}>
                 Соединение для обновлений в реальном времени разорвано
               </p>
             </div>

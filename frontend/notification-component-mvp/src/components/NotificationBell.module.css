@@ -1,0 +1,50 @@
+/* Notification Bell component styles */
+
+.bellButton {
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  background: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.bellButton:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.4);
+  transform: scale(1.05);
+}
+
+.bellButton:active {
+  transform: scale(0.95);
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.iconLight {
+  color: #ffffff;
+}
+
+.iconDark {
+  color: #374151;
+}
+
+.badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #ef4444;
+  border-radius: 9999px;
+}

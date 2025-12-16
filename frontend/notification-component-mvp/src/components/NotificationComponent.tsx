@@ -9,6 +9,7 @@ import type { Notification } from '../types';
 import { EmailAuthWrapper } from './EmailAuthWrapper';
 import { useNotificationContext } from './NotificationContext';
 import {config} from "../index.ts";
+import styles from './NotificationComponent.module.css';
 
 interface NotificationComponentProps {
   onNotificationClick?: (notification: Notification) => void;
@@ -43,13 +44,16 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
     };
   }, [store]);
 
+  const settingsIconClass = config.iconsTheme === "dark" ? styles.settingsIconDark : styles.settingsIconLight;
+  const dropdownPositionClass = position === 'right' ? styles.dropdownRight : styles.dropdownLeft;
+
   return (
     <div
       ref={containerRef}
-      className="relative"
+      className={styles.container}
       data-testid="notification-component"
     >
-      <div className="flex items-center gap-2">
+      <div className={styles.header}>
         <NotificationBell
           store={store}
           className={bellClassName}
@@ -58,15 +62,15 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
         {showPreferencesButton && (
           <button
             onClick={store.togglePreferencesModal}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className={styles.settingsButton}
             title="Настройки уведомлений"
           >
-            <Settings className={config.iconsTheme == "dark" ? "w-8 h-8 text-gray-600" : "w-8 h-8 text-white"} />
+            <Settings className={`${styles.settingsIcon} ${settingsIconClass}`} />
           </button>
         )}
       </div>
       
-      <div className={`absolute ${position === 'right' ? 'right-0' : 'left-0'}`}>
+      <div className={`${styles.dropdownWrapper} ${dropdownPositionClass}`}>
         <NotificationDropdown
           store={store}
           onNotificationClick={onNotificationClick}

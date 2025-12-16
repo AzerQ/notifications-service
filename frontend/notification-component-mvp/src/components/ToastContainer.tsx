@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Toast } from './Toast';
 import type { Notification } from '../types';
+import styles from './ToastContainer.module.css';
 
 interface ToastItem {
   id: string;
@@ -42,13 +43,13 @@ export const ToastContainer: React.FC = () => {
 
   return (
     <div 
-      className="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full"
+      className={styles.container}
       data-testid="toast-container"
     >
       {toasts.map((toast) => (
         <div
        key={toast.id}
-        className="pointer-events-auto"
+        className={styles.toastWrapper}
         data-testid={`toast-wrapper-${toast.id}`}
  >
           <Toast

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, X } from 'lucide-react';
 import type { EmailCodeVerification } from '../services/authenticationService';
+import styles from './EmailCodeModal.module.css';
 
 interface EmailCodeModalProps {
   isOpen: boolean;
@@ -106,42 +107,42 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden">
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-white bg-opacity-20 p-2 rounded-lg">
-              <Mail className="w-6 h-6 text-white" />
+        <div className={styles.header}>
+          <div className={styles.headerContent}>
+            <div className={styles.iconWrapper}>
+              <Mail className={styles.icon} />
             </div>
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className={styles.headerTitle}>
               {step === 'email' ? 'Введите вашу электронную почту' : 'Проверка электронной почты'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1 transition-colors"
+            className={styles.closeButton}
             aria-label="Закрыть"
           >
-            <X className="w-5 h-5" />
+            <X className={styles.closeIcon} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-6">
+        <div className={styles.content}>
           {step === 'email' ? (
             /* Step 1: Enter Email */
             <>
-              <p className="text-gray-600 text-sm mb-6">
+              <p className={styles.description}>
                 Аутентификация Windows не удалась. Пожалуйста, введите вашу электронную почту для
                 получения кода проверки.
               </p>
 
-              <form onSubmit={handleSendCode} className="space-y-4">
-                <div>
+              <form onSubmit={handleSendCode} className={styles.form}>
+                <div className={styles.formGroup}>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className={styles.label}
                   >
                     Адрес электронной почты
                   </label>
@@ -150,7 +151,7 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
                     id="email"
                     value={localEmail}
                     onChange={(e) => setLocalEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={styles.input}
                     placeholder="ваша.почта@example.com"
                     required
                     autoFocus
@@ -160,24 +161,24 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
 
                 {/* Error message */}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                    <p className="text-sm text-red-800">{error}</p>
+                  <div className={styles.error}>
+                    <p className={styles.errorText}>{error}</p>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex justify-end space-x-3 pt-2">
+                <div className={styles.actions}>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={styles.cancelButton}
                   >
                     Отмена
                   </button>
                   <button
                     type="submit"
                     disabled={isResending || !localEmail || !localEmail.includes('@')}
-                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className={styles.submitButton}
                   >
                     {isResending ? 'Отправка...' : 'Отправить код'}
                   </button>
@@ -187,24 +188,24 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
           ) : (
             /* Step 2: Enter Code */
             <>
-              <p className="text-gray-600 text-sm mb-6">
+              <p className={styles.description}>
                 {challengeMessage ||
                   'Код проверки отправлен на вашу электронную почту. Пожалуйста, введите его ниже для продолжения.'}
               </p>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className={styles.form}>
                 {/* Email display */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
                     Адрес электронной почты
                   </label>
-                  <div className="text-gray-900 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 flex items-center justify-between">
+                  <div className={styles.emailDisplay}>
                     <span>{localEmail}</span>
                     {requiresEmailInput && (
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="text-sm text-blue-600 hover:text-blue-700"
+                        className={styles.changeButton}
                       >
                         Изменить
                       </button>
@@ -213,10 +214,10 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
                 </div>
 
                 {/* Code input */}
-                <div>
+                <div className={styles.formGroup}>
                   <label
                     htmlFor="code"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className={styles.label}
                   >
                     Код проверки
                   </label>
@@ -225,48 +226,48 @@ export const EmailCodeModal: React.FC<EmailCodeModalProps> = ({
                     id="code"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-center text-2xl tracking-widest font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`${styles.input} ${styles.codeInput}`}
                     placeholder="000000"
                     maxLength={6}
                     required
                     autoComplete="off"
                     autoFocus
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className={styles.inputHint}>
                     Введите 6-значный код из вашей электронной почты
                   </p>
                 </div>
 
                 {/* Error message */}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                    <p className="text-sm text-red-800">{error}</p>
+                  <div className={styles.error}>
+                    <p className={styles.errorText}>{error}</p>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-2">
+                <div className={styles.actionsSpaceBetween}>
                   <button
                     type="button"
                     onClick={handleSendCode}
                     disabled={isResending || !localEmail}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+                    className={styles.resendButton}
                   >
                     {isResending ? 'Отправка...' : 'Отправить код повторно'}
                   </button>
 
-                  <div className="flex space-x-3">
+                  <div className={styles.buttonGroup}>
                     <button
                       type="button"
                       onClick={onClose}
-                      className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                      className={styles.cancelButton}
                     >
                       Отмена
                     </button>
                     <button
                       type="submit"
                       disabled={isVerifying || code.length !== 6}
-                      className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      className={styles.submitButton}
                     >
                       {isVerifying ? 'Проверка...' : 'Проверить'}
                     </button>

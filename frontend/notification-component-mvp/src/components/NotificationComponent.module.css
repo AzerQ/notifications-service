@@ -1,0 +1,55 @@
+/* Notification Component main container styles */
+
+.container {
+  position: relative;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settingsButton {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  background: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.settingsButton:hover {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.4);
+  transform: scale(1.05);
+}
+
+.settingsButton:active {
+  transform: scale(0.95);
+}
+
+.settingsIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.settingsIconLight {
+  color: #ffffff;
+}
+
+.settingsIconDark {
+  color: #4b5563;
+}
+
+.dropdownWrapper {
+  position: absolute;
+}
+
+.dropdownRight {
+  right: 0;
+}
+
+.dropdownLeft {
+  left: 0;
+}

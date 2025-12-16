@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Bell } from 'lucide-react';
 import type { NotificationStore } from '../store/NotificationStore';
 import {config} from "../index.ts";
+import styles from './NotificationBell.module.css';
 
 interface NotificationBellProps {
   store: NotificationStore;
@@ -23,18 +24,21 @@ export const NotificationBell: React.FC<NotificationBellProps> = observer(({
     onClick?.();
   };
 
+  const iconClass = config.iconsTheme === "dark" ? styles.iconDark : styles.iconLight;
+
   return (
     <button
       onClick={handleClick}
-      className={`relative p-2 rounded-full hover:bg-gray-100 transition-colors ${className}`}
+      className={`${styles.bellButton} ${className}`}
       aria-label="Уведомления"
+      title="Уведомления"
       data-testid="notification-bell"
     >
-      <Bell className={config.iconsTheme == "dark" ? "w-8 h-8 text-gray-700" :  "w-8 h-8 text-white"} />
+      <Bell className={`${styles.icon} ${iconClass}`} />
       
       {store.hasUnread && (
         <span 
-          className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full"
+          className={styles.badge}
           data-testid="notification-badge"
         >
           {store.unreadCount > 99 ? '99+' : store.unreadCount}

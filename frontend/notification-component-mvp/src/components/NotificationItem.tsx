@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {Bell, ExternalLink, Check, X, LucideProps} from 'lucide-react';
 import type { Notification } from '../types';
 import * as LucideIcons from 'lucide-react';
+import styles from './NotificationItem.module.css';
 
 interface CustomIconProps extends LucideProps {
   name: string;
@@ -58,16 +59,16 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
     if (notification.icon) {
       // Use backend-provided icon with custom class if available
       return (
-        <div className={`w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 ${notification.icon.cssClass || ''}`}>
-              <DynamicIcon name={notification.icon.name}/>
+        <div className={`${styles.icon} ${notification.icon.cssClass || ''}`}>
+              <DynamicIcon name={notification.icon.name} className={styles.iconInner}/>
         </div>
       );
     }
     
     // Default bell icon
     return (
-      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100">
-        <Bell className="w-5 h-5 text-blue-600" />
+      <div className={styles.icon}>
+        <Bell className={styles.iconInner} />
       </div>
     );
   };
@@ -93,40 +94,40 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
   const displayType = notification.type || notification.category;
   const displaySubType = notification.subType;
 
+  const itemClasses = `${styles.item} ${!notification.read ? styles.unread : ''}`;
+
   return (
     <div
       onClick={handleClick}
-      className={`p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors ${
-        !notification.read ? 'bg-blue-50' : ''
-      }`}
+      className={itemClasses}
       data-testid="notification-item"
       data-read={notification.read}
     >
-      <div className="flex gap-3">
+      <div className={styles.container}>
         {/* Icon */}
-        <div className="flex-shrink-0">
+        <div className={styles.iconWrapper}>
           {getIcon()}
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
+        <div className={styles.content}>
+          <div className={styles.contentTop}>
+            <div className={styles.contentLeft}>
               {/* Type and Subtype badges */}
-              <div className="flex items-center gap-2 mb-1">
+              <div className={styles.badges}>
                 {displayType && (
-                  <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <span className={styles.badge}>
                     {displayType}
                   </span>
                 )}
                 {displaySubType && (
-                  <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                  <span className={styles.subTypeBadge}>
                     {displaySubType}
                   </span>
                 )}
               </div>
    
-              <h4 className="text-sm font-semibold text-gray-900 truncate">
+              <h4 className={styles.title}>
                 {notification.title}
               </h4>
             </div>
@@ -134,31 +135,31 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
             {/* Read/Unread toggle */}
             <button
               onClick={handleToggleRead}
-              className="flex-shrink-0 p-1 rounded hover:bg-gray-200 transition-colors"
+              className={styles.toggleButton}
               aria-label={notification.read ? 'Отметить как непрочитанное' : 'Отметить как прочитанное'}
               data-testid="notification-toggle-read"
             >
               {notification.read ? (
-                <X className="w-4 h-4 text-gray-500" />
+                <X className={`${styles.toggleIcon} ${styles.toggleIconRead}`} />
               ) : (
-                <Check className="w-4 h-4 text-blue-600" />
+                <Check className={`${styles.toggleIcon} ${styles.toggleIconUnread}`} />
               )}
             </button>
           </div>
 
-          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+          <p className={styles.text}>
             {notification.content}
           </p>
 
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className="text-xs text-gray-500">
+          <div className={styles.metadata}>
+            <span className={styles.metadataItem}>
               {formatDate(displayDate)}
             </span>
             
             {notification.author && (
               <>
-                <span className="text-xs text-gray-400">•</span>
-                <span className="text-xs text-gray-500">
+                <span className={styles.metadataSeparator}>•</span>
+                <span className={styles.metadataItem}>
                   {notification.author}
                 </span>
               </>
@@ -166,19 +167,19 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
         
             {notification.url && (
               <>
-                <span className="text-xs text-gray-400">•</span>
-                <ExternalLink className="w-3 h-3 text-gray-400" />
+                <span className={styles.metadataSeparator}>•</span>
+                <ExternalLink className={styles.externalIcon} />
               </>
             )}
           </div>
 
           {/* Hashtags */}
           {notification.hashtags && notification.hashtags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className={styles.hashtags}>
               {notification.hashtags.slice(0, 3).map((tag, index) => (
                 <span 
                   key={index}
-                  className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                  className={styles.hashtag}
                 >
                   #{tag}
                 </span>
