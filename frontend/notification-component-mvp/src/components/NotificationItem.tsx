@@ -9,8 +9,16 @@ interface CustomIconProps extends LucideProps {
   name: string;
 }
 
+function toPascalCase(text: string) {
+  function clearAndUpper(text: string) {
+    return text.replace(/-/, "").toUpperCase();
+  }
+  return text.replace(/(^\w|-\w)/g, clearAndUpper);
+}
+
 const DynamicIcon = ({name, ...props} : CustomIconProps) => {
-  const IconComponent = (LucideIcons as any)[name];
+  const iconName = toPascalCase(name);
+  const IconComponent = (LucideIcons as any)[iconName];
   if (!IconComponent) {
     console.warn(`Icon "${name}" not found`);
     return null;
