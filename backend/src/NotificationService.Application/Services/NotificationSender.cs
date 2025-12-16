@@ -10,6 +10,7 @@ namespace NotificationService.Application.Services;
 /// Управляет процессом валидации, проверки предпочтений и отправки по всем активным каналам.
 /// </summary>
 public class NotificationSender(
+    ITemplateRepository templateRepository,
     INotificationRepository notificationRepository,
     ITemplateRenderer templateRenderer,
     IEmailProvider emailProvider,
@@ -113,7 +114,8 @@ public class NotificationSender(
     /// <returns>Содержимое для отправки</returns>
     private string ResolveContent(Notification notification, NotificationChannel notificationChannel)
     {
-        string contentTemplate = notification.Template.ContentTemplateByChannel(notificationChannel);
+        var template = templateRepository.GetTemplateByName(notification.TemplateName) ?? throw new ArgumentException($"Template '{notification.TemplateName}' not found.");
+        string contentTemplate = template.ContentTemplateByChannel(notificationChannel);
         return templateRenderer.Render(contentTemplate, notification.TemplateData);
     }
 }

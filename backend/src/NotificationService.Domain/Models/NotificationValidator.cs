@@ -32,7 +32,7 @@ public static class NotificationValidator
                 }
         }
 
-        if (notification.Template is null && string.IsNullOrWhiteSpace(notification.Message))
+        if (notification.TemplateName is null && string.IsNullOrWhiteSpace(notification.Message))
         {
             result.AddError("Either message text or template must be provided.");
         }

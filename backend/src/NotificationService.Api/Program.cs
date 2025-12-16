@@ -77,6 +77,6 @@ app.MapHub<NotificationHub>("/notificationHub");
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Apply migrations and seed initial data
-await DbInitializer.InitializeAsync(app.Services, app.Configuration, app.Environment.IsProduction());
+await ServiceInitializer.InitializeAsync(app.Services, app.Configuration, app.Environment.IsProduction());
 
 app.Run();

@@ -46,7 +46,8 @@ namespace NotificationService.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("TemplateId")
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
@@ -54,11 +55,13 @@ namespace NotificationService.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RecipientId");
-
-                    b.HasIndex("TemplateId");
 
                     b.ToTable("Notifications", (string)null);
                 });
@@ -110,48 +113,6 @@ namespace NotificationService.Infrastructure.Migrations
                     b.HasIndex("NotificationId");
 
                     b.ToTable("NotificationMetadataField");
-                });
-
-            modelBuilder.Entity("NotificationService.Domain.Models.NotificationTemplate", b =>
-                {
-                    b.Property<string>("Name")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Channel")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContentShortTemplate")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Name");
-
-                    b.HasIndex("Name", "Channel")
-                        .IsUnique();
-
-                    b.ToTable("Templates", (string)null);
                 });
 
             modelBuilder.Entity("NotificationService.Domain.Models.RefreshToken", b =>
@@ -269,13 +230,7 @@ namespace NotificationService.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("NotificationService.Domain.Models.NotificationTemplate", "Template")
-                        .WithMany()
-                        .HasForeignKey("TemplateId");
-
                     b.Navigation("Recipient");
-
-                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("NotificationService.Domain.Models.NotificationChannelDeliveryStatus", b =>

@@ -3,11 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotificationService.Domain.Models;
-using NotificationService.Infrastructure.Templates;
 
 namespace NotificationService.Infrastructure.Data.Init;
 
-public static class DbInitializer
+public static class ServiceInitializer
 {
 
     private static void SeedTestUsers(IConfiguration configuration, NotificationDbContext notificationDbContext)
@@ -30,9 +29,6 @@ public static class DbInitializer
                 await context.Database.MigrateAsync();
             else 
                 await context.Database.EnsureCreatedAsync();
-
-            ITemplateLoader templateLoader = scopedProvider.GetRequiredService<ITemplateLoader>();
-            await templateLoader.LoadTemplatesAsync();
             
             if (!isProduction && !await context.Users.AnyAsync())
             {

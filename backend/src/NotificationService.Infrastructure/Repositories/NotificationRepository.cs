@@ -52,7 +52,7 @@ public class NotificationRepository : INotificationRepository
     {
         return await _context.Notifications
             .Include(n => n.Recipient)
-            .Include(n => n.Template)
+            .Include(n => n.TemplateName)
             .FirstOrDefaultAsync(n => n.Id == id);
     }
 

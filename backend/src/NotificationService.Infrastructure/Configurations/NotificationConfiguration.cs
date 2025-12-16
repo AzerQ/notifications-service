@@ -34,10 +34,5 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
         builder.Property(x => x.TemplateData)
         .HasJsonConversion();
-
-        builder.HasOne(x => x.Template)
-            .WithMany()
-            .HasForeignKey("TemplateId")
-            .IsRequired(false);
     }
 }

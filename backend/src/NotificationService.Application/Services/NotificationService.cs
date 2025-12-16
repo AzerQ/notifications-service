@@ -33,9 +33,10 @@ public class NotificationCommandService
         
         INotificationDataResolver notificationDataResolver = notificationRoutesContext.GetDataResolverForRoute(request.Route);
         
-        INotificationRouteConfiguration notificationRouteConfiguration = notificationRoutesContext.GetNotificationRouteConfiguration(request.Route);
+        INotificationRouteConfiguration notificationRouteConfiguration = 
+            notificationRoutesContext.GetNotificationRouteConfiguration(request.Route) ?? throw new ArgumentException($"Route '{request.Route}' configuration not found.");
         
-        NotificationTemplate template = await templateRepository.GetTemplateByNameAsync(notificationRouteConfiguration.TemplateName)
+        NotificationTemplate template = templateRepository.GetTemplateByName(notificationRouteConfiguration.TemplateName)
                        ?? throw new ArgumentException($"Template '{notificationRouteConfiguration.TemplateName}' not found.");
         
         

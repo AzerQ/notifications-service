@@ -12,23 +12,6 @@ namespace NotificationService.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Templates",
-                columns: table => new
-                {
-                    Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    FilePath = table.Column<string>(type: "TEXT", nullable: false),
-                    Subject = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Content = table.Column<string>(type: "TEXT", maxLength: 4000, nullable: false),
-                    Channel = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Templates", x => x.Name);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserRoutePreferences",
                 columns: table => new
                 {
@@ -51,7 +34,9 @@ namespace NotificationService.Infrastructure.Migrations
                     Email = table.Column<string>(type: "TEXT", maxLength: 320, nullable: false),
                     PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 24, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DeviceToken = table.Column<string>(type: "TEXT", maxLength: 512, nullable: true)
+                    DeviceToken = table.Column<string>(type: "TEXT", maxLength: 512, nullable: true),
+                    Role = table.Column<string>(type: "TEXT", nullable: true),
+                    AccountName = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -68,19 +53,36 @@ namespace NotificationService.Infrastructure.Migrations
                     Route = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RecipientId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TemplateId = table.Column<string>(type: "TEXT", nullable: true)
+                    TemplateData = table.Column<string>(type: "TEXT", nullable: false),
+                    TemplateName = table.Column<string>(type: "TEXT", nullable: false),
+                    NotificationWasRead = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Url = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Notifications_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
-                        principalColumn: "Name");
-                    table.ForeignKey(
                         name: "FK_Notifications_Users_RecipientId",
                         column: x => x.RecipientId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    TokenHash = table.Column<string>(type: "TEXT", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.TokenHash);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -163,15 +165,9 @@ namespace NotificationService.Infrastructure.Migrations
                 column: "RecipientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_TemplateId",
-                table: "Notifications",
-                column: "TemplateId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Templates_Name_Channel",
-                table: "Templates",
-                columns: new[] { "Name", "Channel" },
-                unique: true);
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserAttribute_UserId",
@@ -200,6 +196,9 @@ namespace NotificationService.Infrastructure.Migrations
                 name: "NotificationMetadataField");
 
             migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
                 name: "UserAttribute");
 
             migrationBuilder.DropTable(
@@ -207,9 +206,6 @@ namespace NotificationService.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notifications");
-
-            migrationBuilder.DropTable(
-                name: "Templates");
 
             migrationBuilder.DropTable(
                 name: "Users");

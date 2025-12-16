@@ -91,7 +91,7 @@ public static class NotificationServiceDiConfigurationExtensions
                     , ServiceLifetime.Singleton)
                 .AddSingleton<INotificationRepository, NotificationRepository>()
                 .AddSingleton<IUserRepository, UserRepository>()
-                .AddSingleton<ITemplateRepository, TemplateRepository>()
+                .AddSingleton<ITemplateRepository, FileSystemTemplateRepository>()
                 .AddSingleton<IUserRoutePreferenceRepository, UserRoutePreferenceRepository>()
                 .AddScoped<IQueryBuilder, QueryBuilder>();
     }
@@ -118,7 +118,6 @@ public static class NotificationServiceDiConfigurationExtensions
             .AddScoped<InAppNotificationProcessor>()
             .AddSingleton<IEmailProvider, SmtpEmailProvider>()
             .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
-            .AddScoped<ITemplateLoader, FileSystemTemplateLoader>()
             .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
     }
 

@@ -62,7 +62,7 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             Title = renderedSubject,
             Message = renderedContent,
             Route = request.Route,
-            Template = template,
+            TemplateName = template.Name,
             CreatedAt = DateTime.UtcNow,
             TemplateData = notificationData.Data,
             Url = notificationData.Url
