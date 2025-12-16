@@ -16,10 +16,16 @@ interface ToastProps {
 export const Toast: React.FC<ToastProps> = ({ notification, onClose, duration = 5000 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   useEffect(() => {
     // Trigger fade-in animation after mount
     const showTimer = setTimeout(() => setIsVisible(true), 10);
+
+    // Start timer animation slightly after mount
+    const timerStart = setTimeout(() => {
+      setIsTimerRunning(true);
+    }, 50);
 
     // Auto-close after duration
     const closeTimer = setTimeout(() => {
@@ -28,6 +34,7 @@ export const Toast: React.FC<ToastProps> = ({ notification, onClose, duration = 
 
     return () => {
       clearTimeout(showTimer);
+      clearTimeout(timerStart);
       clearTimeout(closeTimer);
     };
   }, [duration]);
@@ -142,10 +149,12 @@ export const Toast: React.FC<ToastProps> = ({ notification, onClose, duration = 
       {/* Progress bar */}
       <div className={styles.progressBar}>
         <div
-          className={styles.progress}
-          style={{
-            animation: `shrink ${duration}ms linear`
-          }}
+          className={`${styles.progress} ${isTimerRunning ? styles.shrinking : ''}`}
+          style={
+            {
+              '--toast-duration': `${duration}ms`,
+            } as React.CSSProperties
+          }
         />
       </div>
     </div>

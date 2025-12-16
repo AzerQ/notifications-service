@@ -155,8 +155,14 @@
 .progress {
   height: 100%;
   background-color: #3b82f6;
-  transition: all ease-linear;
   width: 100%;
+  transition-property: width;
+  transition-timing-function: linear;
+  transition-duration: var(--toast-duration) !important;
+}
+
+.shrinking {
+  width: 0%;
 }
 
 /* Dark mode support */
@@ -215,12 +221,3 @@
   }
 }
 
-/* Animation keyframes */
-@keyframes shrink {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0%;
-  }
-}
