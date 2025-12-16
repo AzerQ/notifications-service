@@ -2,6 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Bell } from 'lucide-react';
 import type { NotificationStore } from '../store/NotificationStore';
+import {config} from "../index.ts";
 
 interface NotificationBellProps {
   store: NotificationStore;
@@ -29,7 +30,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = observer(({
       aria-label="Уведомления"
       data-testid="notification-bell"
     >
-      <Bell className="w-8 h-8 text-gray-700" />
+      <Bell className={config.iconsTheme == "dark" ? "w-8 h-8 text-gray-700" :  "w-8 h-8 text-white"} />
       
       {store.hasUnread && (
         <span 

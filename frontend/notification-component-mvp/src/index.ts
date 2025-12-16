@@ -16,7 +16,10 @@ export const config = {
     apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
     signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
     accessToken: import.meta.env.VITE_ACCESS_TOKEN,
+    iconsTheme: (import.meta.env.VITE_ICONS_THEME || 'light') as NotificationsIconsTheme,
   };
+
+export type NotificationsIconsTheme = 'light' | 'dark';
 
 // Components
 export { NotificationComponent } from './components/NotificationComponent';

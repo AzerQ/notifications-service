@@ -8,6 +8,7 @@ import { useRoutePreferences } from '../hooks/useRoutePreferences';
 import type { Notification } from '../types';
 import { EmailAuthWrapper } from './EmailAuthWrapper';
 import { useNotificationContext } from './NotificationContext';
+import {config} from "../index.ts";
 
 interface NotificationComponentProps {
   onNotificationClick?: (notification: Notification) => void;
@@ -60,7 +61,7 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Настройки уведомлений"
           >
-            <Settings className="w-8 h-8 text-gray-600" />
+            <Settings className={config.iconsTheme == "dark" ? "w-8 h-8 text-gray-600" : "w-8 h-8 text-white"} />
           </button>
         )}
       </div>
