@@ -16,15 +16,19 @@ export const NotificationsCenter: React.FC = () => {
     );
 };
 
-export function RenderNotificationsCenter(cssSelector: string) {
+export function RenderNotificationsCenter(cssSelector: string,  useShadowDom: bool = true) {
     const container = document.querySelector(cssSelector) as HTMLElement;
     const stylesPath: string = location.origin + import.meta.env.VITE_STYLES_PATH;
 
     ReactDOM.createRoot(container).render(
         <React.StrictMode>
-                <CSSWrapper cssHref={stylesPath}>
+            {
+                useShadowDom ?
+                    <CSSWrapper cssHref={stylesPath}>
+                        <NotificationsCenter />
+                    </CSSWrapper> :
                     <NotificationsCenter />
-                </CSSWrapper>
+            }
             </React.StrictMode>
         ,
     );
