@@ -16,7 +16,7 @@ export const NotificationsCenter: React.FC = () => {
     );
 };
 
-export function RenderNotificationsCenter(cssSelector: string,  useShadowDom: bool = true) {
+export function RenderNotificationsCenter(cssSelector: string,  useShadowDom: boolean = true) {
     const container = document.querySelector(cssSelector) as HTMLElement;
     const stylesPath: string = location.origin + import.meta.env.VITE_STYLES_PATH;
 
