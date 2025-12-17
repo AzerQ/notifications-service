@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace NotificationService.Application.Interfaces
 {
     /// <summary>Регистрация сервисов для уведомлений</summary>
-    public interface INotificationServicesRegister
+    public interface INotificationsModuleServicesRegister
     {
         IServiceCollection RegisterServices(IServiceCollection serviceCollection, ConfigurationManager configurationManager);
     }

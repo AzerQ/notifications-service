@@ -50,7 +50,7 @@ builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 
 // Register test notification handlers
 builder.Services.AddNotificationsServiceModule(builder.Configuration, 
-    typeof(NotificationService.TestHandlers.NotificationServicesRegister).Assembly);
+    typeof(NotificationService.TestHandlers.NotificationsModuleServicesRegister).Assembly);
 
 var app = builder.Build();
 

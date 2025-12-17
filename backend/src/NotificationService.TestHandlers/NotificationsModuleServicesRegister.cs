@@ -7,7 +7,7 @@ namespace NotificationService.TestHandlers;
 /// <summary>
 /// Регистратор тестовых сервисов уведомлений
 /// </summary>
-public class NotificationServicesRegister : INotificationServicesRegister
+public class NotificationsModuleServicesRegister : INotificationsModuleServicesRegister
 {
     /// <summary>
     /// Регистрирует сервисы уведомлений в контейнере зависимостей
