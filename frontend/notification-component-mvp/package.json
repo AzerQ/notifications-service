@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build &&  .\\rename_build_to_static_names.bat",
     "build:lib": "tsc && vite build --mode lib",
     "preview": "vite preview",
     "test": "vitest",
