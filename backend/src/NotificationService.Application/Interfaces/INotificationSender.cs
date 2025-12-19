@@ -5,5 +5,5 @@ namespace NotificationService.Application.Interfaces;
 
 public interface INotificationSender
 {
-    Task SendAsync(Notification notification, INotificationRouteConfiguration routeConfiguration);
+    Task SendAsync(Notification notification, NotificationRouteConfiguration routeConfiguration);
 }

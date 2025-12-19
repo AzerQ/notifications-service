@@ -7,6 +7,6 @@ namespace NotificationService.Application.Mappers;
 public interface INotificationMapper
 {
     NotificationResponseDto MapToResponse(IEnumerable<Notification> createdNotifications);
-    Task<IEnumerable<Notification>> MapFromRequest(NotificationRequest request, INotificationDataResolver notificationDataResolver, NotificationTemplate template);
+    Task<IEnumerable<Notification>> MapFromRequest(NotificationRequest request, INotificationRoute notificationRoute, NotificationTemplate template);
     UserDto MapToUserDto(User user);
 }

@@ -1,5 +1,6 @@
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
+using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Mappers;
@@ -8,7 +9,7 @@ namespace NotificationService.Application.Mappers;
 /// Маппер для преобразования между доменными моделями уведомлений и DTO.
 /// Отвечает за конвертацию запросов в доменные модели и формирование ответов API.
 /// </summary>
-public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificationMapper
+public class NotificationMapper(ITemplateRenderer templateRenderer, IUserRepository userRepository) : INotificationMapper
 {
     /// <summary>
     /// Преобразует коллекцию доменных уведомлений в DTO ответа для API.
@@ -40,17 +41,17 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
     /// Выполняет резолвинг данных, рендеринг шаблонов и создание уведомлений для каждого получателя.
     /// </summary>
     /// <param name="request">Запрос на создание уведомления</param>
-    /// <param name="notificationDataResolver">Резолвер данных для маршрута</param>
+    /// <param name="notificationRoute">Резолвер данных для маршрута</param>
     /// <param name="template">Шаблон для форматирования</param>
     /// <returns>Коллекция созданных доменных уведомлений</returns>
     /// <exception cref="ArgumentNullException">Выбрасывается, если какой-либо параметр null</exception>
-    public async Task<IEnumerable<Notification>> MapFromRequest(NotificationRequest request, INotificationDataResolver notificationDataResolver, NotificationTemplate template)
+    public async Task<IEnumerable<Notification>> MapFromRequest(NotificationRequest request, INotificationRoute notificationRoute, NotificationTemplate template)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(template);
-        ArgumentNullException.ThrowIfNull(notificationDataResolver);
+        ArgumentNullException.ThrowIfNull(notificationRoute);
 
-        var notificationData = await notificationDataResolver.ResolveNotificationFullData(request);
+        var notificationData = await notificationRoute.ResolveNotificationFullData(request);
         
         var renderedContent = templateRenderer.Render(template.CommonContentTemplate, notificationData);
         var renderedSubject = string.IsNullOrWhiteSpace(template.Subject)
@@ -74,8 +75,9 @@ public class NotificationMapper(ITemplateRenderer templateRenderer) : INotificat
             notification.DeliveryChannelsState = Notification.ChannelsDefaultState(request.Channels);
         }
         
-        var recipients = await notificationDataResolver.ResolveNotificationRecipients(request);
-        return recipients.Select(recipient => notification with { Id = Guid.NewGuid(), Recipient = recipient });
+        var recipientsIds = await notificationRoute.ResolveNotificationRecipientsIds(request);
+        var recipientsUsers = await userRepository.GetUsersByIdsAync(recipientsIds);
+        return recipientsUsers.Select(recipient => notification with { Id = Guid.NewGuid(), Recipient = recipient });
 
     }
 

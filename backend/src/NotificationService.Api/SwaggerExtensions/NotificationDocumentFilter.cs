@@ -1,25 +1,24 @@
 ﻿using Microsoft.OpenApi.Models;
-using NotificationService.Application;
+using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NotificationService.Api.SwaggerExtensions;
 
-public class NotificationDocumentFilter(NotificationRoutesContext notificationRoutesContext) : IDocumentFilter
+public class NotificationDocumentFilter(IServiceProvider serviceProvider) : IDocumentFilter
 {
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
-        var notificationsRoutesConfigurations = notificationRoutesContext
-            .GetAllNotificationRouteConfigurations();
-
-        foreach (var notificationRouteConfiguration in notificationsRoutesConfigurations)
+        using var scope = serviceProvider.CreateScope();
+        var notificationRoutesService = scope.ServiceProvider.GetService<INotificationRoutesService>()!;
+        foreach (var notificationRouteConfiguration in notificationRoutesService.GetAllNotificationRoutesConfigurations())
         {
             AddNotificationEndpoint(swaggerDoc, context, notificationRouteConfiguration);
         }
     }
 
     private void AddNotificationEndpoint(OpenApiDocument swaggerDoc, DocumentFilterContext context,
-        INotificationRouteConfiguration notificationRouteConfiguration)
+        NotificationRouteConfiguration notificationRouteConfiguration)
     {
         string objectKind = notificationRouteConfiguration.NotificationObjectKind.Name;
         string notificationRoute = notificationRouteConfiguration.Name;

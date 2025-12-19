@@ -19,6 +19,11 @@ public class UserRepository : IUserRepository
         return await _context.Users.FindAsync(id);
     }
 
+    public async Task<IEnumerable<User>> GetUsersByIdsAync(IEnumerable<Guid> ids)
+    {
+        return await _context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+    }
+
     public async Task<User?> GetUserByEmailAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -49,6 +54,12 @@ public class UserRepository : IUserRepository
         ArgumentNullException.ThrowIfNull(user);
 
         _context.Users.Update(user);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateUsersAync(IEnumerable<User> users)
+    {
+        _context.Users.UpdateRange(users);
         await _context.SaveChangesAsync();
     }
 

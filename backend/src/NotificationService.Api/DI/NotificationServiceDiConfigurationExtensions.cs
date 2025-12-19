@@ -84,15 +84,12 @@ public static class NotificationServiceDiConfigurationExtensions
     {
         return services.AddDbContext<NotificationDbContext>
                 (options =>
-                        options.UseSqlite(
-                            configuration
-                                .GetConnectionString(
-                                    "Notifications")) // , b =>  b.MigrationsAssembly("NotificationService.Api")
-                    , ServiceLifetime.Singleton)
-                .AddSingleton<INotificationRepository, NotificationRepository>()
-                .AddSingleton<IUserRepository, UserRepository>()
-                .AddSingleton<ITemplateRepository, FileSystemTemplateRepository>()
-                .AddSingleton<IUserRoutePreferenceRepository, UserRoutePreferenceRepository>()
+                        options.UseSqlite(configuration.GetConnectionString("Notifications")) // , b =>  b.MigrationsAssembly("NotificationService.Api")
+                )
+                .AddScoped<INotificationRepository, NotificationRepository>()
+                .AddScoped<IUserRepository, UserRepository>()
+                .AddScoped<ITemplateRepository, FileSystemTemplateRepository>()
+                .AddScoped<IUserRoutePreferenceRepository, UserRoutePreferenceRepository>()
                 .AddScoped<IQueryBuilder, QueryBuilder>();
     }
 
@@ -102,22 +99,23 @@ public static class NotificationServiceDiConfigurationExtensions
         return services
             .Configure<EmailProviderOptions>(configuration.GetSection("Email"))
             .Configure<TemplateOptions>(configuration.GetSection("Templates"))
-            .AddSingleton(sp => sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<TemplateOptions>>().Value);
+            .AddScoped(sp => sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<TemplateOptions>>().Value);
     }
 
     public static IServiceCollection AddNotificationApplicationCommonServices(this IServiceCollection services)
     {
         return services
+            .AddScoped<INotificationRoutesService, NotificationRoutesService>()   
             .AddScoped<INotificationMapper, NotificationMapper>()
-            .AddSingleton<InAppNotificationMapper>()
+            .AddScoped<InAppNotificationMapper>()
             .AddScoped<INotificationSender, NotificationSender>()
             .AddScoped<IInAppNotificationSender, SignalRNotificationSender>()
             .AddScoped<INotificationCommandService, NotificationCommandService>()
             .AddScoped<INotificationQueryService, NotificationQueryService>()
             .AddScoped<INotificationCleanupService, NotificationCleanupService>()
             .AddScoped<InAppNotificationProcessor>()
-            .AddSingleton<IEmailProvider, SmtpEmailProvider>()
-            .AddSingleton<ISmtpClientFactory, SmtpClientFactory>()
+            .AddScoped<IEmailProvider, SmtpEmailProvider>()
+            .AddScoped<ISmtpClientFactory, SmtpClientFactory>()
             .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
     }
 

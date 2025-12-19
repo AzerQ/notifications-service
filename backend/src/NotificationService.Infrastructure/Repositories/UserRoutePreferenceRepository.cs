@@ -1,32 +1,29 @@
 using Microsoft.EntityFrameworkCore;
-using NotificationService.Application;
+using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
 using NotificationService.Domain.Models;
 using NotificationService.Infrastructure.Data;
 
 namespace NotificationService.Infrastructure.Repositories;
 
-public class UserRoutePreferenceRepository : IUserRoutePreferenceRepository
+public class UserRoutePreferenceRepository(
+    NotificationDbContext context,
+    INotificationRoutesService notificationRoutesService)
+    : IUserRoutePreferenceRepository
 {
-    private readonly NotificationDbContext _context;
-    private readonly NotificationRoutesContext _notificationRoutesContext;
-
-    public UserRoutePreferenceRepository(NotificationDbContext context, NotificationRoutesContext notificationRoutesContext)
-    {
-        _context = context;
-        _notificationRoutesContext = notificationRoutesContext;
-    }
+    private readonly IEnumerable<NotificationRouteConfiguration> _notificationRoutes = notificationRoutesService.GetAllNotificationRoutesConfigurations();
 
     private IEnumerable<UserRoutePreference> GetDefaultPreferencesForUser(Guid userId)
     {
-        return _notificationRoutesContext.GetAllNotificationRouteConfigurations()
+        return _notificationRoutes
             .Select(r => UserPreferencesMapper.GetDefaultPreference(userId, r.Name));
     }
 
     private IEnumerable<UserRoutePreferenceView> ToRoutePreferenceView(IEnumerable<UserRoutePreference> source) {
         return source.Select(p =>
         {
-            var routeConfig = _notificationRoutesContext.GetNotificationRouteConfiguration(p.Route);
+            var routeConfig = _notificationRoutes
+                .FirstOrDefault(r => r.Name == p.Route)!;
             return UserPreferencesMapper.ToView(p, routeConfig);
         });
     }
@@ -38,7 +35,7 @@ public class UserRoutePreferenceRepository : IUserRoutePreferenceRepository
 
     public async Task<IEnumerable<UserRoutePreferenceView>> GetByUserAsync(Guid userId)
     {
-        var userRoutePreferences = await _context.UserRoutePreferences
+        var userRoutePreferences = await context.UserRoutePreferences
             .Where(p => p.UserId == userId)
             .AsNoTracking()
             .ToListAsync();
@@ -56,9 +53,9 @@ public class UserRoutePreferenceRepository : IUserRoutePreferenceRepository
         var newPreferences = userPreferenceDtos.Where(p => p.Id is null)
             .Select(p => UserPreferencesMapper.ToModel(p, userId));
 
-        await _context.UserRoutePreferences.AddRangeAsync(newPreferences);
+        await context.UserRoutePreferences.AddRangeAsync(newPreferences);
 
-        var existingPreferences = await _context.UserRoutePreferences
+        var existingPreferences = await context.UserRoutePreferences
             .Where(p => preferencesIds.Contains(p.Id)).ToListAsync();
 
         existingPreferences.ForEach(p =>
@@ -68,15 +65,15 @@ public class UserRoutePreferenceRepository : IUserRoutePreferenceRepository
                 UserPreferencesMapper.UpdateModel(p, preferenceDto);
         });
 
-        _context.UserRoutePreferences.UpdateRange(existingPreferences);
-        await _context.SaveChangesAsync();
+        context.UserRoutePreferences.UpdateRange(existingPreferences);
+        await context.SaveChangesAsync();
     }
 
     public async Task<bool> IsRouteEnabledAsync(Guid userId, string route)
     {
         if (string.IsNullOrWhiteSpace(route)) return true; // пустой маршрут считаем включенным
 
-        var pref = await _context.UserRoutePreferences
+        var pref = await context.UserRoutePreferences
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == userId && p.Route == route);
 

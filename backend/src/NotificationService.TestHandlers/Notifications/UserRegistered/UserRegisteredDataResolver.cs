@@ -6,28 +6,29 @@ using NotificationService.Domain.Models;
 
 namespace NotificationService.TestHandlers.Notifications.UserRegistered;
 
-public class UserRegisteredDataResolver : INotificationDataResolver
+[NotificationRoute(Name = Route)]
+public class UserRegisteredDataResolver(IUserRepository userRepository) : INotificationRoute
 {
-    private readonly IUserRepository _userRepository;
+    public const string Route = "UserRegistered";
 
-    public UserRegisteredDataResolver(IUserRepository userRepository)
+    public NotificationRouteConfiguration RouteConfiguration { get; } = new()
     {
-        _userRepository = userRepository;
-    }
+        Name = Route,
+        NotificationObjectKind = NotificationObjectKinds.User,
+        TemplateName = Route,
+        DisplayName = "Регистрация пользователя",
+        Description = "Уведомление отправляется при регистрации нового пользователя",
+        Tags = ["пользователь", "регистрация", "добро пожаловать"],
+        PayloadType = typeof(UserRegisteredRequestData),
+        Icon = new("user")
+    };
 
-    public string Route => "UserRegistered";
-
-    public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
+    public Task<IEnumerable<Guid>> ResolveNotificationRecipientsIds(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<UserRegisteredRequestData>();
         
-        if (parameters?.UserId == null)
-        {
-            return Enumerable.Empty<User>();
-        }
-
-        var user = await _userRepository.GetUserByIdAsync(parameters.UserId);
-        return user != null ? new[] { user } : Enumerable.Empty<User>();
+        return Task.FromResult(Enumerable.Empty<Guid>());
+        
     }
 
     public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
@@ -38,7 +39,7 @@ public class UserRegisteredDataResolver : INotificationDataResolver
             throw new ArgumentException("Требуется UserId");
         }
 
-        var user = await _userRepository.GetUserByIdAsync(parameters.UserId);
+        var user = await userRepository.GetUserByIdAsync(parameters.UserId);
         
         if (user == null)
         {

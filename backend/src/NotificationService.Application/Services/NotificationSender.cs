@@ -26,7 +26,7 @@ public class NotificationSender(
     /// <param name="notification">Уведомление для отправки</param>
     /// <exception cref="ArgumentNullException">Выбрасывается, если уведомление или получатель null</exception>
     /// <exception cref="ArgumentException">Выбрасывается, если уведомление не прошло валидацию</exception>
-    public async Task SendAsync(Notification notification, INotificationRouteConfiguration routeConfiguration)
+    public async Task SendAsync(Notification notification, NotificationRouteConfiguration routeConfiguration)
     {
         ArgumentNullException.ThrowIfNull(notification);
         ArgumentNullException.ThrowIfNull(notification.Recipient);
@@ -38,7 +38,7 @@ public class NotificationSender(
         }
 
         // Проверка пользовательских предпочтений по маршрутам (по умолчанию разрешено)
-        if (userRoutePreferenceRepository is not null && notification.Recipient is not null)
+        if (notification.Recipient is not null)
         {
             var allowed = await userRoutePreferenceRepository.IsRouteEnabledAsync(notification.Recipient.Id, notification.Route);
             if (!allowed)
@@ -46,7 +46,7 @@ public class NotificationSender(
                 foreach (var channelState in notification.DeliveryChannelsState)
                     channelState.DeliveryStatus = NotificationDeliveryStatus.Skipped;
 
-                await notificationRepository.UpdateNotificationsAsync(notification);
+                notificationRepository.UpdateNotifications(notification);
                 return; // тихо выходим без отправки
             }
         }
@@ -56,7 +56,7 @@ public class NotificationSender(
 
         await Task.WhenAll(channelsSendTasks);
 
-        await notificationRepository.UpdateNotificationsAsync(notification);
+        notificationRepository.UpdateNotifications(notification);
 
     }
 
@@ -67,7 +67,7 @@ public class NotificationSender(
     /// <param name="channel">Канал доставки</param>
     /// <exception cref="NotSupportedException">Выбрасывается, если канал не поддерживается</exception>
     private async Task SendToChannelAsync(Notification notification, NotificationChannel channel, string content, 
-    INotificationRouteConfiguration routeConfiguration)
+    NotificationRouteConfiguration routeConfiguration)
     {
         var wasSent = channel switch
         {
@@ -81,7 +81,7 @@ public class NotificationSender(
             .DeliveryStatus = wasSent ? NotificationDeliveryStatus.Sent : NotificationDeliveryStatus.Failed;
     }
 
-    private async Task<bool> SendInAppAsync(Notification notification, string content, INotificationRouteConfiguration routeConfiguration)
+    private async Task<bool> SendInAppAsync(Notification notification, string content, NotificationRouteConfiguration routeConfiguration)
     {
         var inAppNotification = inAppNotificationMapper.Map(notification, routeConfiguration);
         inAppNotification.Content = content;

@@ -9,7 +9,7 @@ namespace NotificationService.Application.Mappers
         public AppNotification Map
         (
             Notification notification,
-            INotificationRouteConfiguration routeConfiguration,
+            NotificationRouteConfiguration routeConfiguration,
             List<NotificationAction>? notificationActions = null,
             List<NotificationParameter>? notificationParameters = null
         )

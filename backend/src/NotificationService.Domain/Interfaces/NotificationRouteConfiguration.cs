@@ -3,44 +3,44 @@
 /// <summary>
 /// Маршрут для уведомления
 /// </summary>
-public interface INotificationRouteConfiguration
+public class NotificationRouteConfiguration
 {
     /// <summary>
     /// Наименование маршрута
     /// </summary>
-    public string Name { get; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Тип объекта по которому приходят уведомления
     /// </summary>
-    public NotificationObjectKind NotificationObjectKind { get; }
+    public required NotificationObjectKind NotificationObjectKind { get; set; }
     
     /// <summary>
     /// Наименование шаблона
     /// </summary>
-    public string TemplateName { get; }
+    public required string TemplateName { get; set; }
     
     /// <summary>
     /// Отображаемое имя маршрута
     /// </summary>
-    public string DisplayName { get; }
+    public required string DisplayName { get; set; }
     
     /// <summary>
     /// Описание маршрута
     /// </summary>
-    public string Description { get; }
+    public required string Description { get; set; }
 
     /// <summary>
     /// Дополнительные теги для маршрута
     /// </summary>
-    public IEnumerable<string> Tags { get; }
+    public IEnumerable<string> Tags { get; set; } = [];
     
     /// <summary>
     /// Тип  полезной нагрузки
     /// </summary>
-    public Type PayloadType { get; }
+    public required Type PayloadType { get; set; }
 
-    public Icon? Icon {get;}
+    public Icon? Icon {get; set; }
     
 }
 

@@ -1,33 +1,36 @@
-using System.Text.Json;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
-using NotificationService.Domain.Models;
 
 namespace NotificationService.TestHandlers.Notifications.TaskAssigned;
 
-public class TaskAssignedDataResolver : INotificationDataResolver
+[NotificationRoute(Name = Route)]
+public class TaskAssignedNotificationRoute(IUserRepository userRepository) : INotificationRoute
 {
-    private readonly IUserRepository _userRepository;
+    public const string Route = "TaskAssigned";
 
-    public TaskAssignedDataResolver(IUserRepository userRepository)
+    public NotificationRouteConfiguration RouteConfiguration { get; } = new()
     {
-        _userRepository = userRepository;
-    }
+        Name = Route,
+        NotificationObjectKind = NotificationObjectKinds.Task,
+        TemplateName = Route,
+        DisplayName = "Задача назначена",
+        Description = "Уведомление отправляется при назначении задачи пользователю",
+        Tags = ["задача", "назначение", "работа"],
+        PayloadType = typeof(TaskAssignedRequestData),
+        Icon = new("bookmark-check")
+    };
 
-    public string Route => "TaskAssigned";
-
-    public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
+    public Task<IEnumerable<Guid>> ResolveNotificationRecipientsIds(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<TaskAssignedRequestData>();
         
         if (parameters?.AssigneeId == null)
         {
-            return Enumerable.Empty<User>();
+            return Task.FromResult(Enumerable.Empty<Guid>());
         }
 
-        var user = await _userRepository.GetUserByIdAsync(parameters.AssigneeId);
-        return user != null ? new[] { user } : Enumerable.Empty<User>();
+        return Task.FromResult<IEnumerable<Guid>>([parameters.AssigneeId]);
     }
 
     public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
@@ -39,8 +42,8 @@ public class TaskAssignedDataResolver : INotificationDataResolver
             throw new ArgumentException("Требуются AssigneeId и AssignerId");
         }
 
-        var assignee = await _userRepository.GetUserByIdAsync(parameters.AssigneeId);
-        var assigner = await _userRepository.GetUserByIdAsync(parameters.AssignerId);
+        var assignee = await userRepository.GetUserByIdAsync(parameters.AssigneeId);
+        var assigner = await userRepository.GetUserByIdAsync(parameters.AssignerId);
         
         if (assignee == null)
         {

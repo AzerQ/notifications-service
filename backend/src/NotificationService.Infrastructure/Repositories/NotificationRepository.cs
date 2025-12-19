@@ -13,23 +13,29 @@ public class NotificationRepository : INotificationRepository
     {
         _context = context;
     }
-
-    public async Task SaveNotificationsAsync(params Notification[] notifications)
+    
+    public void SaveNotifications(params Notification[] notifications)
     {
-        ArgumentNullException.ThrowIfNull(notifications);
+       _context.Notifications.AddRange(notifications);
+    }
 
+    public void UpdateNotifications(params Notification[] notifications)
+    {
         foreach (var notification in notifications)
         {
-            User? existedUser = await _context.Users.FindAsync(notification.Recipient.Id);
+            User? existedUser = _context.Users.Find(notification.Recipient.Id);
             if (existedUser != null)
                 notification.Recipient = existedUser;
         }
-        
-        await _context.Notifications.AddRangeAsync(notifications);
-        await _context.SaveChangesAsync();
+        _context.Notifications.UpdateRange(notifications);
     }
 
-    public async Task<IEnumerable<Notification>> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest)
+    public void SaveChanges()
+    {
+        _context.SaveChanges();
+    }
+
+    public async Task<IEnumerable<Notification>> GetUserNotificationsAsync(Guid userId, GetUserNotificationsRequest userNotificationsRequest)
     {
         var query =  _context.Notifications
             .Include(n => n.Recipient)
@@ -56,23 +62,16 @@ public class NotificationRepository : INotificationRepository
             .FirstOrDefaultAsync(n => n.Id == id);
     }
 
-    public async Task MarkAllUserNotificationsAsRead(Guid userId)
+    public void MarkAllUserNotificationsAsRead(Guid userId)
     {
-        var allUserUnreadNotifications = await _context.Notifications
-        .Where(n => n.RecipientId == userId && n.NotificationWasRead == false)
-        .ToListAsync();
+        var allUserUnreadNotifications = _context.Notifications
+            .Where(n => n.RecipientId == userId && n.NotificationWasRead == false)
+            .ToList();
         
         foreach (var notification in allUserUnreadNotifications)
         {
             notification.NotificationWasRead = true;
         }
         _context.UpdateRange(allUserUnreadNotifications);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateNotificationsAsync(params Notification[] notifications)
-    {
-         _context.UpdateRange(notifications);
-        await _context.SaveChangesAsync();
     }
 }

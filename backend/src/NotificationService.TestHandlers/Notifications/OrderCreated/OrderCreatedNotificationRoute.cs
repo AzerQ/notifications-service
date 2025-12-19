@@ -1,35 +1,39 @@
-using System.Text.Json;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
-using NotificationService.Domain.Models;
 
 namespace NotificationService.TestHandlers.Notifications.OrderCreated;
 
-public class OrderCreatedDataResolver : INotificationDataResolver
+[NotificationRoute(Name = Route)]
+public class OrderCreatedNotificationRoute(IUserRepository userRepository)
+    : INotificationRoute
 {
-    private readonly IUserRepository _userRepository;
+    public const string Route = "OrderCreated";
 
-    public OrderCreatedDataResolver(IUserRepository userRepository)
+    public NotificationRouteConfiguration RouteConfiguration { get; } = new()
     {
-        _userRepository = userRepository;
-    }
+        Name = Route,
+        NotificationObjectKind = NotificationObjectKinds.Order,
+        TemplateName = Route,
+        DisplayName = "Заказ создан",
+        Description = "Уведомление отправляется при создании нового заказа",
+        Tags = ["заказ", "покупка", "подтверждение"],
+        PayloadType = typeof(OrderCreatedRequestData),
+        Icon = new ("book-a")
+    };
 
-    public string Route => "OrderCreated";
-
-    public async Task<IEnumerable<User>> ResolveNotificationRecipients(NotificationRequest notificationRequest)
+    public Task<IEnumerable<Guid>> ResolveNotificationRecipientsIds(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<OrderCreatedRequestData>();
         
         if (parameters?.CustomerId == null)
         {
-            return Enumerable.Empty<User>();
+            return Task.FromResult(Enumerable.Empty<Guid>());
         }
 
-        var user = await _userRepository.GetUserByIdAsync(parameters.CustomerId);
-        return user != null ? new[] { user } : Enumerable.Empty<User>();
+        return Task.FromResult<IEnumerable<Guid>>([parameters.CustomerId]);
     }
-
+    
     public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
     {
         var parameters = notificationRequest.GetData<OrderCreatedRequestData>();
@@ -39,7 +43,7 @@ public class OrderCreatedDataResolver : INotificationDataResolver
             throw new ArgumentException("Требуется CustomerId");
         }
 
-        var user = await _userRepository.GetUserByIdAsync(parameters.CustomerId);
+        var user = await userRepository.GetUserByIdAsync(parameters.CustomerId);
         
         if (user == null)
         {

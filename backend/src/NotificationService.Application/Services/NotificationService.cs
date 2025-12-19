@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
@@ -12,7 +13,7 @@ namespace NotificationService.Application.Services;
 /// Координирует весь процесс от получения запроса до отправки уведомления.
 /// </summary>
 public class NotificationCommandService 
-    (NotificationRoutesContext notificationRoutesContext,
+    (IServiceProvider serviceProvider,
     INotificationRepository notificationRepository,
     ITemplateRepository templateRepository,
     INotificationSender notificationSender,
@@ -31,29 +32,36 @@ public class NotificationCommandService
     {
         ArgumentNullException.ThrowIfNull(request);
         
-        INotificationDataResolver notificationDataResolver = notificationRoutesContext.GetDataResolverForRoute(request.Route);
+        INotificationRoute notificationRoute = 
+            serviceProvider.GetKeyedService<INotificationRoute>(request.Route) ?? throw new KeyNotFoundException($"Route ${request.Route} handler not found");
         
-        INotificationRouteConfiguration notificationRouteConfiguration = 
-            notificationRoutesContext.GetNotificationRouteConfiguration(request.Route) ?? throw new ArgumentException($"Route '{request.Route}' configuration not found.");
+        NotificationRouteConfiguration notificationRouteConfiguration = notificationRoute.RouteConfiguration ?? throw new ArgumentException($"Route '{request.Route}' configuration not found.");
         
         NotificationTemplate template = templateRepository.GetTemplateByName(notificationRouteConfiguration.TemplateName)
                        ?? throw new ArgumentException($"Template '{notificationRouteConfiguration.TemplateName}' not found.");
         
         
-        var preparedNotifications = (await notificationMapper.MapFromRequest(request, notificationDataResolver, template))
+        var preparedNotifications = (await notificationMapper.MapFromRequest(request, notificationRoute, template))
             .ToArray();
 
-        await notificationRepository.SaveNotificationsAsync(preparedNotifications);
-        
-        await Task.WhenAll(preparedNotifications.Select(notification => notificationSender.SendAsync(notification, notificationRouteConfiguration)));
-        
-        return notificationMapper.MapToResponse(preparedNotifications);
+            notificationRepository.SaveNotifications(preparedNotifications);
+            
+            notificationRepository.SaveChanges();
+
+            await Task.WhenAll(preparedNotifications.Select(notification =>
+                notificationSender.SendAsync(notification, notificationRouteConfiguration)));
+            
+            notificationRepository.SaveChanges();
+
+            return notificationMapper.MapToResponse(preparedNotifications);
         
     }
 
-    public async Task MarkAllUserNotificationsAsRead(Guid userId)
+    public Task MarkAllUserNotificationsAsRead(Guid userId)
     {
-        await notificationRepository.MarkAllUserNotificationsAsRead(userId);
+       notificationRepository.MarkAllUserNotificationsAsRead(userId);
+       notificationRepository.SaveChanges();
+       return Task.CompletedTask;
     }
 }
 
@@ -65,7 +73,7 @@ public class NotificationQueryService(
     INotificationRepository notificationRepository,
     INotificationMapper notificationMapper,
     InAppNotificationMapper inAppNotificationMapper,
-    NotificationRoutesContext notificationRoutesContext
+    INotificationRoutesService notificationRoutesService
 ) : INotificationQueryService
 {
     /// <summary>
@@ -90,17 +98,21 @@ public class NotificationQueryService(
     /// Получает все уведомления для указанного пользователя.
     /// </summary>
     /// <param name="userId">Идентификатор пользователя</param>
+    /// <param name="userNotificationsRequest">Запрос пользователя на уведомления</param>
     /// <returns>Коллекция DTO уведомлений пользователя</returns>
     public async Task<IReadOnlyCollection<AppNotification>> GetUserNotifications(Guid userId,
         GetUserNotificationsRequest userNotificationsRequest)
     {
-        var notifications = GetOnlyInAppSentNotifications(await notificationRepository.GetUserNotifications(userId, userNotificationsRequest));
+        var notifications = GetOnlyInAppSentNotifications(await notificationRepository.GetUserNotificationsAsync(userId, userNotificationsRequest));
 
+        var allNotificationRoutes = notificationRoutesService.GetAllNotificationRoutesConfigurations();       
+        
         var distinctRoutesConfigurations = notifications
                             .Select(n => n.Route)
                             .Distinct()
-                            .Select(notificationRoutesContext.GetNotificationRouteConfiguration)
-                            .ToDictionary(k => k.Name, v => v);
+                            .Select(route => allNotificationRoutes.FirstOrDefault(r => r.Name == route))
+                            .Where(route => route is not null)
+                            .ToDictionary(route => route!.Name, v => v!);
 
         return [.. notifications.Select(n => inAppNotificationMapper.Map(n, distinctRoutesConfigurations[n.Route]))];
 

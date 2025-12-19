@@ -7,12 +7,16 @@ public interface IUserRepository: IUserReadOnlyRepository
     Task<User> CreateUserAsync(User user);
     Task CreateUsersAync(IEnumerable<User> users);
     Task UpdateUserAsync(User user);
+    Task UpdateUsersAync(IEnumerable<User> users);
     Task DeleteUserAsync(Guid id);
 }
 
 public interface IUserReadOnlyRepository
 {
     Task<User?> GetUserByIdAsync(Guid id);
+    
+    Task<IEnumerable<User>> GetUsersByIdsAync(IEnumerable<Guid> ids);
+    
     Task<User?> GetUserByEmailAsync(string email);
 
     Task<User?> GetByAccountNameAsync(string accountName);

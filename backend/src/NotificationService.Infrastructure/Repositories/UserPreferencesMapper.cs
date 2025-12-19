@@ -5,7 +5,7 @@ namespace NotificationService.Infrastructure.Repositories;
 
 static class UserPreferencesMapper {
     
-  public static UserRoutePreferenceView ToView(UserRoutePreference preference, INotificationRouteConfiguration? routeConfig)
+  public static UserRoutePreferenceView ToView(UserRoutePreference preference, NotificationRouteConfiguration? routeConfig)
   {
     return new UserRoutePreferenceView
     {

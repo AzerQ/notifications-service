@@ -4,11 +4,15 @@ namespace NotificationService.Domain.Interfaces;
 
 public interface INotificationRepository
 {
-    Task SaveNotificationsAsync(params Notification[] notifications);
+    void SaveNotifications(params Notification[] notifications);
 
-    Task UpdateNotificationsAsync(params Notification[] notifications);
+    void UpdateNotifications(params Notification[] notifications);
 
-    Task<IEnumerable<Notification>> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
+    void SaveChanges();
+    
+    void MarkAllUserNotificationsAsRead(Guid userId);
+
+    Task<IEnumerable<Notification>> GetUserNotificationsAsync(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
     Task<Notification?> GetNotificationByIdAsync(Guid id);
-    Task MarkAllUserNotificationsAsRead(Guid userId);
+
 }
