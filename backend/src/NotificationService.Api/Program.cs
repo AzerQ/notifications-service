@@ -11,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+builder.Services.AddWindowsService();
+
 builder.Services.AddNotificationApplicationServices(builder.Configuration);
 builder.Services.ConfigureServiceAuthentication(builder.Configuration);
 
