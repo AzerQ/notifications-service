@@ -19,6 +19,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Quartz" Version="3.13.0" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
@@ -40,6 +43,12 @@
     <_ContentIncludedByDefault Remove="Notifications\OrderCreated\template.json" />
     <_ContentIncludedByDefault Remove="Notifications\TaskAssigned\template.json" />
     <_ContentIncludedByDefault Remove="Notifications\UserRegistered\template.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="serilog.config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

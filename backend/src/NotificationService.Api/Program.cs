@@ -4,6 +4,7 @@ using NotificationService.Api.DI;
 using NotificationService.Api.Hubs;
 using NotificationService.Application.Extensions;
 using NotificationService.Infrastructure.Data.Init;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,14 @@ builder.Services.ConfigureServiceAuthentication(builder.Configuration);
 // Register test notification handlers
 builder.Services.AddNotificationsServiceModules(builder.Configuration, 
     typeof(NotificationService.TestHandlers.NotificationsModuleServicesRegister).Assembly);
+
+builder.Configuration.AddJsonFile("serilog.config.json", optional: false);
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom
+    .Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 
