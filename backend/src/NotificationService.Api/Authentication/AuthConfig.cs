@@ -7,6 +7,8 @@ using NotificationService.Domain.Interfaces;
 using NotificationService.Infrastructure.Repositories;
 using NotificationService.Infrastructure.Services;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.SignalR;
+using NotificationService.Api.Providers;
 
 namespace NotificationService.Api.Authentication;
 
@@ -75,6 +77,8 @@ public static class AuthConfig
       .AddPolicy(JwtAuthPolicyName, policy =>
         policy.RequireAuthenticatedUser().AddAuthenticationSchemes("JwtBearer"));
 
+    // Configure SignalR with custom UserIdProvider for targeted notifications
+    services.AddSingleton<IUserIdProvider, UserIdProvider>();
     return services;
   }
 

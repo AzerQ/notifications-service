@@ -1,8 +1,10 @@
 using EF.DynamicFilters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using NotificationService.Api.Configuration;
 using NotificationService.Api.SwaggerExtensions;
 using NotificationService.Api.Hubs;
+using NotificationService.Api.Jobs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Mappers;
 using NotificationService.Application.Services;
@@ -12,11 +14,28 @@ using NotificationService.Infrastructure.Providers.Email;
 using NotificationService.Infrastructure.Repositories;
 using NotificationService.Infrastructure.Services;
 using NotificationService.Infrastructure.Templates;
+using Quartz;
 
 namespace NotificationService.Api.DI;
 
 public static class NotificationServiceDiConfigurationExtensions
 {
+    
+    public static IServiceCollection AddNotificationApplicationServices(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddSignalR();
+        return
+            services
+                .AddApplicationCorsSettings(configuration)
+                .AddMemoryCache()
+                .ConfigureApplicationOptions(configuration)
+                .AddPersistenceServices(configuration)
+                .AddNotificationApplicationCommonServices()
+                .AddSwaggerWithXmlDocumentation()
+                .AddNotificationsCleanupService(configuration);
+    }
+    
     public static IServiceCollection AddSwaggerWithXmlDocumentation(this IServiceCollection services)
     {
         return services
@@ -59,7 +78,37 @@ public static class NotificationServiceDiConfigurationExtensions
             });
     }
 
-    public static IServiceCollection AddApplicationCorsSettings(this IServiceCollection services,
+    private static IServiceCollection AddNotificationsCleanupService(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        
+        // Configure notification cleanup options
+        services.Configure<NotificationCleanupOptions>(
+            configuration.GetSection("NotificationCleanup"));
+
+        // Configure Quartz for scheduled jobs
+        services.AddQuartz(q =>
+        {
+            var cleanupOptions = configuration.GetSection("NotificationCleanup").Get<NotificationCleanupOptions>() 
+                                 ?? new NotificationCleanupOptions();
+    
+            if (cleanupOptions.Enabled)
+            {
+                var jobKey = new JobKey("NotificationCleanupJob");
+                q.AddJob<NotificationCleanupJob>(opts => opts.WithIdentity(jobKey));
+        
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey)
+                    .WithIdentity("NotificationCleanupJob-trigger")
+                    .WithCronSchedule(cleanupOptions.Schedule)
+                    .WithDescription($"Cleans up notifications older than {cleanupOptions.RetentionDays} days"));
+            }
+        });
+
+        return services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+    }
+
+    private static IServiceCollection AddApplicationCorsSettings(this IServiceCollection services,
         IConfiguration configuration)
     {
         return services.AddCors(options =>
@@ -79,7 +128,7 @@ public static class NotificationServiceDiConfigurationExtensions
         });
     }
 
-    public static IServiceCollection AddPersistenceServices(this IServiceCollection services,
+    private static IServiceCollection AddPersistenceServices(this IServiceCollection services,
         IConfiguration configuration)
     {
         return services.AddDbContext<NotificationDbContext>
@@ -93,7 +142,7 @@ public static class NotificationServiceDiConfigurationExtensions
                 .AddScoped<IQueryBuilder, QueryBuilder>();
     }
 
-    public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services,
+    private static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services,
         IConfiguration configuration)
     {
         return services
@@ -102,7 +151,7 @@ public static class NotificationServiceDiConfigurationExtensions
             .AddScoped(sp => sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<TemplateOptions>>().Value);
     }
 
-    public static IServiceCollection AddNotificationApplicationCommonServices(this IServiceCollection services)
+    private static IServiceCollection AddNotificationApplicationCommonServices(this IServiceCollection services)
     {
         return services
             .AddScoped<INotificationRoutesService, NotificationRoutesService>()   
@@ -118,17 +167,5 @@ public static class NotificationServiceDiConfigurationExtensions
             .AddScoped<ISmtpClientFactory, SmtpClientFactory>()
             .AddScoped<ITemplateRenderer, HandlebarsTemplateRenderer>();
     }
-
-    public static IServiceCollection AddNotificationApplicationServices(this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddSignalR();
-        return
-            services
-                .AddApplicationCorsSettings(configuration)
-                .AddMemoryCache()
-                .ConfigureApplicationOptions(configuration)
-                .AddPersistenceServices(configuration)
-                .AddNotificationApplicationCommonServices();
-    }
+    
 }
