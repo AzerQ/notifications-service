@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import {jwtDecode} from "../utils/jwtDecode.ts";
 
 /**
  * Authentication tokens
@@ -130,26 +131,10 @@ export class AuthenticationService {
    * @returns Decoded JWT claims
    */
   private decodeJwt(token: string): JwtClaims {
-    try {
-      // JWT format: header.payload.signature
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
-      }
-
-      // Decode payload (second part)
-      const payload = parts[1];
-      // Add padding if needed
-      const padded = payload + '='.repeat((4 - (payload.length % 4)) % 4);
-      const decoded = atob(padded);
-      const claims = JSON.parse(decoded);
-
-      return claims as JwtClaims;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to decode JWT';
-      console.error('[Auth] JWT decode error:', errorMessage);
-      throw new Error(`Failed to decode JWT token: ${errorMessage}`);
-    }
+      const claims = jwtDecode<JwtClaims>(token);
+      if (!claims)
+        throw new Error(`Failed to decode JWT token`);
+      return  claims;
   }
 
   /**
