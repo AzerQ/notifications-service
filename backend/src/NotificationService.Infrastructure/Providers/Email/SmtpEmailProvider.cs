@@ -3,6 +3,7 @@ using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NotificationService.Domain.Interfaces;
+using NotificationService.Domain.Models;
 
 namespace NotificationService.Infrastructure.Providers.Email;
 
@@ -21,8 +22,8 @@ public class SmtpEmailProvider : IEmailProvider
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _smtpClientFactory = smtpClientFactory ?? throw new ArgumentNullException(nameof(smtpClientFactory));
     }
-
-    public async Task<bool> SendEmailAsync(string to, string subject, string body, string? fromName = null)
+    
+    public async Task<bool> SendEmailAsync(string to, string subject, string body, string? fromName = null, IEnumerable<NotificationFile>? files = null)
     {
         if (string.IsNullOrWhiteSpace(to))
         {
@@ -42,7 +43,15 @@ public class SmtpEmailProvider : IEmailProvider
             Body = body,
             IsBodyHtml = true
         };
-
+        
+        if (files != null && files.Any())
+        {
+            foreach (var notificationFile in files)
+            {
+                message.Attachments.Add(GetMailAttachment(notificationFile));
+            }
+        }
+        
         try
         {
             await smtpClient.SendMailAsync(message);
@@ -53,5 +62,10 @@ public class SmtpEmailProvider : IEmailProvider
             _logger.LogError(ex, "Failed to send email to {Recipient} via SMTP host {Host}", to, _options.SmtpHost);
             return false;
         }
+    }
+
+    private Attachment GetMailAttachment(NotificationFile file)
+    {
+        return new Attachment(new MemoryStream(file.Content), file.Name);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using NotificationService.Application.DTOs;
 using NotificationService.Domain.Interfaces;
+using NotificationService.Domain.Models;
 
 namespace NotificationService.Application.Interfaces;
 
@@ -45,4 +46,4 @@ public interface INotificationRoute
     Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest);
 }
 
-public record NotificationFullData (object Data, string Url);
+public record NotificationFullData (object Data, string Url, IEnumerable<NotificationFile>? Files = null);

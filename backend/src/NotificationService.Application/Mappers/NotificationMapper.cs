@@ -51,12 +51,12 @@ public class NotificationMapper(ITemplateRenderer templateRenderer, IUserReposit
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(notificationRoute);
 
-        var notificationData = await notificationRoute.ResolveNotificationFullData(request);
+        var notificationFullData = await notificationRoute.ResolveNotificationFullData(request);
         
-        var renderedContent = templateRenderer.Render(template.CommonContentTemplate, notificationData);
+        var renderedContent = templateRenderer.Render(template.CommonContentTemplate, notificationFullData.Data);
         var renderedSubject = string.IsNullOrWhiteSpace(template.Subject)
             ? request.Title ?? "Тема отсутсвует"
-            : templateRenderer.Render(template.Subject, notificationData.Data);
+            : templateRenderer.Render(template.Subject, notificationFullData.Data);
         
         var notification = new Notification
         {
@@ -65,8 +65,9 @@ public class NotificationMapper(ITemplateRenderer templateRenderer, IUserReposit
             Route = request.Route,
             TemplateName = template.Name,
             CreatedAt = DateTime.UtcNow,
-            TemplateData = notificationData.Data,
-            Url = notificationData.Url
+            TemplateData = notificationFullData.Data,
+            Url = notificationFullData.Url,
+            Files = notificationFullData.Files
         };
 
         if (request.Channels is not null 

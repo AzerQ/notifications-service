@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace NotificationService.Domain.Models;
 
 public record Notification
@@ -15,6 +17,8 @@ public record Notification
     public string Url {get; set;} = null!;
     public ICollection<NotificationMetadataField> Metadata { get; set; } = new List<NotificationMetadataField>();
 
+    [NotMapped]
+    public IEnumerable<NotificationFile>? Files { get; set; }
      
     public static ICollection<NotificationChannelDeliveryStatus>  ChannelsDefaultState(params NotificationChannel[] notificationChannels)
     {
@@ -31,6 +35,8 @@ public record Notification
 
 
 }
+
+public record NotificationFile(string Name, byte[] Content, long SizeInBytes);
 
 public record NotificationChannelDeliveryStatus
 {

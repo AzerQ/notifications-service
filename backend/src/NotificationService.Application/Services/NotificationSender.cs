@@ -93,6 +93,7 @@ public class NotificationSender(
     /// Отправляет уведомление через Email (SMTP).
     /// </summary>
     /// <param name="notification">Уведомление для отправки</param>
+    /// <param name="content">Тело письма в html формате</param>
     /// <returns>true если отправка успешна, иначе false</returns>
     private async Task<bool> SendEmailAsync(Notification notification, string content)
     {
@@ -103,7 +104,7 @@ public class NotificationSender(
 
         var subject = notification.Title;
 
-        return await emailProvider.SendEmailAsync(notification.Recipient.Email, subject, content);
+        return await emailProvider.SendEmailAsync(notification.Recipient.Email, subject, content, files: notification.Files);
     }
 
     /// <summary>
