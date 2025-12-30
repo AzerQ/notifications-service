@@ -116,6 +116,8 @@ public class NotificationSender(
     {
         var template = templateRepository.GetTemplateByName(notification.TemplateName) ?? throw new ArgumentException($"Template '{notification.TemplateName}' not found.");
         string contentTemplate = template.ContentTemplateByChannel(notificationChannel);
-        return templateRenderer.Render(contentTemplate, notification.TemplateData);
+
+        var additionalData = new { ObjectLink = notification.Url };
+        return templateRenderer.Render(contentTemplate, notification.TemplateData, additionalData);
     }
 }

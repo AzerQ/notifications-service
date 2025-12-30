@@ -30,7 +30,7 @@ public class HandlebarsTemplateRenderer(ILogger<HandlebarsTemplateRenderer> logg
         return handlebars;
     }
     
-    public string Render(string template, object data)
+    public string Render(string template, object data, object? additionalData = null)
     {
         if (string.IsNullOrWhiteSpace(template)) return string.Empty;
 
@@ -38,7 +38,7 @@ public class HandlebarsTemplateRenderer(ILogger<HandlebarsTemplateRenderer> logg
         {
             var handlebars = WithHelpers(Handlebars.Create());
             var compiledTemplate = handlebars.Compile(template);
-            return compiledTemplate(data);
+            return compiledTemplate(data, additionalData);
         }
         catch (Exception ex)
         {
