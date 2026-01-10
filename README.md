@@ -7,12 +7,11 @@ A universal, extensible REST API notification service with real-time SignalR sup
 This MVP includes:
 - ✅ **Generic Notification Handlers** - UserRegistered, OrderCreated, TaskAssigned
 - ✅ **SignalR Integration** - Real-time notifications to connected clients
-- ✅ **JWT Authentication** - Secure user authentication and authorization
+- ✅ **JWT Authentication** - Secure user authentication (Email Challenge, Windows Auth)
 - ✅ **Targeted Notifications** - SignalR notifications delivered only to specific users
 - ✅ **Scheduled Cleanup Service** - Automatic deletion of old notifications with configurable retention period
 - ✅ **Showcase Application** - Full-featured demo with React + TypeScript + MobX + Tailwind
-- ✅ **Test Application** - Ready-to-use demo application
-- ✅ **InApp Frontend Component** - React/TypeScript notification UI
+- ✅ **InApp Frontend Component** - Modern React/TypeScript notification UI component
 - ✅ **Removed Docsvision Dependencies** - Now completely generic
 
 ## 🚀 Showcase Application (NEW!)
@@ -34,7 +33,7 @@ start.bat     # Windows
 Then open http://localhost:3000 in your browser.
 
 **Features:**
-- 🔐 User registration and login with JWT authentication
+- 🔐 User login with JWT authentication (Email/Windows)
 - 📊 Beautiful dashboard with Tailwind CSS
 - 🔔 Real-time notification panel
 - 📤 Send test notifications (UserRegistered, OrderCreated, TaskAssigned)
@@ -65,29 +64,17 @@ See [showcase/README.md](./showcase/README.md) for detailed documentation.
    - Swagger UI: http://localhost:5093/swagger
    - SignalR Hub: http://localhost:5093/notificationHub
 
-### Test Application
-
-The easiest way to test the notification service:
-
-```bash
-cd testapp
-./start.sh    # Linux/Mac
-start.bat     # Windows
-```
-
-Then open http://localhost:8080 in your browser.
-
 ### Frontend Component
 
 The InApp notification component with SignalR support:
 
 ```bash
-cd frontend/sed-notifications-frontend
+cd frontend/notification-component-mvp
 npm install
-npm start
+npm run dev
 ```
 
-Access at http://localhost:5094
+Access at http://localhost:5173
 
 ## SignalR Real-Time Notifications
 
@@ -181,12 +168,10 @@ Complete project documentation is available in the [docs/](./docs/README.md) fol
 ### Create a notification
 
 ```bash
-POST http://localhost:5093/api/notification
+POST http://localhost:5093/api/notification/UserRegistered
 Content-Type: application/json
 
 {
-  "route": "UserRegistered",
-  "channel": "Email",
   "parameters": {
     "UserId": "00000000-0000-0000-0000-000000000001",
     "WelcomeMessage": "Welcome to our service!"
@@ -202,15 +187,16 @@ Content-Type: application/json
 
 {
   "title": "Test Notification",
-  "message": "This is a broadcast test",
-  "route": "Test"
+  "content": "This is a broadcast test",
+  "type": "Test"
 }
 ```
 
-### Get notifications by user
+### Get personal notifications
 
 ```bash
-GET http://localhost:5093/api/notification/by-user/{userId}
+GET http://localhost:5093/api/notification/personal
+Authorization: Bearer {token}
 ```
 
 ## Available Notification Handlers
@@ -225,8 +211,6 @@ Sent when a new user registers.
 **Example:**
 ```json
 {
-  "route": "UserRegistered",
-  "channel": "Email",
   "parameters": {
     "UserId": "00000000-0000-0000-0000-000000000001",
     "WelcomeMessage": "Welcome aboard!"
@@ -246,8 +230,6 @@ Sent when a new order is placed.
 **Example:**
 ```json
 {
-  "route": "OrderCreated",
-  "channel": "Email",
   "parameters": {
     "CustomerId": "00000000-0000-0000-0000-000000000001",
     "OrderNumber": "ORD-12345",
@@ -271,8 +253,6 @@ Sent when a task is assigned to a user.
 **Example:**
 ```json
 {
-  "route": "TaskAssigned",
-  "channel": "Email",
   "parameters": {
     "AssigneeId": "00000000-0000-0000-0000-000000000001",
     "AssignerId": "00000000-0000-0000-0000-000000000002",
@@ -297,11 +277,7 @@ notifications-service/
 │   │   └── NotificationService.TestHandlers/  # Generic test handlers
 │   └── NotificationService.sln
 ├── frontend/                         # Frontend React component
-│   └── sed-notifications-frontend/   # InApp notifications UI
-├── testapp/                          # Test application
-│   ├── index.html                    # Demo web application
-│   ├── start.sh                      # Linux/Mac startup script
-│   └── start.bat                     # Windows startup script
+│   └── notification-component-mvp/   # InApp notifications UI
 ├── tests/                            # Unit tests
 └── docs/                             # Documentation
     └── NOTIFICATION_CLEANUP.md       # Cleanup service documentation
@@ -338,10 +314,9 @@ Example handlers:
 - Real-time delivery via SignalR
 
 #### Delivery Channels
-- **Primary:** Email (SMTP)
-- **Secondary:** SQLite database storage
-- **Real-time:** SignalR for InApp notifications
-- **Query:** REST API for retrieving notifications
+- **Email:** SMTP delivery
+- **InApp:** Real-time SignalR delivery and database storage
+- **Query:** REST API for retrieving personal notifications
 
 #### Functional Requirements
 - ✅ Flexible addition of new notification types
@@ -453,14 +428,14 @@ See existing handlers in `backend/src/NotificationService.TestHandlers/Notificat
 ## Frontend Component
 
 The project includes a fully-featured React InApp notification component:
-- Location: `frontend/sed-notifications-frontend`
+- Location: `frontend/notification-component-mvp`
 - Technology: React, TypeScript, MobX, SignalR
 - Features:
   - Real-time notifications via SignalR
   - Notification center with history
   - Toast/popup alerts
   - Read/unread status
-  - Filtering and search
+  - Route preferences management
 
 ## Example HTML Templates
 
@@ -507,14 +482,12 @@ cd backend
 dotnet test
 ```
 
-### Run Frontend Tests
+### Run Frontend
 ```bash
-cd frontend/sed-notifications-frontend
-npm test
+cd frontend/notification-component-mvp
+npm install
+npm run dev
 ```
-
-### Manual Testing
-Use the test application in `testapp/` for manual end-to-end testing.
 
 ## Troubleshooting
 

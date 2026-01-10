@@ -12,7 +12,7 @@ http://localhost:5093/api
 
 ### 1. Create and Send Notification
 
-**Endpoint:** `POST /api/notification`
+**Endpoint:** `POST /api/notification/{route}` or `POST /api/notification/{notificationCategory}/{route}`
 
 **Description:** Creates a notification, saves it to the database, and sends it via specified channels.
 
@@ -20,8 +20,9 @@ http://localhost:5093/api
 
 ```json
 {
-  "route": "string",
-  "channel": "string", // optional: "Email", "Sms", "Push", "Email,Push"
+  "title": "string", // optional
+  "message": "string", // optional
+  "channels": ["Email", "InApp"], // optional
   "parameters": {
     "key1": "value1",
     "key2": "value2"
@@ -30,41 +31,42 @@ http://localhost:5093/api
 ```
 
 **Parameters:**
-- `route` (required) — notification type/route (e.g., "UserRegistered", "OrderCreated")
-- `channel` (optional) — delivery channels, comma-separated. Uses all available by default
+- `route` (path, required) — notification type/route (e.g., "UserRegistered", "OrderCreated")
+- `notificationCategory` (path, optional) — notification category
+- `title` (optional) — override title
+- `message` (optional) — override content
+- `channels` (optional) — array of delivery channels (`Email`, `InApp`). Uses all available for the route by default.
 - `parameters` (required) — parameters for data resolver and template
 
-**Response (200 OK):**
+**Response (201 Created):**
 
 ```json
 {
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "title": "Welcome!",
-  "message": "Welcome to our service, John!",
   "route": "UserRegistered",
   "createdAt": "2025-10-28T10:30:00Z",
-  "recipient": {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "username": "john_doe",
-    "email": "john@example.com"
-  },
-  "channelStatuses": [
+  "recipients": [
     {
-      "channel": "Email",
-      "status": "Sent"
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
+      "createdAt": "2025-10-28T10:00:00Z"
     }
-  ]
+  ],
+  "createdNotificationIds": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "statusMessage": "Notification sended successfully"
 }
 ```
 
 **Example Request (UserRegistered):**
 
 ```bash
-curl -X POST http://localhost:5093/api/notification \
+curl -X POST http://localhost:5093/api/notification/UserRegistered \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "UserRegistered",
-    "channel": "Email",
     "parameters": {
       "UserId": "00000000-0000-0000-0000-000000000001",
       "WelcomeMessage": "Welcome aboard!"
@@ -75,11 +77,9 @@ curl -X POST http://localhost:5093/api/notification \
 **Example Request (OrderCreated):**
 
 ```bash
-curl -X POST http://localhost:5093/api/notification \
+curl -X POST http://localhost:5093/api/notification/OrderCreated \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "OrderCreated",
-    "channel": "Email",
     "parameters": {
       "CustomerId": "00000000-0000-0000-0000-000000000001",
       "OrderNumber": "ORD-12345",
@@ -92,11 +92,9 @@ curl -X POST http://localhost:5093/api/notification \
 **Example Request (TaskAssigned):**
 
 ```bash
-curl -X POST http://localhost:5093/api/notification \
+curl -X POST http://localhost:5093/api/notification/TaskAssigned \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "TaskAssigned",
-    "channel": "Email",
     "parameters": {
       "AssigneeId": "00000000-0000-0000-0000-000000000001",
       "AssignerId": "00000000-0000-0000-0000-000000000002",
@@ -121,22 +119,22 @@ curl -X POST http://localhost:5093/api/notification \
 
 ```json
 {
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "title": "Welcome!",
-  "message": "Welcome to our service, John!",
   "route": "UserRegistered",
   "createdAt": "2025-10-28T10:30:00Z",
-  "recipient": {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "username": "john_doe",
-    "email": "john@example.com"
-  },
-  "channelStatuses": [
+  "recipients": [
     {
-      "channel": "Email",
-      "status": "Sent"
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
+      "createdAt": "2025-10-28T10:00:00Z"
     }
-  ]
+  ],
+  "createdNotificationIds": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "statusMessage": "Notification sended successfully"
 }
 ```
 
@@ -146,92 +144,98 @@ curl -X POST http://localhost:5093/api/notification \
 curl http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963f66afa6
 ```
 
-### 3. Get Notifications by User
+### 3. Get Personal Notifications
 
-**Endpoint:** `GET /api/notification/by-user/{userId}`
+**Endpoint:** `GET /api/notification/personal`
 
-**Description:** Retrieves all notifications for a specific user.
+**Description:** Retrieves notifications for the current authenticated user.
 
-**Parameters:**
-- `userId` (path, required) — user identifier (GUID)
+**Query Parameters:**
+- `OnlyUnread` (boolean) — only unread (default: false)
+- `PageSize` (int) — page size (default: 50)
+- `PageNumber` (int) — page number (default: 1)
 
 **Response (200 OK):**
 
 ```json
-[
-  {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "title": "Welcome!",
-    "message": "Welcome to our service, John!",
-    "route": "UserRegistered",
-    "createdAt": "2025-10-28T10:30:00Z",
-    "channelStatuses": [...]
+{
+  "notifications": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "receiverId": "00000000-0000-0000-0000-000000000001",
+      "type": "User",
+      "subType": "UserRegistered",
+      "title": "Welcome!",
+      "content": "Welcome to our service!",
+      "url": "https://example.com",
+      "icon": { "name": "user" },
+      "date": "2025-10-28T10:30:00Z",
+      "read": false,
+      "hashtags": ["user", "registration"]
+    }
+  ],
+  "request": {
+    "onlyUnread": false,
+    "pageSize": 50,
+    "pageNumber": 1
   },
-  {
-    "id": "4fb96f75-6828-5673-c4gd-3d074g77bfb7",
-    "title": "Order Confirmation",
-    "message": "Your order #ORD-12345 has been placed",
-    "route": "OrderCreated",
-    "createdAt": "2025-10-28T11:00:00Z",
-    "channelStatuses": [...]
-  }
-]
+  "totalItemsCount": 1
+}
 ```
 
 **Example Request:**
 
 ```bash
-curl http://localhost:5093/api/notification/by-user/00000000-0000-0000-0000-000000000001
+curl -X GET "http://localhost:5093/api/notification/personal?OnlyUnread=true" \
+  -H "Authorization: Bearer {token}"
 ```
 
-### 4. Get Notifications by Status
+---
 
-**Endpoint:** `GET /api/notification/by-status/{status}`
+### 4. Mark All Notifications as Read
 
-**Description:** Retrieves all notifications with a specific delivery status.
+**Endpoint:** `PUT /api/notification/personal/mark-all-read`
 
-**Parameters:**
-- `status` (path, required) — delivery status: "Pending", "Sent", "Failed", "Skipped"
+**Description:** Marks all notifications for the current user as read.
 
-**Response (200 OK):**
+**Response (200 OK):** Empty body.
 
-```json
-[
-  {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "title": "Welcome!",
-    "message": "Welcome to our service, John!",
-    "route": "UserRegistered",
-    "createdAt": "2025-10-28T10:30:00Z",
-    "channelStatuses": [
-      {
-        "channel": "Email",
-        "status": "Sent"
-      }
-    ]
-  }
-]
-```
+---
 
-**Example Request:**
+### 5. Set Read Flag for Specific Notification
 
-```bash
-curl http://localhost:5093/api/notification/by-status/Sent
-```
+**Endpoint:** `PUT /api/notification/set-read-flag`
 
-### 5. Broadcast Notification via SignalR
+**Query Parameters:**
+- `notificationId` (Guid) — notification ID
+- `flagValue` (boolean) — flag value
+
+**Response (200 OK):** Success message.
+
+---
+
+### 6. Search Notifications (Admin only)
+
+**Endpoint:** `POST /api/notification/search`
+
+**Description:** Advanced search for notifications using filters.
+
+---
+
+### 7. Broadcast Notification via SignalR (Admin only)
 
 **Endpoint:** `POST /api/notification/broadcast`
 
-**Description:** Broadcasts a notification to all connected SignalR clients (for testing).
+**Description:** Broadcasts a notification to all connected SignalR clients.
 
 **Request Body:**
 
 ```json
 {
-  "title": "System Announcement",
-  "message": "The system will be under maintenance at 2 AM",
-  "route": "SystemAnnouncement"
+  "title": "string",
+  "content": "string",
+  "url": "string",
+  "type": "string"
 }
 ```
 
@@ -239,45 +243,11 @@ curl http://localhost:5093/api/notification/by-status/Sent
 
 ```json
 {
-  "success": true,
-  "message": "Notification broadcasted successfully"
+  "message": "Notification broadcast successfully"
 }
 ```
 
-**Example Request:**
-
-```bash
-curl -X POST http://localhost:5093/api/notification/broadcast \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Test Notification",
-    "message": "This is a broadcast test",
-    "route": "Test"
-  }'
-```
-
-### 6. Mark Notification as Read
-
-**Endpoint:** `PUT /api/notification/{id}/mark-read`
-
-**Description:** Marks a notification as read.
-
-**Parameters:**
-- `id` (path, required) — notification identifier (GUID)
-
-**Response (200 OK):**
-
-```json
-{
-  "success": true
-}
-```
-
-**Example Request:**
-
-```bash
-curl -X PUT http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963f66afa6/mark-read
-```
+---
 
 ## User Management Endpoints
 
@@ -293,10 +263,13 @@ curl -X PUT http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963
 [
   {
     "id": "00000000-0000-0000-0000-000000000001",
-    "username": "john_doe",
+    "name": "John Doe",
     "email": "john@example.com",
     "phoneNumber": "+1234567890",
-    "deviceToken": null
+    "createdAt": "2025-10-28T10:00:00Z",
+    "deviceToken": "token",
+    "role": "User",
+    "accountName": "DOMAIN\\user"
   }
 ]
 ```
@@ -315,10 +288,13 @@ curl -X PUT http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963
 ```json
 {
   "id": "00000000-0000-0000-0000-000000000001",
-  "username": "john_doe",
+  "name": "John Doe",
   "email": "john@example.com",
   "phoneNumber": "+1234567890",
-  "deviceToken": null
+  "createdAt": "2025-10-28T10:00:00Z",
+  "deviceToken": "token",
+  "role": "User",
+  "accountName": "DOMAIN\\user"
 }
 ```
 
@@ -355,7 +331,7 @@ curl -X PUT http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963
 
 ### 1. Get User Preferences
 
-**Endpoint:** `GET /api/user-route-preferences/{userId}`
+**Endpoint:** `GET /api/users/{userId}/routes`
 
 **Description:** Retrieves notification preferences for a user.
 
@@ -367,41 +343,66 @@ curl -X PUT http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963
 ```json
 [
   {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "userId": "00000000-0000-0000-0000-000000000001",
     "route": "UserRegistered",
-    "isEnabled": true
-  },
-  {
-    "userId": "00000000-0000-0000-0000-000000000001",
-    "route": "OrderCreated",
-    "isEnabled": true
+    "enabled": true,
+    "routeDisplayName": "User Registered",
+    "routeDescription": "..."
   }
 ]
 ```
 
-### 2. Update User Preference
+### 2. Update User Preferences
 
-**Endpoint:** `PUT /api/user-route-preferences`
+**Endpoint:** `PUT /api/users/{userId}/routes`
 
-**Description:** Updates a user's preference for a specific notification route.
+**Description:** Updates a user's preferences for notification routes.
 
 **Request Body:**
 
 ```json
-{
-  "userId": "00000000-0000-0000-0000-000000000001",
-  "route": "OrderCreated",
-  "isEnabled": false
-}
+[
+  {
+    "route": "OrderCreated",
+    "enabled": false
+  }
+]
 ```
 
-**Response (200 OK):**
+**Response (204 No Content)**
 
-```json
-{
-  "success": true
-}
-```
+## Authentication API
+
+### 1. Send Verification Code to Email
+
+**Endpoint:** `POST /api/auth/email/sendCode?email={email}`
+
+**Response:** `CreatedMailChallengeResponse { challengeId, message }`
+
+### 2. Login by Email and Code
+
+**Endpoint:** `POST /api/auth/email`
+
+**Request Body:** `MailChallengeSubmit { id, code }`
+
+**Response:** `LoginTokensResponse { refreshToken, accessToken }`
+
+### 3. Login via Windows Authentication
+
+**Endpoint:** `POST /api/auth/windows`
+
+**Response:** `LoginTokensResponse`
+
+### 4. Refresh Token
+
+**Endpoint:** `POST /api/auth/refresh`
+
+**Request Body:** `RefreshTokenRequest { refreshTokenValue }`
+
+**Response:** `AccessTokenResponse { accessToken }`
+
+---
 
 ## SignalR Hub
 
@@ -411,7 +412,7 @@ curl -X PUT http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963
 
 ### Authentication
 
-For targeted notifications (user-specific), include JWT token:
+Requires JWT token via `access_token` query parameter.
 
 ```typescript
 const connection = new signalR.HubConnectionBuilder()
@@ -422,34 +423,17 @@ const connection = new signalR.HubConnectionBuilder()
     .build();
 ```
 
-For broadcast notifications (no authentication):
-
-```typescript
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl("http://localhost:5093/notificationHub")
-    .withAutomaticReconnect()
-    .build();
-```
-
 ### Events
 
 #### ReceiveNotification
 
-Fired when a notification is received (either targeted or broadcast).
+Fired when a notification is received.
 
 **Event Handler:**
 
 ```typescript
-connection.on("ReceiveNotification", (notification) => {
+connection.on("ReceiveNotification", (notification: AppNotification) => {
     console.log("Received notification:", notification);
-    // notification object structure:
-    // {
-    //   id: "guid",
-    //   title: "string",
-    //   message: "string",
-    //   route: "string",
-    //   createdAt: "ISO date string"
-    // }
 });
 ```
 
@@ -465,8 +449,9 @@ No client-to-server methods are currently exposed. Communication is server-to-cl
 
 ```typescript
 interface NotificationRequest {
-  route: string;
-  channel?: string; // "Email", "Sms", "Push", or combinations like "Email,Push"
+  title?: string;
+  message?: string;
+  channels?: ("Email" | "InApp")[];
   parameters: Record<string, any>;
 }
 ```
@@ -475,13 +460,12 @@ interface NotificationRequest {
 
 ```typescript
 interface NotificationResponseDto {
-  id: string;
-  title: string;
-  message: string;
+  title?: string;
   route: string;
-  createdAt: string; // ISO date string
-  recipient: UserDto;
-  channelStatuses: ChannelStatusDto[];
+  createdAt: string;
+  recipients: UserDto[];
+  createdNotificationIds: string[];
+  statusMessage: string;
 }
 ```
 
@@ -490,19 +474,31 @@ interface NotificationResponseDto {
 ```typescript
 interface UserDto {
   id: string;
-  username: string;
+  name: string;
   email: string;
   phoneNumber?: string;
-  deviceToken?: string;
+  createdAt: string;
 }
 ```
 
-### ChannelStatusDto
+### AppNotification (SignalR / Personal API)
 
 ```typescript
-interface ChannelStatusDto {
-  channel: "Email" | "Sms" | "Push";
-  status: "Pending" | "Sent" | "Failed" | "Skipped";
+interface AppNotification {
+  id: string;
+  receiverId: string;
+  type?: string;
+  subType?: string;
+  title: string;
+  content: string;
+  url: string;
+  icon?: { name: string, cssClass?: string };
+  date: string;
+  read: boolean;
+  author?: string;
+  actions?: { name: string, label: string, url: string }[];
+  hashtags?: string[];
+  parameters?: { key: string, value: string, description: string }[];
 }
 ```
 
@@ -555,7 +551,7 @@ curl -X POST http://localhost:5093/api/notification \
 
 3. **Get user notifications:**
 ```bash
-curl http://localhost:5093/api/notification/by-user/{userId}
+curl -H "Authorization: Bearer {token}" http://localhost:5093/api/notification/personal
 ```
 
 ### SignalR Integration Example

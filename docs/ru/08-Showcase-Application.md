@@ -120,47 +120,27 @@ npm run dev
 
 ### 1. Аутентификация
 
-#### Регистрация
+#### Вход по Email
 
-**Endpoint:** `POST /api/auth/register`
+**Endpoint:** `POST /api/auth/email/sendCode?email={email}` — отправка кода.
+
+**Endpoint:** `POST /api/auth/email` — подтверждение кода и получение токенов.
 
 **Request:**
 ```json
 {
-  "name": "Иван Иванов",
-  "email": "ivan@example.com",
-  "password": "SecurePassword123",
-  "phoneNumber": "+79001234567"
+  "id": "challenge-guid",
+  "code": "123456"
 }
 ```
 
 **Response:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "id": "guid",
-    "name": "Иван Иванов",
-    "email": "ivan@example.com",
-    "phoneNumber": "+79001234567",
-    "role": "User"
-  }
+  "refreshToken": "...",
+  "accessToken": "..."
 }
 ```
-
-#### Вход
-
-**Endpoint:** `POST /api/auth/login`
-
-**Request:**
-```json
-{
-  "email": "ivan@example.com",
-  "password": "SecurePassword123"
-}
-```
-
-**Response:** Аналогичен регистрации
 
 ### 2. Целевые уведомления через SignalR
 
@@ -182,7 +162,7 @@ if (result.Recipients != null && result.Recipients.Any())
     foreach (var recipient in result.Recipients)
     {
         await _hubContext.Clients.User(recipient.Id.ToString())
-            .SendAsync("ReceiveNotification", notification);
+            .SendAsync("ReceiveNotification", inAppNotification);
     }
 }
 ```
@@ -199,7 +179,7 @@ async initializeSignalR(userId: string, token: string) {
     .withAutomaticReconnect()
     .build();
 
-  this.connection.on('ReceiveNotification', (notification) => {
+  this.connection.on('ReceiveNotification', (notification: AppNotification) => {
     // Получаем только уведомления для текущего пользователя
     this.addNotification(notification);
   });
@@ -228,10 +208,9 @@ export class AuthStore {
     this.loading = true;
     try {
       const response = await authApi.login(data);
-      this.token = response.token;
-      this.user = response.user;
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      this.token = response.accessToken;
+      this.user = decodeUserFromToken(response.accessToken);
+      localStorage.setItem('token', response.accessToken);
     } finally {
       this.loading = false;
     }
@@ -300,9 +279,8 @@ const SendNotificationForm: React.FC = observer(() => {
   const [notificationType, setNotificationType] = useState('UserRegistered');
 
   const handleSend = async () => {
-    await notificationApi.send({
-      route: notificationType,
-      channel: 'Email',
+    await notificationApi.send(notificationType, {
+      channels: ['Email', 'InApp'],
       parameters: { /* ... */ }
     });
   };
@@ -348,11 +326,7 @@ const SendNotificationForm: React.FC = observer(() => {
 Используется BCrypt с автоматической солью:
 
 ```csharp
-// Регистрация
-user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-// Вход
-bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+// Аутентификация через Email Challenge или Windows Auth
 ```
 
 ### CORS настройки

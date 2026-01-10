@@ -20,51 +20,45 @@ Frontend часть проекта представляет собой React-п�
 
 ```
 src/
-├── models/                         # Модели данных
-│   ├── Notification.ts            # Базовая модель уведомления
-│   ├── NotificationFilter.ts      # Модели для фильтрации
-│   └── index.ts
-├── services/                      # Сервисы
-│   ├── contracts/                 # Интерфейсы сервисов
-│   │   ├── INotificationService.ts
-│   │   └── ISignalRNotificationService.ts
-│   └── mocks/                     # Mock реализации
-├── stores/                        # MobX stores (если есть)
-├── NotificationsBar/              # Основные компоненты
-│   ├── NotificationBell.tsx       # Иконка уведомлений
-│   ├── NotificationCenterWithStore.tsx  # Центр уведомлений
-│   ├── NotificationFilters.tsx    # Фильтры
-│   ├── NotificationSettings.tsx   # Настройки
-│   ├── Toast/                     # Toast уведомления
-│   │   ├── ToastContainer.tsx
-│   │   ├── ToastProvider.tsx
-│   │   └── ToastNotification.tsx
-│   └── ToastSettings/             # Настройки Toast
+├── components/                    # React компоненты
+│   ├── NotificationBell.tsx       # Иконка колокольчика
+│   ├── NotificationComponent.tsx  # Основной контейнер
+│   ├── NotificationItem.tsx       # Элемент списка
+│   ├── Toast.tsx                  # Всплывающие уведомления
+│   └── RoutePreferencesModal.tsx  # Настройки маршрутов
 ├── hooks/                         # React hooks
-│   └── useNotificationFilters.ts  # Hook для фильтрации
+│   ├── useNotificationStore.ts    # Доступ к store
+│   └── useRoutePreferences.ts     # Работа с настройками
+├── services/                      # Сервисы
+│   ├── apiClient.ts               # REST API клиент
+│   └── signalRService.ts          # SignalR клиент
+├── store/                         # Управление состоянием
+│   └── NotificationStore.ts       # MobX store
+├── types/                         # TypeScript типы
+│   └── index.ts                   # Общие интерфейсы
 └── utils/                         # Утилиты
-    └── notificationUtils.ts
 ```
 
 ## Модели данных
 
-### BaseNotification
+### Notification
 
-Базовая модель уведомления с гибкой типизацией.
+Базовая модель уведомления, соответствующая ответу API.
 
-**Файл:** `src/models/Notification.ts`
+**Файл:** `src/types/index.ts`
 
 ```typescript
-export interface BaseNotification {
-  // Обязательные поля
-  id: number | string;
+export interface Notification {
+  id: string;
+  receiverId: string;
   type: string;
+  subType?: string;
   title: string;
   content: string;
+  url?: string;
+  icon?: { name: string; cssClass?: string };
   date: string;
   read: boolean;
-
-  // Опциональные поля
   author?: string;
   actions?: NotificationAction[];
   hashtags?: string[];
@@ -117,81 +111,6 @@ export interface NotificationAction {
 }
 ```
 
-## Система фильтрации
-
-### NotificationFilter
-
-Модель для динамической фильтрации уведомлений.
-
-**Файл:** `src/models/NotificationFilter.ts`
-
-```typescript
-export interface NotificationFilter {
-  conditions: FilterCondition[];
-  logic: 'AND' | 'OR';
-}
-
-export interface FilterCondition {
-  field: string;
-  operator: FilterOperator;
-  value: any;
-}
-
-export type FilterOperator =
-  | 'equals'
-  | 'contains'
-  | 'startsWith'
-  | 'endsWith'
-  | 'greaterThan'
-  | 'lessThan'
-  | 'in'
-  | 'exists';
-```
-
-### useNotificationFilters Hook
-
-React hook для работы с фильтрами уведомлений.
-
-**Файл:** `src/hooks/useNotificationFilters.ts`
-
-```typescript
-export function useNotificationFilters() {
-  const [filters, setFilters] = useState<NotificationFilter[]>([]);
-  const [searchText, setSearchText] = useState<string>('');
-
-  const filterByType = (type: string) => {
-    // Добавляет фильтр по типу
-  };
-
-  const filterByHashtag = (hashtag: string) => {
-    // Добавляет фильтр по hashtag
-  };
-
-  const filterByReadStatus = (read: boolean) => {
-    // Добавляет фильтр по статусу прочитанности
-  };
-
-  const clearFilters = () => {
-    // Очищает все фильтры
-  };
-
-  const applyFilters = (notifications: BaseNotification[]) => {
-    // Применяет все активные фильтры
-    return filterNotifications(notifications, filters, searchText);
-  };
-
-  return {
-    filters,
-    searchText,
-    filterByType,
-    filterByHashtag,
-    filterByReadStatus,
-    setSearchText,
-    clearFilters,
-    applyFilters,
-  };
-}
-```
 
 **Использование:**
 
@@ -232,25 +151,7 @@ function MyComponent() {
 
 Иконка-кнопка для открытия центра уведомлений с индикатором непрочитанных.
 
-**Файл:** `src/NotificationsBar/NotificationBell.tsx`
-
-```typescript
-interface NotificationBellProps {
-  unreadCount: number;
-  onClick: () => void;
-}
-
-export function NotificationBell({ unreadCount, onClick }: NotificationBellProps) {
-  return (
-    <button onClick={onClick} className="notification-bell">
-      <BellIcon />
-      {unreadCount > 0 && (
-        <span className="badge">{unreadCount}</span>
-      )}
-    </button>
-  );
-}
-```
+**Файл:** `src/components/NotificationBell.tsx`
 
 **Использование:**
 
@@ -261,58 +162,17 @@ export function NotificationBell({ unreadCount, onClick }: NotificationBellProps
 />
 ```
 
-### NotificationCenterWithStore
+### NotificationComponent
 
 Центральный компонент для отображения списка уведомлений.
 
-**Файл:** `src/NotificationsBar/NotificationCenterWithStore.tsx`
+**Файл:** `src/components/NotificationComponent.tsx`
 
 **Основные возможности:**
-- Отображение списка уведомлений
-- Фильтрация и поиск
-- Пагинация
-- Действия с уведомлениями (пометить как прочитанное, удалить)
-- Real-time обновления через SignalR
-
-**Пример использования:**
-
-```typescript
-import { NotificationCenterWithStore } from './NotificationsBar';
-
-function App() {
-  return (
-    <div className="app">
-      <NotificationCenterWithStore 
-        userId="user-123"
-        signalRUrl="http://localhost:5000/notificationHub"
-      />
-    </div>
-  );
-}
-```
-
-### NotificationFilters
-
-Компонент для фильтрации уведомлений.
-
-**Файл:** `src/NotificationsBar/NotificationFilters.tsx`
-
-**Возможности:**
-- Фильтрация по типу
-- Фильтрация по статусу (прочитано/не прочитано)
-- Фильтрация по дате
-- Фильтрация по хештегам
-- Текстовый поиск
-
-**Использование:**
-
-```typescript
-<NotificationFilters 
-  onFilterChange={(filters) => handleFilterChange(filters)}
-  availableTypes={['document', 'task', 'message']}
-  availableHashtags={['urgent', 'info', 'warning']}
-/>
-```
+- Отображение списка уведомлений в выпадающем меню
+- Интеграция с SignalR для real-time обновлений
+- Управление настройками маршрутов
+- Отображение Toast уведомлений
 
 ### Toast система
 
@@ -329,141 +189,36 @@ Toast-уведомления для отображения временных в
 - `duration` — длительность отображения (мс)
 - `position` — позиция на экране
 
-**Использование через hook:**
-
-```typescript
-import { useToast } from './NotificationsBar/Toast';
-
-function MyComponent() {
-  const { showToast } = useToast();
-
-  const handleClick = () => {
-    showToast({
-      title: 'Success!',
-      message: 'Operation completed successfully',
-      type: 'success',
-      duration: 3000,
-    });
-  };
-
-  return <button onClick={handleClick}>Show Toast</button>;
-}
-```
-
-### ToastSettings
-
-Компонент для настройки отображения toast-уведомлений.
-
-**Файл:** `src/NotificationsBar/ToastSettings/`
-
-**Настройки:**
-- Позиция toast (top-left, top-right, bottom-left, bottom-right)
-- Длительность отображения
-- Размер toast
-- Включение/выключение звука
 
 ## SignalR интеграция
 
-### ISignalRNotificationService
+### SignalRService
 
-Интерфейс для работы с SignalR.
+Сервис для работы с SignalR.
 
-**Файл:** `src/services/contracts/ISignalRNotificationService.ts`
-
-```typescript
-export interface ISignalRNotificationService {
-  connect(url: string): Promise<void>;
-  disconnect(): Promise<void>;
-  onNotificationReceived(callback: (notification: BaseNotification) => void): void;
-  isConnected(): boolean;
-}
-```
-
-### Подключение к SignalR Hub
+**Файл:** `src/services/signalRService.ts`
 
 ```typescript
-import * as signalR from "@microsoft/signalr";
-
-class SignalRNotificationService implements ISignalRNotificationService {
+export class SignalRService {
   private connection: signalR.HubConnection | null = null;
-  private callbacks: Array<(notification: BaseNotification) => void> = [];
 
-  async connect(url: string): Promise<void> {
+  async startConnection(config: SignalRConfig): Promise<void> {
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(url)
+      .withUrl(config.hubUrl, {
+        accessTokenFactory: () => config.accessToken || ''
+      })
       .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Information)
       .build();
-
-    this.connection.on("ReceiveNotification", (notification) => {
-      this.callbacks.forEach(callback => callback(notification));
-    });
 
     await this.connection.start();
   }
 
-  async disconnect(): Promise<void> {
-    if (this.connection) {
-      await this.connection.stop();
-      this.connection = null;
-    }
-  }
-
-  onNotificationReceived(callback: (notification: BaseNotification) => void): void {
-    this.callbacks.push(callback);
-  }
-
-  isConnected(): boolean {
-    return this.connection?.state === signalR.HubConnectionState.Connected;
+  onNotificationReceived(callback: (notification: Notification) => void): void {
+    this.connection?.on("ReceiveNotification", callback);
   }
 }
 ```
 
-## Утилиты
-
-### notificationUtils
-
-Вспомогательные функции для работы с уведомлениями.
-
-**Файл:** `src/utils/notificationUtils.ts`
-
-```typescript
-// Форматирование даты
-export function formatNotificationDate(date: string): string {
-  const now = new Date();
-  const notificationDate = new Date(date);
-  const diffMs = now.getTime() - notificationDate.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-}
-
-// Группировка уведомлений по дате
-export function groupNotificationsByDate(
-  notifications: BaseNotification[]
-): Record<string, BaseNotification[]> {
-  return notifications.reduce((groups, notification) => {
-    const date = new Date(notification.date).toDateString();
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(notification);
-    return groups;
-  }, {} as Record<string, BaseNotification[]>);
-}
-
-// Подсчет непрочитанных уведомлений
-export function countUnread(notifications: BaseNotification[]): number {
-  return notifications.filter(n => !n.read).length;
-}
-```
 
 ## Стилизация
 
@@ -506,62 +261,20 @@ export function countUnread(notifications: BaseNotification[]): number {
 
 ## Примеры использования
 
-### Продвинутое использование с фильтрацией
+### Базовое использование
 
 ```typescript
-import React, { useState, useEffect } from 'react';
-import {
-  NotificationBell,
-  NotificationFilters,
-  useNotificationFilters
-} from 'sed-notifications-frontend';
-import { fetchNotifications } from './api';
+import { NotificationComponent } from 'notification-component-mvp';
 
-function NotificationsPage() {
-  const [notifications, setNotifications] = useState<BaseNotification[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const {
-    filterByType,
-    filterByHashtag,
-    setSearchText,
-    applyFilters,
-    clearFilters
-  } = useNotificationFilters();
-
-  useEffect(() => {
-    // Загрузка уведомлений
-    fetchNotifications().then(setNotifications);
-  }, []);
-
-  const filteredNotifications = applyFilters(notifications);
-  const unreadCount = filteredNotifications.filter(n => !n.read).length;
+function App() {
+  const config = {
+    apiBaseUrl: 'http://localhost:5093/api',
+    signalRHubUrl: 'http://localhost:5093/notificationHub',
+    accessToken: 'your-jwt-token'
+  };
 
   return (
-    <div>
-      <NotificationBell 
-        unreadCount={unreadCount}
-        onClick={() => setIsOpen(!isOpen)}
-      />
-      
-      {isOpen && (
-        <div className="notification-panel">
-          <NotificationFilters 
-            onFilterChange={(type) => filterByType(type)}
-            availableTypes={['document', 'task', 'message']}
-          />
-          
-          <div className="notification-list">
-            {filteredNotifications.map(notification => (
-              <NotificationItem 
-                key={notification.id}
-                notification={notification}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <NotificationComponent config={config} />
   );
 }
 ```

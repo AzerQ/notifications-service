@@ -12,7 +12,7 @@ http://localhost:5093/api
 
 ### 1. Создание и отправка уведомления
 
-**Endpoint:** `POST /api/notification`
+**Endpoint:** `POST /api/notification/{route}` или `POST /api/notification/{notificationCategory}/{route}`
 
 **Описание:** Создает уведомление, сохраняет в БД и отправляет по указанным каналам.
 
@@ -20,8 +20,9 @@ http://localhost:5093/api
 
 ```json
 {
-  "route": "string",
-  "channel": "string", // optional: "Email", "Sms", "Push", "Email,Push"
+  "title": "string", // optional
+  "message": "string", // optional
+  "channels": ["Email", "InApp"], // optional
   "parameters": {
     "key1": "value1",
     "key2": "value2"
@@ -30,41 +31,42 @@ http://localhost:5093/api
 ```
 
 **Параметры:**
-- `route` (обязательно) — тип/маршрут уведомления (например, "UserRegistered", "OrderCreated")
-- `channel` (опционально) — каналы доставки через запятую. По умолчанию используются все доступные
+- `route` (в пути, обязательно) — тип/маршрут уведомления (например, "UserRegistered", "OrderCreated")
+- `notificationCategory` (в пути, опционально) — категория уведомления
+- `title` (опционально) — переопределение заголовка
+- `message` (опционально) — переопределение содержимого
+- `channels` (опционально) — массив каналов доставки (`Email`, `InApp`). По умолчанию используются все доступные для маршрута.
 - `parameters` (обязательно) — параметры для резолвера данных и шаблона
 
-**Response (200 OK):**
+**Response (201 Created):**
 
 ```json
 {
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "title": "Welcome!",
-  "message": "Welcome to our service, John!",
   "route": "UserRegistered",
   "createdAt": "2025-10-28T10:30:00Z",
-  "recipient": {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "username": "john_doe",
-    "email": "john@example.com"
-  },
-  "channelStatuses": [
+  "recipients": [
     {
-      "channel": "Email",
-      "status": "Sent"
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
+      "createdAt": "2025-10-28T10:00:00Z"
     }
-  ]
+  ],
+  "createdNotificationIds": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "statusMessage": "Notification sended successfully"
 }
 ```
 
 **Пример запроса (UserRegistered):**
 
 ```bash
-curl -X POST http://localhost:5093/api/notification \
+curl -X POST http://localhost:5093/api/notification/UserRegistered \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "UserRegistered",
-    "channel": "Email",
     "parameters": {
       "UserId": "00000000-0000-0000-0000-000000000001",
       "WelcomeMessage": "Welcome aboard!"
@@ -75,11 +77,9 @@ curl -X POST http://localhost:5093/api/notification \
 **Пример запроса (OrderCreated):**
 
 ```bash
-curl -X POST http://localhost:5093/api/notification \
+curl -X POST http://localhost:5093/api/notification/OrderCreated \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "OrderCreated",
-    "channel": "Email",
     "parameters": {
       "CustomerId": "00000000-0000-0000-0000-000000000001",
       "OrderNumber": "ORD-12345",
@@ -92,11 +92,9 @@ curl -X POST http://localhost:5093/api/notification \
 **Пример запроса (TaskAssigned):**
 
 ```bash
-curl -X POST http://localhost:5093/api/notification \
+curl -X POST http://localhost:5093/api/notification/TaskAssigned \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "TaskAssigned",
-    "channel": "Email",
     "parameters": {
       "AssigneeId": "00000000-0000-0000-0000-000000000001",
       "AssignerId": "00000000-0000-0000-0000-000000000002",
@@ -109,7 +107,7 @@ curl -X POST http://localhost:5093/api/notification \
 ```
 
 **Коды ответов:**
-- `200 OK` — уведомление успешно создано и отправлено
+- `201 Created` — уведомление успешно создано и отправлено
 - `400 Bad Request` — неверные данные запроса
 - `404 Not Found` — маршрут или шаблон не найден
 - `500 Internal Server Error` — внутренняя ошибка сервера
@@ -129,22 +127,22 @@ curl -X POST http://localhost:5093/api/notification \
 
 ```json
 {
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "title": "Welcome!",
-  "message": "Welcome to our service, John!",
   "route": "UserRegistered",
   "createdAt": "2025-10-28T10:30:00Z",
-  "recipient": {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "username": "john_doe",
-    "email": "john@example.com"
-  },
-  "channelStatuses": [
+  "recipients": [
     {
-      "channel": "Email",
-      "status": "Sent"
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phoneNumber": "+1234567890",
+      "createdAt": "2025-10-28T10:00:00Z"
     }
-  ]
+  ],
+  "createdNotificationIds": [
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  ],
+  "statusMessage": "Notification sended successfully"
 }
 ```
 
@@ -160,116 +158,85 @@ curl -X GET http://localhost:5093/api/notification/3fa85f64-5717-4562-b3fc-2c963
 
 ---
 
-### 3. Получение уведомлений пользователя
+### 3. Получение уведомлений текущего пользователя
 
-**Endpoint:** `GET /api/notification/by-user/{userId}`
+**Endpoint:** `GET /api/notification/personal`
 
-**Описание:** Получает все уведомления конкретного пользователя.
+**Описание:** Получает уведомления текущего аутентифицированного пользователя.
 
-**Параметры:**
-- `userId` (path) — GUID пользователя
+**Query Параметры:**
+- `OnlyUnread` (boolean) — только непрочитанные (default: false)
+- `PageSize` (int) — размер страницы (default: 50)
+- `PageNumber` (int) — номер страницы (default: 1)
 
 **Response (200 OK):**
 
 ```json
-[
-  {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "title": "Welcome!",
-    "message": "Welcome to our service!",
-    "route": "UserRegistered",
-    "createdAt": "2025-10-28T10:30:00Z",
-    "recipient": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "username": "john_doe",
-      "email": "john@example.com"
-    },
-    "channelStatuses": [
-      {
-        "channel": "Email",
-        "status": "Sent"
-      }
-    ]
+{
+  "notifications": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "receiverId": "00000000-0000-0000-0000-000000000001",
+      "type": "Пользователь",
+      "subType": "Регистрация пользователя",
+      "title": "Welcome!",
+      "content": "Welcome to our service!",
+      "url": "https://example.com",
+      "icon": { "name": "user" },
+      "date": "2025-10-28T10:30:00Z",
+      "read": false,
+      "hashtags": ["пользователь", "регистрация"]
+    }
+  ],
+  "request": {
+    "onlyUnread": false,
+    "pageSize": 50,
+    "pageNumber": 1
   },
-  {
-    "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
-    "title": "Order Confirmation",
-    "message": "Your order has been placed!",
-    "route": "OrderCreated",
-    "createdAt": "2025-10-28T11:00:00Z",
-    "recipient": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "username": "john_doe",
-      "email": "john@example.com"
-    },
-    "channelStatuses": [
-      {
-        "channel": "Email",
-        "status": "Sent"
-      }
-    ]
-  }
-]
+  "totalItemsCount": 1
+}
 ```
 
 **Пример запроса:**
 
 ```bash
-curl -X GET http://localhost:5093/api/notification/by-user/00000000-0000-0000-0000-000000000001
+curl -X GET "http://localhost:5093/api/notification/personal?OnlyUnread=true" \
+  -H "Authorization: Bearer {token}"
 ```
-
-**Коды ответов:**
-- `200 OK` — возвращает массив уведомлений (может быть пустым)
 
 ---
 
-### 4. Получение уведомлений по статусу
+### 4. Пометить все уведомления как прочитанные
 
-**Endpoint:** `GET /api/notification/by-status/{status}`
+**Endpoint:** `PUT /api/notification/personal/mark-all-read`
 
-**Описание:** Получает уведомления с определенным статусом доставки.
+**Описание:** Помечает все уведомления текущего пользователя как прочитанные.
 
-**Параметры:**
-- `status` (path) — статус доставки: `Pending`, `Sent`, `Failed`, `Skipped`
-
-**Response (200 OK):**
-
-```json
-[
-  {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "title": "Welcome!",
-    "message": "Welcome to our service!",
-    "route": "UserRegistered",
-    "createdAt": "2025-10-28T10:30:00Z",
-    "recipient": {
-      "id": "00000000-0000-0000-0000-000000000001",
-      "username": "john_doe",
-      "email": "john@example.com"
-    },
-    "channelStatuses": [
-      {
-        "channel": "Email",
-        "status": "Sent"
-      }
-    ]
-  }
-]
-```
-
-**Пример запроса:**
-
-```bash
-curl -X GET http://localhost:5093/api/notification/by-status/Sent
-```
-
-**Коды ответов:**
-- `200 OK` — возвращает массив уведомлений
-- `400 Bad Request` — неизвестный статус
+**Response (200 OK):** Пустое тело.
 
 ---
 
-### 5. Трансляция уведомления через SignalR
+### 5. Установка флага прочтения для конкретного уведомления
+
+**Endpoint:** `PUT /api/notification/set-read-flag`
+
+**Query Параметры:**
+- `notificationId` (Guid) — ID уведомления
+- `flagValue` (boolean) — значение флага
+
+**Response (200 OK):** Сообщение об успешном обновлении.
+
+---
+
+### 6. Поиск уведомлений (Admin only)
+
+**Endpoint:** `POST /api/notification/search`
+
+**Описание:** Расширенный поиск уведомлений по фильтрам.
+
+---
+
+### 7. Трансляция уведомления через SignalR (Admin only)
 
 **Endpoint:** `POST /api/notification/broadcast`
 
@@ -280,8 +247,9 @@ curl -X GET http://localhost:5093/api/notification/by-status/Sent
 ```json
 {
   "title": "string",
-  "message": "string",
-  "route": "string"
+  "content": "string",
+  "url": "string",
+  "type": "string"
 }
 ```
 
@@ -289,21 +257,8 @@ curl -X GET http://localhost:5093/api/notification/by-status/Sent
 
 ```json
 {
-  "success": true,
-  "message": "Notification broadcasted successfully"
+  "message": "Notification broadcast successfully"
 }
-```
-
-**Пример запроса:**
-
-```bash
-curl -X POST http://localhost:5093/api/notification/broadcast \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "System Notification",
-    "message": "Maintenance scheduled for tonight",
-    "route": "SystemAlert"
-  }'
 ```
 
 ---
@@ -312,71 +267,40 @@ curl -X POST http://localhost:5093/api/notification/broadcast \
 
 ### Получение пользователя по ID
 
-**Endpoint:** `GET /api/users/{id}`
+**Endpoint:** `GET /api/users/{userId}`
 
-**Описание:** Получает информацию о пользователе.
+**Описание:** Получает информацию о пользователе. Пользователь может получить только свои данные, админ — любые.
 
 **Response (200 OK):**
 
 ```json
 {
   "id": "00000000-0000-0000-0000-000000000001",
-  "username": "john_doe",
+  "name": "John Doe",
   "email": "john@example.com",
   "phoneNumber": "+1234567890",
-  "deviceToken": "device_token_here"
+  "createdAt": "2025-10-28T10:00:00Z",
+  "deviceToken": "token",
+  "role": "User",
+  "accountName": "DOMAIN\\user"
 }
 ```
 
-### Получение всех пользователей
+### Получение всех пользователей (Admin only)
 
 **Endpoint:** `GET /api/users`
 
 **Описание:** Получает список всех пользователей.
 
-**Response (200 OK):**
+**Response (200 OK):** Массив объектов пользователя.
 
-```json
-[
-  {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "username": "john_doe",
-    "email": "john@example.com"
-  },
-  {
-    "id": "00000000-0000-0000-0000-000000000002",
-    "username": "jane_smith",
-    "email": "jane@example.com"
-  }
-]
-```
-
-### Создание пользователя
+### Создание пользователей (Admin only)
 
 **Endpoint:** `POST /api/users`
 
-**Request Body:**
+**Request Body:** Массив объектов пользователя.
 
-```json
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "phoneNumber": "+1234567890",
-  "deviceToken": "device_token_here"
-}
-```
-
-**Response (201 Created):**
-
-```json
-{
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "username": "john_doe",
-  "email": "john@example.com",
-  "phoneNumber": "+1234567890",
-  "deviceToken": "device_token_here"
-}
-```
+**Response (204 No Content)**
 
 ---
 
@@ -384,7 +308,7 @@ curl -X POST http://localhost:5093/api/notification/broadcast \
 
 ### Получение предпочтений пользователя
 
-**Endpoint:** `GET /api/user-route-preferences/{userId}`
+**Endpoint:** `GET /api/users/{userId}/routes`
 
 **Описание:** Получает настройки маршрутов уведомлений для пользователя.
 
@@ -396,37 +320,61 @@ curl -X POST http://localhost:5093/api/notification/broadcast \
     "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "userId": "00000000-0000-0000-0000-000000000001",
     "route": "UserRegistered",
-    "isEnabled": true
-  },
-  {
-    "id": "4fa85f64-5717-4562-b3fc-2c963f66afa7",
-    "userId": "00000000-0000-0000-0000-000000000001",
-    "route": "OrderCreated",
-    "isEnabled": false
+    "enabled": true,
+    "routeDisplayName": "Регистрация пользователя",
+    "routeDescription": "..."
   }
 ]
 ```
 
-### Обновление предпочтения маршрута
+### Обновление предпочтений маршрутов
 
-**Endpoint:** `PUT /api/user-route-preferences/{userId}/{route}`
+**Endpoint:** `PUT /api/users/{userId}/routes`
 
 **Request Body:**
 
 ```json
-{
-  "isEnabled": true
-}
+[
+  {
+    "route": "UserRegistered",
+    "enabled": true
+  }
+]
 ```
 
-**Response (200 OK):**
+**Response (204 No Content)**
 
-```json
-{
-  "success": true,
-  "message": "Preference updated successfully"
-}
-```
+---
+
+## Authentication API
+
+### 1. Отправка кода подтверждения на Email
+
+**Endpoint:** `POST /api/auth/email/sendCode?email={email}`
+
+**Response:** `CreatedMailChallengeResponse { challengeId, message }`
+
+### 2. Вход по Email и коду
+
+**Endpoint:** `POST /api/auth/email`
+
+**Request Body:** `MailChallengeSubmit { id, code }`
+
+**Response:** `LoginTokensResponse { refreshToken, accessToken }`
+
+### 3. Вход через Windows Authentication
+
+**Endpoint:** `POST /api/auth/windows`
+
+**Response:** `LoginTokensResponse`
+
+### 4. Обновление токена
+
+**Endpoint:** `POST /api/auth/refresh`
+
+**Request Body:** `RefreshTokenRequest { refreshTokenValue }`
+
+**Response:** `AccessTokenResponse { accessToken }`
 
 ---
 
@@ -435,7 +383,7 @@ curl -X POST http://localhost:5093/api/notification/broadcast \
 ### Hub URL
 
 ```
-ws://localhost:5000/notificationHub
+ws://localhost:5093/notificationHub
 ```
 
 ### События
@@ -444,17 +392,7 @@ ws://localhost:5000/notificationHub
 
 Событие, которое транслируется клиентам при получении нового уведомления.
 
-**Payload:**
-
-```json
-{
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "title": "New Notification",
-  "message": "You have a new notification",
-  "route": "SystemAlert",
-  "createdAt": "2025-10-28T10:30:00Z"
-}
-```
+**Payload:** `AppNotification` объект.
 
 ### Подключение к SignalR Hub
 
@@ -521,9 +459,10 @@ await connection.StartAsync();
 
 ```typescript
 interface NotificationRequest {
-  route: string;                      // Тип уведомления
-  channel?: string;                   // Каналы доставки (опционально)
-  parameters: Record<string, any>;    // Параметры для обработчика
+  title?: string;
+  message?: string;
+  channels?: ("Email" | "InApp")[];
+  parameters: Record<string, any>;
 }
 ```
 
@@ -531,13 +470,12 @@ interface NotificationRequest {
 
 ```typescript
 interface NotificationResponseDto {
-  id: string;                         // GUID уведомления
-  title: string;                      // Заголовок
-  message: string;                    // Содержимое
-  route: string;                      // Тип уведомления
-  createdAt: string;                  // ISO 8601 дата создания
-  recipient: UserDto;                 // Получатель
-  channelStatuses: ChannelStatusDto[]; // Статусы по каналам
+  title?: string;
+  route: string;
+  createdAt: string;
+  recipients: UserDto[];
+  createdNotificationIds: string[];
+  statusMessage: string;
 }
 ```
 
@@ -545,20 +483,32 @@ interface NotificationResponseDto {
 
 ```typescript
 interface UserDto {
-  id: string;                         // GUID пользователя
-  username: string;                   // Имя пользователя
-  email: string;                      // Email
-  phoneNumber?: string;               // Телефон (опционально)
-  deviceToken?: string;               // Токен устройства (опционально)
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  createdAt: string;
 }
 ```
 
-### ChannelStatusDto
+### AppNotification (SignalR / Personal API)
 
 ```typescript
-interface ChannelStatusDto {
-  channel: "Email" | "Sms" | "Push"; // Канал доставки
-  status: "Pending" | "Sent" | "Failed" | "Skipped"; // Статус
+interface AppNotification {
+  id: string;
+  receiverId: string;
+  type?: string;
+  subType?: string;
+  title: string;
+  content: string;
+  url: string;
+  icon?: { name: string, cssClass?: string };
+  date: string;
+  read: boolean;
+  author?: string;
+  actions?: { name: string, label: string, url: string }[];
+  hashtags?: string[];
+  parameters?: { key: string, value: string, description: string }[];
 }
 ```
 

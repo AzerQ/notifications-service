@@ -19,14 +19,14 @@
 - `Metadata` — дополнительные метаданные в формате ключ-значение
 - `DeliveryChannelsState` — статусы доставки по каналам
 
-**Особенность:** Использует метод `ChannelsDefaultState()` для инициализации каналов доставки по умолчанию (Email и Push).
+**Особенность:** Использует метод `ChannelsDefaultState()` для инициализации каналов доставки по умолчанию (Email и InApp).
 
 ### NotificationChannelDeliveryStatus
 
 Статус доставки уведомления по конкретному каналу.
 
 **Свойства:**
-- `NotificationChannel` — канал доставки (Email, SMS, Push)
+- `NotificationChannel` — канал доставки (Email, InApp)
 - `DeliveryStatus` — статус доставки (Pending, Sent, Failed, Skipped)
 
 ### NotificationMetadataField
@@ -41,10 +41,13 @@
 
 **Ключевые свойства:**
 - `Id` — уникальный идентификатор пользователя
-- `Username` — имя пользователя
+- `Name` — имя пользователя
 - `Email` — email адрес для доставки
-- `PhoneNumber` — номер телефона для SMS (опционально)
-- `DeviceToken` — токен устройства для Push (опционально)
+- `PhoneNumber` — номер телефона (опционально)
+- `CreatedAt` — дата создания
+- `DeviceToken` — токен устройства (опционально)
+- `Role` — роль пользователя
+- `AccountName` — имя учетной записи (для Windows Auth)
 
 ### NotificationTemplate
 
@@ -52,8 +55,9 @@
 
 **Свойства:**
 - `Name` — уникальное имя шаблона
-- `Subject` — тема/заголовок
-- `Content` — содержимое (Handlebars шаблон)
+- `Subject` — тема/заголовок (Handlebars шаблон)
+- `CommonContentTemplate` — общее содержимое (Handlebars шаблон)
+- `ChannelsTemplates` — специфичные для каналов шаблоны
 
 ### UserRoutePreference
 
@@ -68,8 +72,7 @@
 public enum NotificationChannel
 {
     Email,
-    Sms,
-    Push
+    InApp
 }
 
 // Статусы доставки
@@ -90,10 +93,10 @@ public enum NotificationDeliveryStatus
 
 **Основные методы:**
 - `GetNotificationByIdAsync(id)` — получить уведомление по ID
-- `GetNotificationsForUserAsync(userId)` — получить все уведомления пользователя
-- `GetNotificationsByStatusAsync(status)` — получить уведомления по статусу
-- `SaveNotificationsAsync(notifications)` — сохранить новые уведомления
-- `UpdateNotificationsAsync(notifications)` — обновить существующие уведомления
+- `GetUserNotificationsAsync(userId, request)` — получить уведомления пользователя с фильтрацией и пагинацией
+- `SaveNotifications(notifications)` — сохранить новые уведомления
+- `UpdateNotifications(notifications)` — обновить существующие уведомления
+- `MarkAllUserNotificationsAsRead(userId)` — пометить все уведомления пользователя как прочитанные
 
 #### IUserRepository
 
@@ -101,8 +104,11 @@ public enum NotificationDeliveryStatus
 
 **Основные методы:**
 - `GetUserByIdAsync(id)` — получить пользователя по ID
+- `GetUsersByIdsAync(ids)` — получить пользователей по списку ID
+- `GetUserByEmailAsync(email)` — получить пользователя по email
+- `GetByAccountNameAsync(accountName)` — получить пользователя по имени учетной записи
 - `GetAllUsersAsync()` — получить всех пользователей
-- `SaveUsersAsync(users)` — сохранить пользователей
+- `CreateUsersAync(users)` — создать пользователей
 
 #### ITemplateRepository
 
@@ -119,33 +125,22 @@ public enum NotificationDeliveryStatus
 Интерфейс для отправки email уведомлений.
 
 ```csharp
-Task<bool> SendEmailAsync(string to, string subject, string body);
+Task<bool> SendEmailAsync(string to, string subject, string body, string? fromName = null, IEnumerable<NotificationFile>? files = null);
 ```
 
-#### ISmsProvider
+### NotificationRouteConfiguration
 
-Интерфейс для отправки SMS уведомлений (для расширения).
-
-```csharp
-Task<bool> SendSmsAsync(string phoneNumber, string message);
-```
-
-#### IPushNotificationProvider
-
-Интерфейс для отправки Push-уведомлений (для расширения).
-
-```csharp
-Task<bool> SendPushNotificationAsync(string deviceToken, string title, string body);
-```
-
-### INotificationRouteConfiguration
-
-Интерфейс конфигурации маршрута уведомления.
+Класс конфигурации маршрута уведомления.
 
 **Свойства:**
-- `RouteName` — имя маршрута (например, "UserRegistered")
-- `TemplateName` — имя шаблона для этого маршрута
-- `DefaultChannels` — каналы доставки по умолчанию
+- `Name` — имя маршрута (например, "UserRegistered")
+- `NotificationObjectKind` — тип объекта (User, Order, Task)
+- `TemplateName` — имя шаблона
+- `DisplayName` — отображаемое имя
+- `Description` — описание
+- `Tags` — теги
+- `PayloadType` — тип данных полезной нагрузки
+- `Icon` — иконка (Lucide)
 
 ## Прикладной слой (Application Layer)
 
@@ -171,8 +166,7 @@ Task<bool> SendPushNotificationAsync(string deviceToken, string title, string bo
 
 **Основные методы:**
 - `GetByIdAsync(id)` — получить уведомление по ID
-- `GetByUserAsync(userId)` — получить уведомления пользователя
-- `GetByStatusAsync(status)` — получить уведомления по статусу
+- `GetUserNotifications(userId, request)` — получить уведомления пользователя (возвращает `AppNotification`)
 
 ### NotificationSender
 
@@ -198,15 +192,15 @@ Task<bool> SendPushNotificationAsync(string deviceToken, string title, string bo
 
 **Использование:** Автоматически регистрирует все обработчики из сборки при запуске приложения.
 
-### INotificationDataResolver
+### INotificationRoute
 
-Интерфейс для резолверов данных уведомлений.
+Интерфейс для обработчиков маршрутов уведомлений.
 
 **Методы:**
-- `ResolveRecipientsAsync(parameters)` — получить список получателей
-- `ResolveTemplateDataAsync(recipient, parameters)` — подготовить данные для шаблона
+- `ResolveNotificationRecipientsIds(request)` — получить ID получателей
+- `ResolveNotificationFullData(request)` — подготовить полные данные для шаблона и URL
 
-**Концепция:** Каждый тип уведомления имеет свой резолвер, который знает, как получить данные из различных источников.
+**Концепция:** Каждый тип уведомления реализует этот интерфейс, определяя логику сбора данных.
 
 ### NotificationMapper
 
@@ -230,22 +224,23 @@ Task<bool> SendPushNotificationAsync(string deviceToken, string title, string bo
 Входящий запрос на создание уведомления.
 
 **Свойства:**
-- `Route` — тип уведомления (обязательно)
-- `Channel` — каналы доставки (опционально, по умолчанию все)
-- `Parameters` — параметры для резолвера и шаблона
+- `Route` — тип уведомления (в пути)
+- `Title` — переопределение заголовка (опционально)
+- `Message` — переопределение содержимого (опционально)
+- `Channels` — массив каналов (опционально)
+- `Parameters` — параметры для резолвера (в теле)
 
 #### NotificationResponseDto
 
 Ответ API с информацией об уведомлении.
 
 **Свойства:**
-- `Id` — идентификатор уведомления
 - `Title` — заголовок
-- `Message` — содержимое
 - `Route` — тип уведомления
 - `CreatedAt` — дата создания
-- `Recipient` — информация о получателе
-- `ChannelStatuses` — статусы доставки по каналам
+- `Recipients` — список получателей (UserDto)
+- `CreatedNotificationIds` — ID созданных уведомлений
+- `StatusMessage` — статусное сообщение
 
 ## Инфраструктурный слой (Infrastructure Layer)
 
@@ -325,10 +320,11 @@ Templates/
 Контроллер REST API для работы с уведомлениями.
 
 **Основные endpoints:**
-- `POST /api/notification` — создать и отправить уведомление
+- `POST /api/notification/{route}` — создать и отправить уведомление
 - `GET /api/notification/{id}` — получить уведомление по ID
-- `GET /api/notification/by-user/{userId}` — получить уведомления пользователя
-- `GET /api/notification/by-status/{status}` — получить уведомления по статусу
+- `GET /api/notification/personal` — получить уведомления текущего пользователя
+- `PUT /api/notification/personal/mark-all-read` — пометить все как прочитанные
+- `PUT /api/notification/set-read-flag` — установить флаг прочтения
 - `POST /api/notification/broadcast` — транслировать уведомление через SignalR
 
 ### NotificationHub
@@ -337,7 +333,7 @@ SignalR Hub для real-time уведомлений.
 
 **Методы:**
 - `BroadcastNotification(notification)` — отправить всем подключенным клиентам
-- `SendToUser(userId, notification)` — отправить конкретному пользователю
+- `SendInAppNotificationToUser(userId, notification)` — отправить конкретному пользователю
 
 **События:**
 - `ReceiveNotification` — событие, которое получают клиенты
@@ -348,14 +344,10 @@ SignalR Hub для real-time уведомлений.
 
 Каждый обработчик состоит из:
 
-1. **Data Resolver** — реализует `INotificationDataResolver`
-   - Получает данные получателей по параметрам запроса
-   - Подготавливает данные для рендеринга шаблона
-
-2. **Route Configuration** — реализует `INotificationRouteConfiguration`
-   - Определяет имя маршрута
-   - Указывает имя шаблона
-   - Определяет каналы доставки по умолчанию
+1. **Route Handler** — реализует `INotificationRoute`
+   - `RouteConfiguration` — свойство с настройками маршрута
+   - `ResolveNotificationRecipientsIds` — определяет получателей
+   - `ResolveNotificationFullData` — подготавливает данные для шаблона
 
 3. **HTML Template** (`.hbs`) — Handlebars шаблон
    - Содержит HTML структуру уведомления

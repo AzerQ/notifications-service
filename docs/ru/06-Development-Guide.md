@@ -19,11 +19,10 @@
 
 Для добавления нового типа уведомления необходимо:
 
-1. Создать Data Resolver
-2. Создать Route Configuration
-3. Создать HTML шаблон
-4. Создать конфигурацию шаблона
-5. Зарегистрировать обработчик
+1. Создать класс обработчика маршрута, реализующий `INotificationRoute`
+2. Создать HTML шаблон (`.hbs`)
+3. Создать конфигурацию шаблона (`template.json`)
+4. Зарегистрировать обработчик
 
 ### Шаг 1: Создание структуры файлов
 
@@ -31,131 +30,60 @@
 
 ```
 MyNotification/
-├── MyNotificationDataResolver.cs      # Резолвер данных
-├── MyNotificationRouteConfig.cs       # Конфигурация маршрута
-├── MyNotification.hbs                 # HTML шаблон
-└── template.json                      # Метаданные шаблона
+├── MyNotificationNotificationRoute.cs  # Обработчик маршрута
+├── MyNotification.hbs                  # HTML шаблон
+└── template.json                       # Метаданные шаблона
 ```
 
-### Шаг 2: Реализация Data Resolver
+### Шаг 2: Реализация Notification Route
 
-**Файл:** `MyNotificationDataResolver.cs`
+**Файл:** `MyNotificationNotificationRoute.cs`
 
 ```csharp
+using NotificationService.Application.DTOs;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Interfaces;
-using NotificationService.Domain.Models;
 
 namespace NotificationService.TestHandlers.Notifications.MyNotification;
 
-/// <summary>
-/// Резолвер данных для уведомления MyNotification.
-/// Определяет получателей и подготавливает данные для шаблона.
-/// </summary>
-public class MyNotificationDataResolver : INotificationDataResolver
+[NotificationRoute(Name = Route)]
+public class MyNotificationNotificationRoute(IUserRepository userRepository) : INotificationRoute
 {
-    private readonly IUserRepository _userRepository;
+    public const string Route = "MyNotification";
 
-    public MyNotificationDataResolver(IUserRepository userRepository)
+    public NotificationRouteConfiguration RouteConfiguration { get; } = new()
     {
-        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-    }
-
-    /// <summary>
-    /// Получает список получателей на основе параметров запроса.
-    /// </summary>
-    /// <param name="parameters">Параметры из API запроса</param>
-    /// <returns>Список пользователей-получателей</returns>
-    public async Task<IReadOnlyCollection<User>> ResolveRecipientsAsync(
-        Dictionary<string, object> parameters)
-    {
-        // Извлечение обязательных параметров
-        if (!parameters.TryGetValue("UserId", out var userIdObj))
-        {
-            throw new ArgumentException("UserId parameter is required");
-        }
-
-        // Парсинг и валидация
-        if (!Guid.TryParse(userIdObj.ToString(), out var userId))
-        {
-            throw new ArgumentException("Invalid UserId format");
-        }
-
-        // Получение пользователя из репозитория
-        var user = await _userRepository.GetUserByIdAsync(userId);
-        
-        if (user == null)
-        {
-            throw new ArgumentException($"User with id '{userId}' not found");
-        }
-
-        return new[] { user };
-    }
-
-    /// <summary>
-    /// Подготавливает данные для рендеринга шаблона.
-    /// </summary>
-    /// <param name="recipient">Получатель уведомления</param>
-    /// <param name="parameters">Параметры из API запроса</param>
-    /// <returns>Словарь данных для шаблона</returns>
-    public Task<Dictionary<string, object>> ResolveTemplateDataAsync(
-        User recipient, 
-        Dictionary<string, object> parameters)
-    {
-        var data = new Dictionary<string, object>
-        {
-            // Данные пользователя
-            ["UserName"] = recipient.Username,
-            ["Email"] = recipient.Email,
-            
-            // Дополнительные параметры
-            ["CustomField"] = parameters.GetValueOrDefault("CustomField", "default value"),
-            ["Date"] = DateTime.UtcNow,
-            
-            // Вычисляемые поля
-            ["FormattedDate"] = DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm"),
-        };
-
-        return Task.FromResult(data);
-    }
-}
-```
-
-### Шаг 3: Реализация Route Configuration
-
-**Файл:** `MyNotificationRouteConfig.cs`
-
-```csharp
-using NotificationService.Domain.Interfaces;
-using NotificationService.Domain.Models;
-
-namespace NotificationService.TestHandlers.Notifications.MyNotification;
-
-/// <summary>
-/// Конфигурация маршрута для уведомления MyNotification.
-/// Определяет имя шаблона и каналы доставки по умолчанию.
-/// </summary>
-public class MyNotificationRouteConfig : INotificationRouteConfiguration
-{
-    /// <summary>
-    /// Имя маршрута (должно совпадать с параметром "route" в API запросе).
-    /// </summary>
-    public string RouteName => "MyNotification";
-
-    /// <summary>
-    /// Имя шаблона для форматирования уведомления.
-    /// </summary>
-    public string TemplateName => "MyNotificationTemplate";
-
-    /// <summary>
-    /// Каналы доставки по умолчанию.
-    /// </summary>
-    public NotificationChannel[] DefaultChannels => new[]
-    {
-        NotificationChannel.Email,
-        NotificationChannel.Push
+        Name = Route,
+        NotificationObjectKind = new("MyObject", "Мой объект"),
+        TemplateName = Route,
+        DisplayName = "Мое уведомление",
+        Description = "Описание уведомления",
+        Tags = ["тег1", "тег2"],
+        PayloadType = typeof(MyNotificationRequestData),
+        Icon = new("bell")
     };
+
+    public Task<IEnumerable<Guid>> ResolveNotificationRecipientsIds(NotificationRequest notificationRequest)
+    {
+        var parameters = notificationRequest.GetData<MyNotificationRequestData>();
+        return Task.FromResult<IEnumerable<Guid>>(parameters?.UserId != null ? [parameters.UserId] : []);
+    }
+
+    public async Task<NotificationFullData> ResolveNotificationFullData(NotificationRequest notificationRequest)
+    {
+        var parameters = notificationRequest.GetData<MyNotificationRequestData>();
+        var user = await userRepository.GetUserByIdAsync(parameters.UserId);
+        
+        return new NotificationFullData(new MyNotificationTemplateModel
+        {
+            UserName = user?.Name ?? "User",
+            CustomField = parameters.CustomField
+        }, "https://example.com/objects/1");
+    }
 }
+
+public class MyNotificationRequestData { public Guid UserId { get; set; } public string CustomField { get; set; } }
+public class MyNotificationTemplateModel { public string UserName { get; set; } public string CustomField { get; set; } }
 ```
 
 ### Шаг 4: Создание HTML шаблона
@@ -242,7 +170,9 @@ public class MyNotificationRouteConfig : INotificationRouteConfiguration
   "description": "Template for my custom notification",
   "version": "1.0.0",
   "author": "Your Name",
-  "channels": ["Email", "Push"]
+  "channelsTemplates": [
+    { "channel": "Email", "filePath": "MyNotification.hbs" }
+  ]
 }
 ```
 
@@ -250,15 +180,15 @@ public class MyNotificationRouteConfig : INotificationRouteConfiguration
 
 Обработчик автоматически регистрируется при запуске приложения, если:
 
-1. Реализует интерфейсы `INotificationDataResolver` и `INotificationRouteConfiguration`
-2. Находится в сборке, переданной в `AddNotificationsServiceModule`
+1. Реализует интерфейс `INotificationRoute` и помечен атрибутом `[NotificationRoute]`
+2. Находится в сборке, переданной в `AddNotificationsServiceModules`
 
 **Проверка в** `Program.cs`:
 
 ```csharp
-builder.Services.AddNotificationsServiceModule(
-    builder.Configuration, 
-    typeof(NotificationService.TestHandlers.NotificationServicesRegister).Assembly
+builder.Services.AddNotificationsServiceModules(
+    builder.Configuration,
+    typeof(NotificationService.TestHandlers.NotificationsModuleServicesRegister).Assembly
 );
 ```
 
@@ -267,11 +197,9 @@ builder.Services.AddNotificationsServiceModule(
 Создайте запрос к API:
 
 ```bash
-curl -X POST http://localhost:5000/api/notification \
+curl -X POST http://localhost:5093/api/notification/MyNotification \
   -H "Content-Type: application/json" \
   -d '{
-    "route": "MyNotification",
-    "channel": "Email",
     "parameters": {
       "UserId": "00000000-0000-0000-0000-000000000001",
       "CustomField": "Custom value here"
@@ -302,8 +230,7 @@ curl -X POST http://localhost:5000/api/notification \
 public enum NotificationChannel
 {
     Email,
-    Sms,
-    Push,
+    InApp,
     Telegram,  // Новый канал
     Slack      // Новый канал
 }
@@ -422,29 +349,22 @@ public class NotificationSender : INotificationSender
     private readonly ITelegramProvider? _telegramProvider;
 
     public NotificationSender(
-        INotificationRepository notificationRepository,
-        IEmailProvider? emailProvider = null,
-        ISmsProvider? smsProvider = null,
-        IPushNotificationProvider? pushNotificationProvider = null,
+        // ...
         ITelegramProvider? telegramProvider = null,  // Добавлен новый провайдер
-        IUserRoutePreferenceRepository? userRoutePreferenceRepository = null)
+        // ...
+    )
     {
-        _notificationRepository = notificationRepository;
-        _emailProvider = emailProvider;
-        _smsProvider = smsProvider;
-        _pushNotificationProvider = pushNotificationProvider;
+        // ...
         _telegramProvider = telegramProvider;  // Сохранение провайдера
-        _userRoutePreferenceRepository = userRoutePreferenceRepository;
     }
 
-    private async Task SendToChannelAsync(Notification notification, NotificationChannel channel)
+    private async Task SendToChannelAsync(Notification notification, NotificationChannel channel, string content, NotificationRouteConfiguration routeConfiguration)
     {
         var wasSent = channel switch
         {
-            NotificationChannel.Email => await SendEmailAsync(notification),
-            NotificationChannel.Sms => await SendSmsAsync(notification),
-            NotificationChannel.Push => await SendPushAsync(notification),
-            NotificationChannel.Telegram => await SendTelegramAsync(notification),  // Новый канал
+            NotificationChannel.Email => await SendEmailAsync(notification, content),
+            NotificationChannel.InApp => await SendInAppAsync(notification, content, routeConfiguration),
+            NotificationChannel.Telegram => await SendTelegramAsync(notification, content),  // Новый канал
             _ => throw new NotSupportedException($"Channel {channel} not supported")
         };
 
@@ -456,7 +376,7 @@ public class NotificationSender : INotificationSender
     /// <summary>
     /// Отправляет уведомление через Telegram.
     /// </summary>
-    private async Task<bool> SendTelegramAsync(Notification notification)
+    private async Task<bool> SendTelegramAsync(Notification notification, string content)
     {
         if (_telegramProvider is null)
         {
@@ -464,16 +384,14 @@ public class NotificationSender : INotificationSender
         }
 
         // Предполагается, что Telegram Chat ID хранится в User.DeviceToken
-        // или в отдельном поле
         if (string.IsNullOrWhiteSpace(notification.Recipient.DeviceToken))
         {
             return false;
         }
 
-        var message = ResolveContent(notification);
         return await _telegramProvider.SendTelegramMessageAsync(
             notification.Recipient.DeviceToken,
-            message
+            content
         );
     }
 }
@@ -656,8 +574,13 @@ public class NotificationSenderTests
             .ReturnsAsync(true);
 
         var sender = new NotificationSender(
+            mockTemplateRepo.Object,
             mockRepository.Object,
-            mockEmailProvider.Object
+            mockRenderer.Object,
+            mockEmailProvider.Object,
+            mockPrefsRepo.Object,
+            mockInAppSender.Object,
+            inAppMapper
         );
 
         var notification = new Notification

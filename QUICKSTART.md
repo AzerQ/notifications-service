@@ -29,8 +29,9 @@ start.bat
 ### Features Out of the Box
 
 ✅ **Authentication System**
-- User registration with BCrypt password hashing
-- JWT-based login
+- Email-based authentication with verification codes
+- Windows Authentication support
+- JWT-based tokens (Access & Refresh)
 - Automatic session restoration
 
 ✅ **Real-Time Notifications**
@@ -50,12 +51,12 @@ start.bat
 
 ## Your First Steps
 
-### 1. Register a User
+### 1. Login
 
 1. Navigate to http://localhost:3000
-2. Click **"Sign up"**
-3. Fill in the registration form
-4. You'll be automatically logged in
+2. Enter your email
+3. Receive code via email (check logs or test-mail-server)
+4. Enter the code to login
 
 ### 2. Send a Test Notification
 
@@ -66,8 +67,8 @@ start.bat
 ### 3. Test Targeted Delivery
 
 1. Open two different browsers (or incognito mode)
-2. Register two different users
-3. Send a notification from User A
+2. Login as two different users
+3. Send a notification to User A
 4. **Only User A** receives the notification ✨
 
 ## Architecture Overview
@@ -169,7 +170,7 @@ Wait for: `Local: http://localhost:3000`
 
 ## Key Code Locations
 
-- **Authentication**: `backend/src/NotificationService.Api/Controllers/AuthController.cs`
+- **Authentication**: `backend/src/NotificationService.Api/Authentication/Controllers/AuthController.cs`
 - **SignalR Hub**: `backend/src/NotificationService.Api/Hubs/NotificationHub.cs`
 - **User Provider**: `backend/src/NotificationService.Api/Providers/UserIdProvider.cs`
 - **Frontend Auth**: `showcase/frontend/src/stores/AuthStore.ts`
@@ -181,7 +182,7 @@ Wait for: `Local: http://localhost:3000`
 | Component | Technology |
 |-----------|-----------|
 | Backend Framework | .NET 8 |
-| Authentication | JWT + BCrypt |
+| Authentication | JWT + Email Challenge / Windows |
 | Real-time | SignalR |
 | Database | SQLite |
 | Frontend Framework | React 18 |
@@ -203,7 +204,7 @@ Wait for: `Local: http://localhost:3000`
 
 🎯 **Targeted Notifications**: Unlike typical broadcast systems, notifications are delivered **only to specific users** using JWT claims and SignalR's `Clients.User()` method.
 
-🔐 **Production-Ready Auth**: Full JWT authentication with BCrypt password hashing, automatic token refresh, and session persistence.
+🔐 **Production-Ready Auth**: Full JWT authentication with Email verification, automatic token refresh, and session persistence.
 
 ⚡ **Real-Time**: Instant notification delivery with automatic reconnection and connection state management.
 
