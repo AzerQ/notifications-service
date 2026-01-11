@@ -5,6 +5,7 @@ import type { NotificationStore } from "../store/NotificationStore";
 import { NotificationItem } from "./NotificationItem";
 import { ToastContainer } from "./ToastContainer";
 import { num_decline } from "../utils/numDecline";
+import { Select, SelectOption } from "./ui/Select";
 import styles from './NotificationDropdown.module.css';
 
 interface NotificationDropdownProps {
@@ -56,6 +57,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
         ) {
           store.closeDropdown();
         }
+        
       };
 
       if (store.isDropdownOpen) {
@@ -87,6 +89,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
       num_decline(store.unreadCount, ["уведомление", "уведомления", "уведомлений"], false);
 
     const displayedNotifications = store.filteredNotifications;
+
+    const dateOptions: SelectOption[] = [
+      { value: 'all', label: 'За все время' },
+      { value: 'today', label: 'За этот день' },
+      { value: 'week', label: 'За эту неделю' },
+      { value: 'month', label: 'За этот месяц' }
+    ];
 
     return (
       <>
@@ -162,19 +171,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                   value={store.searchQuery}
                   onChange={(e) => store.setSearchQuery(e.target.value)}
                 />
-                <div className={styles.dateFilterWrapper}>
-                  <Calendar className={styles.calendarIcon} />
-                  <select
-                    className={styles.dateSelect}
-                    value={store.filters.dateRange || 'all'}
-                    onChange={(e) => store.setFilters({ dateRange: e.target.value as any })}
-                  >
-                    <option value="all">За все время</option>
-                    <option value="today">За этот день</option>
-                    <option value="week">За эту неделю</option>
-                    <option value="month">За этот месяц</option>
-                  </select>
-                </div>
+                <Select
+                  options={dateOptions}
+                  value={store.filters.dateRange || 'all'}
+                  onChange={(val) => store.setFilters({ dateRange: val as any })}
+                  icon={Calendar}
+                  className={styles.dateFilter}
+                />
               </div>
             </div>
 
