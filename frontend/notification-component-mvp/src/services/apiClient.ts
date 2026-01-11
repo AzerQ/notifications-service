@@ -204,7 +204,7 @@ export class NotificationApiClient {
     
     // Convert UserRoutePreferenceView to UserRoutePreference
     return response.data.map(pref => ({
-      id: pref.id || '',
+      id: pref.id,
       userId: pref.userId,
       route: pref.route,
       enabled: pref.enabled,

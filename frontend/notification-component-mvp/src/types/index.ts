@@ -118,7 +118,7 @@ export interface SignalRConfig {
  * User route preference model matching backend API response
  */
 export interface UserRoutePreference {
-  id: string;
+  id?: string;
   userId: string;
   route: string;
   enabled: boolean;
