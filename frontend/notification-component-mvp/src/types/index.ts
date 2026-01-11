@@ -91,6 +91,7 @@ export interface NotificationFilters {
   category?: string;
   fromDate?: string;
   toDate?: string;
+  dateRange?: 'all' | 'today' | 'week' | 'month';
 }
 
 /**

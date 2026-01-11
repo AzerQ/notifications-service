@@ -10,11 +10,12 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
   z-index: 50;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .header {
   padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .headerTop {
@@ -62,6 +63,7 @@
 
 .content {
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .loading {
@@ -97,11 +99,6 @@
   font-size: 12pt;
 }
 
-.footer {
-  padding: 0.75rem;
-  border-top: 1px solid #e5e7eb;
-  text-align: center;
-}
 
 .viewAllButton {
   font-size: 0.875rem;
@@ -130,8 +127,15 @@
 
 .searchWrapper {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
   background-color: #f9fafb;
+  box-sizing: border-box;
+}
+
+.searchRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .searchInput {
@@ -142,6 +146,36 @@
   border-radius: 0.375rem;
   outline: none;
   transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.dateFilterWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  padding: 0 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.calendarIcon {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
+}
+
+.dateSelect {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  padding: 0.375rem 0;
+  outline: none;
+  color: #374151;
+  cursor: pointer;
 }
 
 .searchInput:focus {
@@ -159,13 +193,21 @@
 @media (prefers-color-scheme: dark) {
   .searchWrapper {
     background-color: #1f2937;
-    border-bottom-color: #374151;
   }
   
   .searchInput {
     background-color: #374151;
     border-color: #4b5563;
     color: white;
+  }
+
+  .dateFilterWrapper {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .dateSelect {
+    color: #d1d5db;
   }
   
   .searchInput:focus {

@@ -279,8 +279,37 @@ pageSize: this.pageSize,
   /**
    * Set filters and reload
    */
-  setFilters(filters: NotificationFilters): void {
-    this.filters = filters;
+  setFilters(filters: Partial<NotificationFilters>): void {
+    this.filters = { ...this.filters, ...filters };
+    
+    // Handle date range filtering
+    if (filters.dateRange) {
+      const now = new Date();
+      let fromDate: Date | undefined;
+
+      switch (filters.dateRange) {
+        case 'today':
+          fromDate = new Date(now.setHours(0, 0, 0, 0));
+          break;
+        case 'week':
+          const day = now.getDay();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+          fromDate = new Date(now.setDate(diff));
+          fromDate.setHours(0, 0, 0, 0);
+          break;
+        case 'month':
+          fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case 'all':
+        default:
+          fromDate = undefined;
+          break;
+      }
+
+      this.filters.fromDate = fromDate?.toISOString();
+      this.filters.toDate = undefined; // Clear toDate when using quick filters
+    }
+
     this.currentPage = 1;
     this.loadNotifications();
   }

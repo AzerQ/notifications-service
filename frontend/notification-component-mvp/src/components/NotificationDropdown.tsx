@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
-import { CheckCheck, Eye, EyeClosed, Loader2 } from "lucide-react";
+import { CheckCheck, Eye, EyeClosed, Loader2, Calendar } from "lucide-react";
 import type { NotificationStore } from "../store/NotificationStore";
 import { NotificationItem } from "./NotificationItem";
 import { ToastContainer } from "./ToastContainer";
@@ -149,15 +149,30 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
             style={{ maxHeight }}
             data-testid="notification-list"
           >
-            {/* Search Input */}
+            {/* Search and Filter Input */}
             <div className={styles.searchWrapper}>
-              <input
-                type="text"
-                placeholder="Поиск уведомлений..."
-                className={styles.searchInput}
-                value={store.searchQuery}
-                onChange={(e) => store.setSearchQuery(e.target.value)}
-              />
+              <div className={styles.searchRow}>
+                <input
+                  type="text"
+                  placeholder="Поиск уведомлений..."
+                  className={styles.searchInput}
+                  value={store.searchQuery}
+                  onChange={(e) => store.setSearchQuery(e.target.value)}
+                />
+                <div className={styles.dateFilterWrapper}>
+                  <Calendar className={styles.calendarIcon} />
+                  <select
+                    className={styles.dateSelect}
+                    value={store.filters.dateRange || 'all'}
+                    onChange={(e) => store.setFilters({ dateRange: e.target.value as any })}
+                  >
+                    <option value="all">За все время</option>
+                    <option value="today">За этот день</option>
+                    <option value="week">За эту неделю</option>
+                    <option value="month">За этот месяц</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {store.isLoading ? (
@@ -190,21 +205,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
             )}
           </div>
 
-          {/* Footer */}
-          {!store.isLoading && displayedNotifications.length > 0 && (
-            <div className={styles.footer}>
-              <button
-                onClick={() => {
-                  store.closeDropdown();
-                  // Could navigate to full notifications page here
-                }}
-                className={styles.viewAllButton}
-                data-testid="notification-view-all"
-              >
-                Показать все уведомления
-              </button>
-            </div>
-          )}
+          {/* Footer removed as per requirements */}
 
           {/* SignalR connection status */}
           {!store.isSignalRConnected && (
