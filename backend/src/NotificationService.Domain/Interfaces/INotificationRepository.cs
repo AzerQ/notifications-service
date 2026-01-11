@@ -12,7 +12,7 @@ public interface INotificationRepository
     
     void MarkAllUserNotificationsAsRead(Guid userId);
 
-    Task<IEnumerable<Notification>> GetUserNotificationsAsync(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
+    Task<(IEnumerable<Notification> Notifications, int TotalCount)> GetUserNotificationsAsync(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
     Task<Notification?> GetNotificationByIdAsync(Guid id);
 
 }

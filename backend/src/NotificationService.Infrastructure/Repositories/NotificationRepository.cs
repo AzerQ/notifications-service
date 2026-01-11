@@ -35,7 +35,7 @@ public class NotificationRepository : INotificationRepository
         _context.SaveChanges();
     }
 
-    public async Task<IEnumerable<Notification>> GetUserNotificationsAsync(Guid userId, GetUserNotificationsRequest userNotificationsRequest)
+    public async Task<(IEnumerable<Notification> Notifications, int TotalCount)> GetUserNotificationsAsync(Guid userId, GetUserNotificationsRequest userNotificationsRequest)
     {
         var query =  _context.Notifications
             .Include(n => n.Recipient)
@@ -45,13 +45,22 @@ public class NotificationRepository : INotificationRepository
          if (userNotificationsRequest.OnlyUnread)
             query = query.Where(n => n.NotificationWasRead == false);
 
+        if (userNotificationsRequest.FromDate.HasValue)
+            query = query.Where(n => n.CreatedAt >= userNotificationsRequest.FromDate.Value);
+
+        if (userNotificationsRequest.ToDate.HasValue)
+            query = query.Where(n => n.CreatedAt <= userNotificationsRequest.ToDate.Value);
+
+        var totalCount = await query.CountAsync();
+
         // Apply pagination
         query = query
+            .OrderByDescending(n => n.CreatedAt)
             .Skip((userNotificationsRequest.PageNumber - 1) * userNotificationsRequest.PageSize)
             .Take(userNotificationsRequest.PageSize);
 
-        return await query.ToListAsync();
-
+        var notifications = await query.ToListAsync();
+        return (notifications, totalCount);
     }
 
     public async Task<Notification?> GetNotificationByIdAsync(Guid id)

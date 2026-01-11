@@ -7,5 +7,5 @@ namespace NotificationService.Application.Interfaces;
 public interface INotificationQueryService
 {
     Task<NotificationResponseDto?> GetByIdAsync(Guid id);
-    Task<IReadOnlyCollection<AppNotification>> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
+    Task<UserNotificationsResponse> GetUserNotifications(Guid userId, GetUserNotificationsRequest userNotificationsRequest);
 }
