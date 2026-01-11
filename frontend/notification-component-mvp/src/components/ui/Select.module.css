@@ -17,6 +17,8 @@
   transition: all 0.2s;
   text-align: left;
   outline: none;
+  height: 2.375rem;
+  box-sizing: border-box;
 }
 
 .toggle:hover {
