@@ -265,7 +265,7 @@ interface NotificationIcon {
 ```
 GET  /api/notification/personal
      Query params: pageNumber, pageSize, onlyUnread, category, fromDate, toDate
-     Returns: { notifications: Notification[], totalItemsCount: number, request: {...} }
+     Returns: { notifications: Notification[], totalItemsCount: number, request: { pageNumber: number, pageSize: number, onlyUnread: boolean, fromDate?: string, toDate?: string } }
 
 PUT  /api/notification/{id}/read
      Body: { "read": true }
