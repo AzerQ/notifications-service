@@ -18,12 +18,6 @@ export interface NotificationWidgetAPI {
   close(): void;
 
   /**
-   * Update the JWT access token dynamically
-   * @param token New JWT token
-   */
-  setToken(token: string): void;
-
-  /**
    * Register a handler for custom actions with appaction:// protocol
    * @param actionName Name of the action (e.g., 'taskAccept')
    * @param handler Callback function receiving arguments as string record

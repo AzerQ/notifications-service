@@ -70,7 +70,6 @@ function App() {
 - `refresh(): Promise<void>` - Принудительное обновление списка с сервера.
 - `open(): void` - Программное открытие выпадающего списка.
 - `close(): void` - Программное закрытие выпадающего списка.
-- `setToken(token: string): void` - Динамическое обновление JWT токена.
 - `registerActionHandler(name: string, handler: (args: Record<string, string>) => void): void` - Регистрация обработчика для URL `appaction://`.
 
 ### Настройка аутентификации

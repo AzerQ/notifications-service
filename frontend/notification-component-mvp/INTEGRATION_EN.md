@@ -33,7 +33,6 @@ interface NotificationWidget {
   refresh(): Promise<void>;
   open(): void;
   close(): void;
-  setToken(token: string): void;
   registerActionHandler(name: string, handler: (args: Record<string, string>) => void): void;
 }
 ```

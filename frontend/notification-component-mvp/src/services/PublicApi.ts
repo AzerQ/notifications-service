@@ -31,15 +31,6 @@ export class NotificationWidgetAPIImpl {
   }
 
   /**
-   * Set a new access token
-   */
-  setToken(token: string): void {
-    // This would require updating the apiClient and signalRService
-    // For now, we'll need to expose a way to update them in the store
-    (this.store as any).updateToken?.(token);
-  }
-
-  /**
    * Register a handler for appaction:// protocol
    */
   registerActionHandler(

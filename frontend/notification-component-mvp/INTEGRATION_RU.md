@@ -36,8 +36,6 @@ interface NotificationWidget {
   open(): void;
   /** Закрыть выпадающий список */
   close(): void;
-  /** Обновить JWT токен */
-  setToken(token: string): void;
   /** Регистрация обработчика для кнопок действий */
   registerActionHandler(name: string, handler: (args: Record<string, string>) => void): void;
 }
