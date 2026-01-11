@@ -57,6 +57,8 @@ export interface AuthServiceConfig {
   onAuthSuccess?: (tokens: AuthTokens) => void;
   onAuthFailure?: (error: string) => void;
   onEmailCodeRequired?: (email: string, challengeId: string) => void;
+  /** Enabled authentication methods. Defaults to ['windows', 'email'] */
+  enabledMethods?: Array<'windows' | 'email'>;
 }
 
 /**
@@ -193,38 +195,46 @@ export class AuthenticationService {
     this.lastAuthAttempt = now;
 
     try {
+      const enabledMethods = this.config.enabledMethods || ['windows', 'email'];
+
       // Level 1: Try to refresh using refresh token
       console.log('[Auth] Level 1: Attempting refresh token authentication...');
       const refreshTokens = await this.tryRefreshToken();
       if (refreshTokens) {
-        console.log('[Auth] Level 1: ? Refresh token authentication successful');
+        console.log('[Auth] Level 1: ✅ Refresh token authentication successful');
         this.setTokens(refreshTokens);
         this.processAuthQueue(refreshTokens);
         return refreshTokens;
       }
-      console.log('[Auth] Level 1: ? Refresh token authentication failed');
+      console.log('[Auth] Level 1: ❌ Refresh token authentication failed');
 
-      // Level 2: Try Windows authentication (skip if already failed once)
-      if (!this.windowsAuthFailed) {
-        console.log('[Auth] Level 2: Attempting Windows authentication...');
-        const windowsTokens = await this.tryWindowsAuthentication();
-        if (windowsTokens) {
-          console.log('[Auth] Level 2: ? Windows authentication successful');
-          this.setTokens(windowsTokens);
-          this.processAuthQueue(windowsTokens);
-          return windowsTokens;
+      // Level 2: Try Windows authentication
+      if (enabledMethods.includes('windows')) {
+        if (!this.windowsAuthFailed) {
+          console.log('[Auth] Level 2: Attempting Windows authentication...');
+          const windowsTokens = await this.tryWindowsAuthentication();
+          if (windowsTokens) {
+            console.log('[Auth] Level 2: ✅ Windows authentication successful');
+            this.setTokens(windowsTokens);
+            this.processAuthQueue(windowsTokens);
+            return windowsTokens;
+          }
+          console.log('[Auth] Level 2: ❌ Windows authentication failed');
+          this.windowsAuthFailed = true;
+        } else {
+          console.log('[Auth] Level 2: Skipping Windows authentication (already failed once)');
         }
-        console.log('[Auth] Level 2: ? Windows authentication failed');
-        // Mark Windows auth as failed to skip it in future attempts
-        this.windowsAuthFailed = true;
-      } else {
-        console.log('[Auth] Level 2: Skipping Windows authentication (already failed once)');
       }
 
-      // Level 3: Email code required - notify caller
-      console.log('[Auth] Level 3: Email code authentication required');
-      this.processAuthQueue(null);
-      this.config.onAuthFailure?.('Email code authentication required');
+      // Level 3: Email code required
+      if (enabledMethods.includes('email')) {
+        console.log('[Auth] Level 3: Email code authentication required');
+        this.processAuthQueue(null);
+        this.config.onAuthFailure?.('Email code authentication required');
+      } else {
+        console.log('[Auth] Level 3: Email authentication is disabled');
+        this.processAuthQueue(null, new Error('No authentication methods available'));
+      }
       
       return null;
     } catch (error) {

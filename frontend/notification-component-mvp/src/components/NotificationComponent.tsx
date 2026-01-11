@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
+import { NotificationWidgetAPIImpl } from '../services/PublicApi';
 import { Settings } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -37,8 +38,14 @@ export const NotificationComponent: React.FC<NotificationComponentProps> = obser
     savePreferences,
     closeModal
   } = useRoutePreferences(store);
-  // Cleanup on unmount
+  // Initialize Public API and export to window
   useEffect(() => {
+    if (store && !window.NotificationWidget) {
+      const api = new NotificationWidgetAPIImpl(store);
+      store.setApi(api);
+      window.NotificationWidget = api as any;
+    }
+    
     return () => {
       store.dispose();
     };

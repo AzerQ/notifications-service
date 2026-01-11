@@ -44,6 +44,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = observer(({
           {store.unreadCount > 99 ? '99+' : store.unreadCount}
         </span>
       )}
+      
+      {/* Connection Status Indicator */}
+      <span className={`${styles.statusIndicator} ${store.isSignalRConnected ? styles.online : styles.offline}`} />
     </button>
   );
 });

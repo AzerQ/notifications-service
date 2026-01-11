@@ -222,3 +222,34 @@
     color: #d1d5db;
   }
 }
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.actionButton {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+  background-color: #1d4ed8;
+}
+
+@media (prefers-color-scheme: dark) {
+  .actionButton {
+    background-color: #3b82f6;
+  }
+  .actionButton:hover {
+    background-color: #2563eb;
+  }
+}

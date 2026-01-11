@@ -19,6 +19,17 @@ interface NotificationDropdownProps {
 export const NotificationDropdown: React.FC<NotificationDropdownProps> =
   observer(({ store, onNotificationClick, maxHeight = "400px" }) => {
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    // Infinite scroll handler
+    const handleScroll = () => {
+      if (!contentRef.current) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
+      if (scrollHeight - scrollTop <= clientHeight + 50) {
+        store.loadMore();
+      }
+    };
 
     // Setup toast callback on mount
     useEffect(() => {
@@ -75,10 +86,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
       " " +
       num_decline(store.unreadCount, ["уведомление", "уведомлений"], false);
 
-    const displayedNotifications =
-      (store.filters.onlyUnread
-        ? store.unreadNotifications
-        : store.notifications) ?? []; // Show max 20 in dropdown
+    const displayedNotifications = store.filteredNotifications;
 
     return (
       <>
@@ -135,10 +143,23 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
 
           {/* Content */}
           <div
+            ref={contentRef}
+            onScroll={handleScroll}
             className={styles.content}
             style={{ maxHeight }}
             data-testid="notification-list"
           >
+            {/* Search Input */}
+            <div className={styles.searchWrapper}>
+              <input
+                type="text"
+                placeholder="Поиск уведомлений..."
+                className={styles.searchInput}
+                value={store.searchQuery}
+                onChange={(e) => store.setSearchQuery(e.target.value)}
+              />
+            </div>
+
             {store.isLoading ? (
               <div className={styles.loading}>
                 <Loader2 className={styles.spinner} />
@@ -161,6 +182,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                   onClick={onNotificationClick}
                 />
               ))
+            )}
+            {store.isLoading && store.notifications.length > 0 && (
+              <div className={styles.loadingMore}>
+                <Loader2 className={`${styles.spinner} w-4 h-4`} />
+              </div>
             )}
           </div>
 

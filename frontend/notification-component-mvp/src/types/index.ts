@@ -1,5 +1,6 @@
 /**
  * Notification types aligned with backend API
+ * @module Types
  */
 
 /**
@@ -32,24 +33,41 @@ export interface NotificationIcon {
  * Base notification model matching backend API response
  */
 export interface Notification {
+  /** Unique identifier (GUID) */
   id: string;
+  /** ID of the user receiving the notification */
   receiverId: string;
+  /** Primary category of the notification */
   type: string;
+  /** Secondary category or specific event type */
   subType?: string;
+  /** Short summary of the notification */
   title: string;
+  /** Detailed message content */
   content: string;
+  /** Optional link to open when clicked */
   url?: string;
+  /** Icon configuration */
   icon?: NotificationIcon;
+  /** ISO 8601 date string */
   date: string;
+  /** Read status flag */
   read: boolean;
+  /** Name of the entity that triggered the notification */
   author?: string;
+  /** List of interactive buttons */
   actions?: NotificationAction[];
+  /** Tags for categorization */
   hashtags?: string[];
+  /** Key-value pairs for template rendering or extra data */
   parameters?: NotificationParameter[];
   
   // Legacy fields for backward compatibility
+  /** @deprecated Use type instead */
   category?: string;
+  /** @deprecated Use date instead */
   createdAt?: string;
+  /** @deprecated Use actions and parameters instead */
   metadata?: Record<string, unknown>;
 }
 
@@ -93,19 +111,6 @@ export interface SignalRConfig {
   autoReconnect?: boolean;
 }
 
-/**
- * Notification component configuration
- * Note: User ID is extracted from JWT token on backend, no need to pass it from frontend
- */
-export interface NotificationComponentConfig {
-  apiBaseUrl: string;
-  signalRHubUrl: string;
-  accessToken?: string;
-  onNotificationClick?: (notification: Notification) => void;
-  maxNotifications?: number;
-  onEmailCodeRequired?: (email: string, challengeId: string) => void;
-  userEmail?: string; // ������������ email ������������ ��� �������������� �������� ����
-}
 
 
 /**

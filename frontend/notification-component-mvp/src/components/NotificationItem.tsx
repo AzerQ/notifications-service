@@ -36,11 +36,11 @@ interface NotificationItemProps {
 /**
  * Single notification item component
  */
-export const NotificationItem: React.FC<NotificationItemProps> = observer(({ 
-  notification, 
+export const NotificationItem: React.FC<NotificationItemProps> = observer(({
+  notification,
   onMarkAsRead,
   onMarkAsUnread,
-  onClick 
+  onClick
 }) => {
   const handleClick = () => {
     if (!notification.read) {
@@ -48,9 +48,32 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
     }
     onClick?.(notification);
     
+    // Handle appaction:// protocol
+    if (notification.url?.startsWith('appaction://')) {
+      if (window.NotificationWidget) {
+        const handled = (window.NotificationWidget as any).executeAction(notification.url);
+        if (handled) return;
+      }
+    }
+
     // Navigate to URL if provided
     if (notification.url) {
       window.open(notification.url, '_blank');
+    }
+  };
+
+  const handleActionClick = (e: React.MouseEvent, actionUrl: string) => {
+    e.stopPropagation();
+    if (!notification.read) {
+      onMarkAsRead(notification.id);
+    }
+    
+    if (actionUrl.startsWith('appaction://')) {
+      if (window.NotificationWidget) {
+        (window.NotificationWidget as any).executeAction(actionUrl);
+      }
+    } else {
+      window.open(actionUrl, '_blank');
     }
   };
 
@@ -191,6 +214,21 @@ export const NotificationItem: React.FC<NotificationItemProps> = observer(({
                 >
                   #{tag}
                 </span>
+              ))}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          {notification.actions && notification.actions.length > 0 && (
+            <div className={styles.actions}>
+              {notification.actions.map((action, index) => (
+                <button
+                  key={index}
+                  className={styles.actionButton}
+                  onClick={(e) => handleActionClick(e, action.url || '')}
+                >
+                  {action.label}
+                </button>
               ))}
             </div>
           )}
