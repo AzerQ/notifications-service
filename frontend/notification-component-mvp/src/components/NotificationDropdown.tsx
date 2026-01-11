@@ -82,9 +82,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
     };
 
     const unreadNotificationsLabel =
-      num_decline(store.unreadCount, ["непрочитанное", "непрочитанных"]) +
+      num_decline(store.unreadCount, ["непрочитанное", "непрочитанных", "непрочитанных"]) +
       " " +
-      num_decline(store.unreadCount, ["уведомление", "уведомлений"], false);
+      num_decline(store.unreadCount, ["уведомление", "уведомления", "уведомлений"], false);
 
     const displayedNotifications = store.filteredNotifications;
 
@@ -139,6 +139,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                 У вас {unreadNotificationsLabel}
               </p>
             )}
+            <p className={styles.totalCountLabel}>
+              Всего: {num_decline(store.totalCount, ["уведомление", "уведомления", "уведомлений"])}
+            </p>
           </div>
 
           {/* Content */}

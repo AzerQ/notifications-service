@@ -190,6 +190,13 @@
   padding: 0.75rem;
 }
 
+.totalCountLabel {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
 @media (prefers-color-scheme: dark) {
   .searchWrapper {
     background-color: #1f2937;
