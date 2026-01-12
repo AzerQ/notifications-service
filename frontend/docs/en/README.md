@@ -19,6 +19,11 @@ A clean, simple, and production-ready React notification component with SignalR 
 - ✅ **Route Preferences** - enable/disable notifications by route
 - ✅ **Settings Modal** with toggle switches for notification types
 - ✅ **Zero Bugs** clean implementation
+- ✅ **Public API** for host applications (`window.NotificationWidget`)
+- ✅ **Action Buttons** with `appaction://` protocol support
+- ✅ **Infinite Scroll** for large notification lists
+- ✅ **Client-side Search** and filtering
+- ✅ **Connection Status** indicator (SignalR)
 
 ## 📦 Installation
 
@@ -50,24 +55,18 @@ npm run build
 
 ### Basic Example
 
+The component is configured via environment variables (`.env`) and handles its own state and authentication.
+
 ```tsx
-import { NotificationComponent, useNotificationStore } from '@notifications-service/inapp-component-mvp';
+import { NotificationComponent } from '@notifications-service/inapp-component-mvp';
 
 function App() {
-  const store = useNotificationStore({
-    apiBaseUrl: 'http://localhost:5093',
-    signalRHubUrl: 'http://localhost:5093/notificationHub',
-    userId: 'your-user-id',
-    accessToken: 'your-jwt-token', // optional
-  });
-
   return (
     <NotificationComponent
-      store={store}
       onNotificationClick={(notification) => {
         console.log('Clicked:', notification);
       }}
-      showPreferencesButton={true} // Show settings button
+      showPreferencesButton={true}
     />
   );
 }
@@ -99,6 +98,30 @@ function CustomNotifications() {
     </div>
   );
 }
+```
+
+## 🔌 Public API (Integration)
+
+When embedded as a module, the widget exposes a global API via `window.NotificationWidget`.
+
+### Methods
+
+- `refresh(): Promise<void>` - Force reload notifications from the server.
+- `open(): void` - Programmatically open the dropdown.
+- `close(): void` - Programmatically close the dropdown.
+- `setToken(token: string): void` - Update the JWT token dynamically.
+- `registerActionHandler(name: string, handler: (args: Record<string, string>) => void): void` - Register a handler for `appaction://` URLs.
+
+### Example: Handling Custom Actions
+
+1. **Backend** sends a notification with an action URL: `appaction://openTask?taskId=456`.
+2. **Host App** registers a handler:
+
+```javascript
+window.NotificationWidget.registerActionHandler('openTask', (args) => {
+  console.log('Opening task:', args.taskId);
+  // Your custom logic here
+});
 ```
 
 ## 🏛️ Architecture
@@ -192,11 +215,10 @@ Create a `.env` file:
 ```env
 VITE_API_URL=http://localhost:5093
 VITE_SIGNALR_URL=http://localhost:5093/notificationHub
-VITE_USER_ID=your-user-id
-VITE_ACCESS_TOKEN=your-jwt-token
+VITE_ENABLED_AUTH_METHODS=windows,email
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 npm test

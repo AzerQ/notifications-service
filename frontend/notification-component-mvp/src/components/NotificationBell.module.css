@@ -48,3 +48,27 @@
   background-color: #ef4444;
   border-radius: 9999px;
 }
+
+.statusIndicator {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  border: 2px solid white;
+}
+
+.online {
+  background-color: #10b981;
+}
+
+.offline {
+  background-color: #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  .statusIndicator {
+    border-color: #1f2937;
+  }
+}

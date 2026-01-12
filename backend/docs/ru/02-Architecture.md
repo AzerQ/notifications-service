@@ -6,7 +6,52 @@
 
 ### Диаграмма высокого уровня
 
-![Overall Architecture](./diagrams/OVERALL_ARCHITECTURE.puml)
+```mermaid
+graph TD
+    subgraph Presentation_Layer ["Слой представления"]
+        REST["REST API контроллеры"]
+        SIGNALR["SignalR Hub (Real-time)"]
+    end
+
+    subgraph Application_Layer ["Прикладной слой"]
+        APP_SERVICES["Сервисы команд и запросов"]
+        SENDER["Отправитель уведомлений"]
+        APP_SUPPORT["Резолверы данных и мапперы"]
+    end
+
+    subgraph Domain_Layer ["Доменный слой"]
+        DOMAIN["Модели, интерфейсы и валидаторы"]
+    end
+
+    subgraph Infrastructure_Layer ["Инфраструктурный слой"]
+        EF_CORE["EF Core репозитории"]
+        EMAIL["Email провайдер (SMTP)"]
+        TEMPLATE["Рендерер шаблонов"]
+    end
+
+    subgraph External_Systems ["Внешние системы"]
+        DB[("SQLite БД")]
+        SMTP["SMTP сервер"]
+    end
+
+    REST --> APP_SERVICES
+    SIGNALR --> APP_SERVICES
+    APP_SERVICES --> SENDER
+    APP_SERVICES --> APP_SUPPORT
+    APP_SUPPORT --> DOMAIN
+    SENDER --> DOMAIN
+    DOMAIN --> EF_CORE
+    DOMAIN --> EMAIL
+    DOMAIN --> TEMPLATE
+    EF_CORE --> DB
+    EMAIL --> SMTP
+
+    style Presentation_Layer fill:#e1f5fe,stroke:#01579b
+    style Application_Layer fill:#f3e5f5,stroke:#4a148c
+    style Domain_Layer fill:#e8f5e9,stroke:#1b5e20
+    style Infrastructure_Layer fill:#fff3e0,stroke:#e65100
+    style External_Systems fill:#f1f8e9,stroke:#33691e
+```
 
 Система состоит из 4 основных слоев:
 
@@ -30,7 +75,80 @@
 - **Интерфейсы провайдеров:** `IEmailProvider`, `ISmsProvider`, `IPushNotificationProvider`
 - **Конфигурационные интерфейсы:** `INotificationRouteConfiguration`
 
-[Подробная диаграмма Domain слоя](./diagrams/DOMAIN_LAYER.puml)
+#### Диаграмма доменного слоя
+
+```mermaid
+classDiagram
+    class Notification {
+        +Guid Id
+        +string Title
+        +string Message
+        +string Route
+        +DateTime CreatedAt
+        +User Recipient
+        +NotificationTemplate Template
+        +List~NotificationMetadataField~ Metadata
+        +List~NotificationChannelDeliveryStatus~ DeliveryChannelsState
+    }
+
+    class User {
+        +Guid Id
+        +string Username
+        +string Email
+        +string? PhoneNumber
+        +string? DeviceToken
+    }
+
+    class NotificationTemplate {
+        +Guid Id
+        +string Name
+        +string Subject
+        +string Content
+    }
+
+    class NotificationMetadataField {
+        +Guid Id
+        +string Key
+        +string Value
+        +string? Description
+    }
+
+    class NotificationChannelDeliveryStatus {
+        +Guid Id
+        +NotificationChannel Channel
+        +NotificationDeliveryStatus Status
+    }
+
+    class UserRoutePreference {
+        +Guid Id
+        +Guid UserId
+        +string Route
+        +bool IsEnabled
+    }
+
+    class NotificationChannel {
+        <<enumeration>>
+        Email
+        Sms
+        Push
+    }
+
+    class NotificationDeliveryStatus {
+        <<enumeration>>
+        Pending
+        Sent
+        Failed
+        Skipped
+    }
+
+    Notification --> User
+    Notification --> NotificationTemplate
+    Notification --> NotificationMetadataField
+    Notification --> NotificationChannelDeliveryStatus
+    NotificationChannelDeliveryStatus --> NotificationChannel
+    NotificationChannelDeliveryStatus --> NotificationDeliveryStatus
+    UserRoutePreference --> User
+```
 
 ### 2. NotificationService.Application (Прикладной слой)
 
@@ -45,7 +163,46 @@
 - **Маппинг:** `NotificationMapper` — преобразование между моделями и DTO
 - **DTO:** `NotificationRequest`, `NotificationResponseDto`, `UserDto`
 
-[Подробная диаграмма Application слоя](./diagrams/APPLICATION_LAYER.puml)
+#### Диаграмма прикладного слоя
+
+```mermaid
+classDiagram
+    class NotificationCommandService {
+        +ProcessNotificationRequestAsync(request) Task
+    }
+
+    class NotificationQueryService {
+        +GetByIdAsync(id) Task
+        +GetByUserAsync(userId) Task
+        +GetByStatusAsync(status) Task
+    }
+
+    class NotificationSender {
+        +SendAsync(notification) Task
+    }
+
+    class NotificationRoutesContext {
+        +RegisterRoute(route, resolver, config)
+        +GetDataResolverForRoute(route) INotificationDataResolver
+        +GetNotificationRouteConfiguration(route) INotificationRouteConfiguration
+    }
+
+    class NotificationMapper {
+        +MapFromRequest(request, resolver, template) Task
+        +MapToResponse(notifications) NotificationResponseDto
+    }
+
+    class INotificationDataResolver {
+        <<interface>>
+        +ResolveRecipientsAsync(parameters) Task
+        +ResolveTemplateDataAsync(recipient, parameters) Task
+    }
+
+    NotificationCommandService --> NotificationRoutesContext
+    NotificationCommandService --> NotificationSender
+    NotificationCommandService --> NotificationMapper
+    NotificationSender --> INotificationDataResolver
+```
 
 ### 3. NotificationService.Infrastructure (Инфраструктурный слой)
 
@@ -60,7 +217,24 @@
 - **Рендеринг шаблонов:** `HandlebarsTemplateRenderer`, `FileSystemTemplateProvider`
 - **Инициализация БД:** `DbInitializer`, миграции
 
-[Подробная диаграмма Infrastructure слоя](./diagrams/INFRASTRUCTURE_LAYER.puml)
+#### Диаграмма инфраструктурного слоя
+
+```mermaid
+graph LR
+    subgraph Data_Access ["Доступ к данным"]
+        DB_CONTEXT["NotificationDbContext"]
+        REPO["Репозитории"]
+    end
+
+    subgraph Providers ["Внешние провайдеры"]
+        SMTP["SmtpEmailProvider"]
+        TEMPLATE["HandlebarsTemplateRenderer"]
+    end
+
+    REPO --> DB_CONTEXT
+    DB_CONTEXT --> SQLITE[("SQLite БД")]
+    SMTP --> SMTP_SERVER["SMTP сервер"]
+```
 
 ### 4. NotificationService.Api (API слой)
 
@@ -74,7 +248,25 @@
 - **Middleware:** `ErrorHandlingMiddleware` для обработки ошибок
 - **DI конфигурация:** регистрация всех сервисов
 
-[Подробная диаграмма API слоя](./diagrams/API_LAYER.puml)
+#### Диаграмма API слоя
+
+```mermaid
+graph TD
+    subgraph Controllers ["Контроллеры"]
+        NC["NotificationController"]
+        UC["UsersController"]
+        URPC["UserRoutePreferencesController"]
+    end
+
+    subgraph RealTime ["Real-time"]
+        HUB["NotificationHub (SignalR)"]
+    end
+
+    NC --> APP["Прикладные сервисы"]
+    UC --> REPO["Репозитории"]
+    URPC --> REPO
+    HUB --> APP
+```
 
 ### 5. NotificationService.TestHandlers (Тестовые обработчики)
 
@@ -104,11 +296,81 @@ MyNotification/
 2. **Application** зависит только от **Domain**
 3. **Infrastructure** зависит от **Domain** (и частично от **Application**)
 4. **Api** зависит от **Application** и **Infrastructure**
-5. **TestHandlers** зависит от **Domain** и **Application**
+5. **TestHandlers** зависит от **Domain** and **Application**
 
 ### Поток данных (вертикальный срез)
 
-[Диаграмма потока данных при обработке уведомления](./diagrams/DATA_FLOW.puml)
+```mermaid
+sequenceDiagram
+    participant Client as HTTP клиент
+    participant Controller as NotificationController
+    participant CommandService as NotificationCommandService
+    participant RoutesContext as NotificationRoutesContext
+    participant DataResolver as INotificationDataResolver
+    participant Mapper as NotificationMapper
+    participant Repository as INotificationRepository
+    participant Sender as NotificationSender
+    participant EmailProvider as IEmailProvider
+
+    Client->>Controller: 1. POST /api/notification (NotificationRequest)
+    activate Controller
+    
+    Controller->>CommandService: 2. ProcessNotificationRequestAsync(request)
+    activate CommandService
+    
+    CommandService->>RoutesContext: 3. GetDataResolverForRoute(route)
+    activate RoutesContext
+    RoutesContext-->>CommandService: Экземпляр DataResolver
+    deactivate RoutesContext
+    
+    CommandService->>RoutesContext: 4. GetNotificationRouteConfiguration(route)
+    activate RoutesContext
+    RoutesContext-->>CommandService: Конфигурация маршрута
+    deactivate RoutesContext
+    
+    CommandService->>Mapper: 5. MapFromRequest(request, resolver, template)
+    activate Mapper
+    
+    Mapper->>DataResolver: 6. ResolveRecipientsAsync(parameters)
+    activate DataResolver
+    DataResolver-->>Mapper: List<User>
+    deactivate DataResolver
+    
+    Mapper->>DataResolver: 7. ResolveTemplateDataAsync(recipient, parameters)
+    activate DataResolver
+    DataResolver-->>Mapper: Dictionary<string, object>
+    deactivate DataResolver
+    
+    Mapper-->>CommandService: 8. List<Notification>
+    deactivate Mapper
+    
+    CommandService->>Repository: 9. SaveNotificationsAsync(notifications)
+    activate Repository
+    Repository-->>CommandService: Сохранено
+    deactivate Repository
+    
+    CommandService->>Sender: 10. SendAsync(notification)
+    activate Sender
+    
+    Sender->>EmailProvider: 11. SendEmailAsync(to, subject, body)
+    activate EmailProvider
+    EmailProvider-->>Sender: true/false
+    deactivate EmailProvider
+    
+    Sender->>Repository: 12. UpdateNotificationsAsync(notification)
+    activate Repository
+    Repository-->>Sender: Обновлено
+    deactivate Repository
+    
+    Sender-->>CommandService: Завершено
+    deactivate Sender
+    
+    CommandService-->>Controller: 13. NotificationResponseDto
+    deactivate CommandService
+    
+    Controller-->>Client: 14. 200 OK + Ответ
+    deactivate Controller
+```
 
 **Основные этапы:**
 1. HTTP запрос поступает в контроллер

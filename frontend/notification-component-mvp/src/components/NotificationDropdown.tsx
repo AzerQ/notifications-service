@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
-import { CheckCheck, Eye, EyeClosed, Loader2 } from "lucide-react";
+import { CheckCheck, Eye, EyeClosed, Loader2, Calendar } from "lucide-react";
 import type { NotificationStore } from "../store/NotificationStore";
 import { NotificationItem } from "./NotificationItem";
 import { ToastContainer } from "./ToastContainer";
 import { num_decline } from "../utils/numDecline";
+import { Select, SelectOption } from "./ui/Select";
 import styles from './NotificationDropdown.module.css';
 
 interface NotificationDropdownProps {
@@ -19,6 +20,17 @@ interface NotificationDropdownProps {
 export const NotificationDropdown: React.FC<NotificationDropdownProps> =
   observer(({ store, onNotificationClick, maxHeight = "400px" }) => {
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    // Infinite scroll handler
+    const handleScroll = () => {
+      if (!contentRef.current) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
+      if (scrollHeight - scrollTop <= clientHeight + 50) {
+        store.loadMore();
+      }
+    };
 
     // Setup toast callback on mount
     useEffect(() => {
@@ -45,6 +57,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
         ) {
           store.closeDropdown();
         }
+        
       };
 
       if (store.isDropdownOpen) {
@@ -71,14 +84,18 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
     };
 
     const unreadNotificationsLabel =
-      num_decline(store.unreadCount, ["непрочитанное", "непрочитанных"]) +
+      num_decline(store.unreadCount, ["непрочитанное", "непрочитанных", "непрочитанных"]) +
       " " +
-      num_decline(store.unreadCount, ["уведомление", "уведомлений"], false);
+      num_decline(store.unreadCount, ["уведомление", "уведомления", "уведомлений"], false);
 
-    const displayedNotifications =
-      (store.filters.onlyUnread
-        ? store.unreadNotifications
-        : store.notifications) ?? []; // Show max 20 in dropdown
+    const displayedNotifications = store.filteredNotifications;
+
+    const dateOptions: SelectOption[] = [
+      { value: 'all', label: 'За все время' },
+      { value: 'today', label: 'За этот день' },
+      { value: 'week', label: 'За эту неделю' },
+      { value: 'month', label: 'За этот месяц' }
+    ];
 
     return (
       <>
@@ -131,14 +148,39 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                 У вас {unreadNotificationsLabel}
               </p>
             )}
+            <p className={styles.totalCountLabel}>
+              Всего: {num_decline(store.totalCount, ["уведомление", "уведомления", "уведомлений"])}
+            </p>
           </div>
 
           {/* Content */}
           <div
+            ref={contentRef}
+            onScroll={handleScroll}
             className={styles.content}
             style={{ maxHeight }}
             data-testid="notification-list"
           >
+            {/* Search and Filter Input */}
+            <div className={styles.searchWrapper}>
+              <div className={styles.searchRow}>
+                <input
+                  type="text"
+                  placeholder="Поиск уведомлений..."
+                  className={styles.searchInput}
+                  value={store.searchQuery}
+                  onChange={(e) => store.setSearchQuery(e.target.value)}
+                />
+                <Select
+                  options={dateOptions}
+                  value={store.filters.dateRange || 'all'}
+                  onChange={(val) => store.setFilters({ dateRange: val as any })}
+                  icon={Calendar}
+                  className={styles.dateFilter}
+                />
+              </div>
+            </div>
+
             {store.isLoading ? (
               <div className={styles.loading}>
                 <Loader2 className={styles.spinner} />
@@ -162,23 +204,14 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> =
                 />
               ))
             )}
+            {store.isLoading && store.notifications.length > 0 && (
+              <div className={styles.loadingMore}>
+                <Loader2 className={`${styles.spinner} w-4 h-4`} />
+              </div>
+            )}
           </div>
 
-          {/* Footer */}
-          {!store.isLoading && displayedNotifications.length > 0 && (
-            <div className={styles.footer}>
-              <button
-                onClick={() => {
-                  store.closeDropdown();
-                  // Could navigate to full notifications page here
-                }}
-                className={styles.viewAllButton}
-                data-testid="notification-view-all"
-              >
-                Показать все уведомления
-              </button>
-            </div>
-          )}
+          {/* Footer removed as per requirements */}
 
           {/* SignalR connection status */}
           {!store.isSignalRConnected && (

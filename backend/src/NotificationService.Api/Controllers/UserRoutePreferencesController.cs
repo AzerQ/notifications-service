@@ -13,10 +13,12 @@ namespace NotificationService.Api.Controllers;
 public class UserRoutePreferencesController : ControllerBase
 {
     private readonly IUserRoutePreferenceRepository _repo;
+    private readonly ILogger<UserRoutePreferencesController> _logger;
 
-    public UserRoutePreferencesController(IUserRoutePreferenceRepository repo)
+    public UserRoutePreferencesController(IUserRoutePreferenceRepository repo, ILogger<UserRoutePreferencesController> logger)
     {
         _repo = repo;
+        _logger = logger;
     }
 
     /// <summary>
@@ -57,6 +59,7 @@ public class UserRoutePreferencesController : ControllerBase
         // Permission check: user can only update their own preferences
         if (currentUserId != userId && !User.IsAdmin())
         {
+            _logger.LogWarning("User {UserId} attempted to update preferences for user {TargetUserId}", currentUserId, userId);
             return Forbid();
         }
 

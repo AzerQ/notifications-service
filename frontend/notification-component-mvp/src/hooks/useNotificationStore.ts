@@ -3,7 +3,7 @@ import { NotificationStore } from '../store/NotificationStore';
 import { createNotificationApiClient } from '../services/apiClient';
 import { createSignalRService } from '../services/signalRService';
 import { useAuthentication } from './useAuthentication';
-import type { NotificationComponentConfig } from '../types';
+import type { NotificationComponentConfig } from '../index';
 
 /**
  * Hook to create and manage notification store with automatic authentication
@@ -15,7 +15,8 @@ export function useNotificationStore(config: NotificationComponentConfig) {
   const authentication = useAuthentication({
     apiBaseUrl: config.apiBaseUrl,
     autoAuthenticate: true,
-    userEmail: config.userEmail, // Передаем email если доступен
+    userEmail: config.userEmail,
+    enabledMethods: config.enabledAuthMethods,
     onAuthSuccess: async (tokens) => {
       console.log('[NotificationStore] Authentication successful');
 
@@ -49,26 +50,18 @@ export function useNotificationStore(config: NotificationComponentConfig) {
   const [store] = useState(() => {
     const apiClient = createNotificationApiClient(
       config.apiBaseUrl,
-      config.accessToken,
+      undefined,
       authentication.authService // Pass auth service for automatic re-auth
     );
 
     const signalRService = createSignalRService({
       hubUrl: config.signalRHubUrl,
-      accessToken: config.accessToken,
+      accessToken: undefined,
       autoReconnect: true,
     });
 
     return new NotificationStore(apiClient, signalRService);
   });
-
-  // Update access token when it changes from external source
-  useEffect(() => {
-    if (config.accessToken) {
-      store['apiClient'].setAccessToken(config.accessToken);
-      store['signalRService'].updateAccessToken(config.accessToken);
-    }
-  }, [config.accessToken, store]);
 
   // Cleanup on unmount
   useEffect(() => {

@@ -6,7 +6,52 @@ The project is organized according to **Clean Architecture** principles with cle
 
 ### High-Level Diagram
 
-![Overall Architecture](./diagrams/OVERALL_ARCHITECTURE.puml.md)
+```mermaid
+graph TD
+    subgraph Presentation_Layer ["Presentation Layer"]
+        REST["REST API Controllers"]
+        SIGNALR["SignalR Hub (Real-time)"]
+    end
+
+    subgraph Application_Layer ["Application Layer"]
+        APP_SERVICES["Command/Query Services"]
+        SENDER["Notification Sender"]
+        APP_SUPPORT["Data Resolvers & Mappers"]
+    end
+
+    subgraph Domain_Layer ["Domain Layer"]
+        DOMAIN["Models, Interfaces & Validators"]
+    end
+
+    subgraph Infrastructure_Layer ["Infrastructure Layer"]
+        EF_CORE["EF Core Repositories"]
+        EMAIL["Email Provider (SMTP)"]
+        TEMPLATE["Template Renderer"]
+    end
+
+    subgraph External_Systems ["External Systems"]
+        DB[("SQLite DB")]
+        SMTP["SMTP Server"]
+    end
+
+    REST --> APP_SERVICES
+    SIGNALR --> APP_SERVICES
+    APP_SERVICES --> SENDER
+    APP_SERVICES --> APP_SUPPORT
+    APP_SUPPORT --> DOMAIN
+    SENDER --> DOMAIN
+    DOMAIN --> EF_CORE
+    DOMAIN --> EMAIL
+    DOMAIN --> TEMPLATE
+    EF_CORE --> DB
+    EMAIL --> SMTP
+
+    style Presentation_Layer fill:#e1f5fe,stroke:#01579b
+    style Application_Layer fill:#f3e5f5,stroke:#4a148c
+    style Domain_Layer fill:#e8f5e9,stroke:#1b5e20
+    style Infrastructure_Layer fill:#fff3e0,stroke:#e65100
+    style External_Systems fill:#f1f8e9,stroke:#33691e
+```
 
 The system consists of 4 main layers:
 
@@ -30,7 +75,80 @@ The system consists of 4 main layers:
 - **Provider Interfaces:** `IEmailProvider`, `ISmsProvider`, `IPushNotificationProvider`
 - **Configuration Interfaces:** `INotificationRouteConfiguration`
 
-[Detailed Domain Layer Diagram](./diagrams/DOMAIN_LAYER.puml.md)
+#### Domain Layer Diagram
+
+```mermaid
+classDiagram
+    class Notification {
+        +Guid Id
+        +string Title
+        +string Message
+        +string Route
+        +DateTime CreatedAt
+        +User Recipient
+        +NotificationTemplate Template
+        +List~NotificationMetadataField~ Metadata
+        +List~NotificationChannelDeliveryStatus~ DeliveryChannelsState
+    }
+
+    class User {
+        +Guid Id
+        +string Username
+        +string Email
+        +string? PhoneNumber
+        +string? DeviceToken
+    }
+
+    class NotificationTemplate {
+        +Guid Id
+        +string Name
+        +string Subject
+        +string Content
+    }
+
+    class NotificationMetadataField {
+        +Guid Id
+        +string Key
+        +string Value
+        +string? Description
+    }
+
+    class NotificationChannelDeliveryStatus {
+        +Guid Id
+        +NotificationChannel Channel
+        +NotificationDeliveryStatus Status
+    }
+
+    class UserRoutePreference {
+        +Guid Id
+        +Guid UserId
+        +string Route
+        +bool IsEnabled
+    }
+
+    class NotificationChannel {
+        <<enumeration>>
+        Email
+        Sms
+        Push
+    }
+
+    class NotificationDeliveryStatus {
+        <<enumeration>>
+        Pending
+        Sent
+        Failed
+        Skipped
+    }
+
+    Notification --> User
+    Notification --> NotificationTemplate
+    Notification --> NotificationMetadataField
+    Notification --> NotificationChannelDeliveryStatus
+    NotificationChannelDeliveryStatus --> NotificationChannel
+    NotificationChannelDeliveryStatus --> NotificationDeliveryStatus
+    UserRoutePreference --> User
+```
 
 ### 2. NotificationService.Application (Application Layer)
 
@@ -45,7 +163,46 @@ The system consists of 4 main layers:
 - **Mapping:** `NotificationMapper` — transformation between models and DTOs
 - **DTOs:** `NotificationRequest`, `NotificationResponseDto`, `UserDto`
 
-[Detailed Application Layer Diagram](./diagrams/APPLICATION_LAYER.puml.md)
+#### Application Layer Diagram
+
+```mermaid
+classDiagram
+    class NotificationCommandService {
+        +ProcessNotificationRequestAsync(request) Task
+    }
+
+    class NotificationQueryService {
+        +GetByIdAsync(id) Task
+        +GetByUserAsync(userId) Task
+        +GetByStatusAsync(status) Task
+    }
+
+    class NotificationSender {
+        +SendAsync(notification) Task
+    }
+
+    class NotificationRoutesContext {
+        +RegisterRoute(route, resolver, config)
+        +GetDataResolverForRoute(route) INotificationDataResolver
+        +GetNotificationRouteConfiguration(route) INotificationRouteConfiguration
+    }
+
+    class NotificationMapper {
+        +MapFromRequest(request, resolver, template) Task
+        +MapToResponse(notifications) NotificationResponseDto
+    }
+
+    class INotificationDataResolver {
+        <<interface>>
+        +ResolveRecipientsAsync(parameters) Task
+        +ResolveTemplateDataAsync(recipient, parameters) Task
+    }
+
+    NotificationCommandService --> NotificationRoutesContext
+    NotificationCommandService --> NotificationSender
+    NotificationCommandService --> NotificationMapper
+    NotificationSender --> INotificationDataResolver
+```
 
 ### 3. NotificationService.Infrastructure (Infrastructure Layer)
 
@@ -60,7 +217,24 @@ The system consists of 4 main layers:
 - **Template Rendering:** `HandlebarsTemplateRenderer`, `FileSystemTemplateProvider`
 - **DB Initialization:** `DbInitializer`, migrations
 
-[Detailed Infrastructure Layer Diagram](./diagrams/INFRASTRUCTURE_LAYER.puml.md)
+#### Infrastructure Layer Diagram
+
+```mermaid
+graph LR
+    subgraph Data_Access ["Data Access"]
+        DB_CONTEXT["NotificationDbContext"]
+        REPO["Repositories"]
+    end
+
+    subgraph Providers ["External Providers"]
+        SMTP["SmtpEmailProvider"]
+        TEMPLATE["HandlebarsTemplateRenderer"]
+    end
+
+    REPO --> DB_CONTEXT
+    DB_CONTEXT --> SQLITE[("SQLite DB")]
+    SMTP --> SMTP_SERVER["SMTP Server"]
+```
 
 ### 4. NotificationService.Api (API Layer)
 
@@ -74,7 +248,25 @@ The system consists of 4 main layers:
 - **Middleware:** `ErrorHandlingMiddleware` for error handling
 - **DI Configuration:** registration of all services
 
-[Detailed API Layer Diagram](./diagrams/API_LAYER.puml.md)
+#### API Layer Diagram
+
+```mermaid
+graph TD
+    subgraph Controllers
+        NC["NotificationController"]
+        UC["UsersController"]
+        URPC["UserRoutePreferencesController"]
+    end
+
+    subgraph RealTime ["Real-time"]
+        HUB["NotificationHub (SignalR)"]
+    end
+
+    NC --> APP["Application Services"]
+    UC --> REPO["Repositories"]
+    URPC --> REPO
+    HUB --> APP
+```
 
 ### 5. NotificationService.TestHandlers (Test Handlers)
 
@@ -108,7 +300,77 @@ MyNotification/
 
 ### Data Flow (Vertical Slice)
 
-[Data flow diagram during notification processing](./diagrams/DATA_FLOW.puml.md)
+```mermaid
+sequenceDiagram
+    participant Client as HTTP Client
+    participant Controller as NotificationController
+    participant CommandService as NotificationCommandService
+    participant RoutesContext as NotificationRoutesContext
+    participant DataResolver as INotificationDataResolver
+    participant Mapper as NotificationMapper
+    participant Repository as INotificationRepository
+    participant Sender as NotificationSender
+    participant EmailProvider as IEmailProvider
+
+    Client->>Controller: 1. POST /api/notification (NotificationRequest)
+    activate Controller
+    
+    Controller->>CommandService: 2. ProcessNotificationRequestAsync(request)
+    activate CommandService
+    
+    CommandService->>RoutesContext: 3. GetDataResolverForRoute(route)
+    activate RoutesContext
+    RoutesContext-->>CommandService: DataResolver instance
+    deactivate RoutesContext
+    
+    CommandService->>RoutesContext: 4. GetNotificationRouteConfiguration(route)
+    activate RoutesContext
+    RoutesContext-->>CommandService: RouteConfiguration
+    deactivate RoutesContext
+    
+    CommandService->>Mapper: 5. MapFromRequest(request, resolver, template)
+    activate Mapper
+    
+    Mapper->>DataResolver: 6. ResolveRecipientsAsync(parameters)
+    activate DataResolver
+    DataResolver-->>Mapper: List<User>
+    deactivate DataResolver
+    
+    Mapper->>DataResolver: 7. ResolveTemplateDataAsync(recipient, parameters)
+    activate DataResolver
+    DataResolver-->>Mapper: Dictionary<string, object>
+    deactivate DataResolver
+    
+    Mapper-->>CommandService: 8. List<Notification>
+    deactivate Mapper
+    
+    CommandService->>Repository: 9. SaveNotificationsAsync(notifications)
+    activate Repository
+    Repository-->>CommandService: Saved
+    deactivate Repository
+    
+    CommandService->>Sender: 10. SendAsync(notification)
+    activate Sender
+    
+    Sender->>EmailProvider: 11. SendEmailAsync(to, subject, body)
+    activate EmailProvider
+    EmailProvider-->>Sender: true/false
+    deactivate EmailProvider
+    
+    Sender->>Repository: 12. UpdateNotificationsAsync(notification)
+    activate Repository
+    Repository-->>Sender: Updated
+    deactivate Repository
+    
+    Sender-->>CommandService: Completed
+    deactivate Sender
+    
+    CommandService-->>Controller: 13. NotificationResponseDto
+    deactivate CommandService
+    
+    Controller-->>Client: 14. 200 OK + Response
+    deactivate Controller
+```
 
 **Main Stages:**
 1. HTTP request arrives at controller

@@ -66,7 +66,7 @@ public class NotificationController(
     [HttpGet("personal")]
     [ProducesResponseType(typeof(UserNotificationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IReadOnlyCollection<NotificationResponseDto>>> GetUserNotifications([FromQuery] GetUserNotificationsRequest userNotificationsRequest)
+    public async Task<ActionResult<UserNotificationsResponse>> GetUserNotifications([FromQuery] GetUserNotificationsRequest userNotificationsRequest)
     {
       var currentUserId = User.GetApplicationUser().Id;
       var result = await queryService.GetUserNotifications(currentUserId, userNotificationsRequest);

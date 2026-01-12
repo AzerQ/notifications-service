@@ -100,12 +100,13 @@ public class NotificationQueryService(
     /// <param name="userId">Идентификатор пользователя</param>
     /// <param name="userNotificationsRequest">Запрос пользователя на уведомления</param>
     /// <returns>Коллекция DTO уведомлений пользователя</returns>
-    public async Task<IReadOnlyCollection<AppNotification>> GetUserNotifications(Guid userId,
+    public async Task<UserNotificationsResponse> GetUserNotifications(Guid userId,
         GetUserNotificationsRequest userNotificationsRequest)
     {
-        var notifications = GetOnlyInAppSentNotifications(await notificationRepository.GetUserNotificationsAsync(userId, userNotificationsRequest));
+        var (dbNotifications, totalCount) = await notificationRepository.GetUserNotificationsAsync(userId, userNotificationsRequest);
+        var notifications = GetOnlyInAppSentNotifications(dbNotifications);
 
-        var allNotificationRoutes = notificationRoutesService.GetAllNotificationRoutesConfigurations();       
+        var allNotificationRoutes = notificationRoutesService.GetAllNotificationRoutesConfigurations();
         
         var distinctRoutesConfigurations = notifications
                             .Select(n => n.Route)
@@ -114,7 +115,13 @@ public class NotificationQueryService(
                             .Where(route => route is not null)
                             .ToDictionary(route => route!.Name, v => v!);
 
-        return [.. notifications.Select(n => inAppNotificationMapper.Map(n, distinctRoutesConfigurations[n.Route]))];
+        var mappedNotifications = notifications.Select(n => inAppNotificationMapper.Map(n, distinctRoutesConfigurations[n.Route])).ToList();
 
+        return new UserNotificationsResponse
+        {
+            Notifications = mappedNotifications,
+            Request = userNotificationsRequest,
+            TotalItemsCount = totalCount
+        };
     }
 }

@@ -1,7 +1,8 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, computed } from 'mobx';
 import type { Notification, NotificationFilters, UserRoutePreference, UserPreferenceDto } from '../types';
 import type { NotificationApiClient } from '../services/apiClient';
 import type { SignalRNotificationService } from '../services/signalRService';
+import type { NotificationWidgetAPIImpl } from '../services/PublicApi';
 
 const getDefaultFilters: () => NotificationFilters = () => ({
   onlyUnread: true
@@ -39,11 +40,35 @@ export class NotificationStore {
   // Callback for showing toast notifications
   private showToastCallback?: (notification: Notification) => void;
 
+  // Public API instance
+  public api?: NotificationWidgetAPIImpl;
+
+  // Search query for client-side filtering
+  searchQuery = '';
+
   constructor(
     private apiClient: NotificationApiClient,
     private signalRService: SignalRNotificationService
   ) {
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      unreadCount: computed,
+      unreadNotifications: computed,
+      filteredNotifications: computed
+    });
+  }
+
+  /**
+   * Set Public API instance
+   */
+  setApi(api: NotificationWidgetAPIImpl): void {
+    this.api = api;
+  }
+
+  /**
+   * Update search query
+   */
+  setSearchQuery(query: string): void {
+    this.searchQuery = query;
   }
 
   /**
@@ -116,6 +141,36 @@ pageSize: this.pageSize,
   }
 
   /**
+   * Load more notifications (Infinite Scroll)
+   */
+  async loadMore(): Promise<void> {
+    if (this.isLoading || this.notifications.length >= this.totalCount) {
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      const nextPage = this.currentPage + 1;
+      const response = await this.apiClient.getNotifications({
+        page: nextPage,
+        pageSize: this.pageSize,
+        filters: this.filters
+      });
+
+      runInAction(() => {
+        this.notifications = [...this.notifications, ...response.notifications];
+        this.currentPage = nextPage;
+        this.isLoading = false;
+      });
+    } catch (error) {
+      console.error('[NotificationStore] Failed to load more notifications:', error);
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
+  }
+
+  /**
    * Connect to SignalR for real-time updates
    */
   private async connectSignalR(): Promise<void> {
@@ -163,6 +218,9 @@ pageSize: this.pageSize,
       this.notifications.unshift(notification);
       this.totalCount += 1;
     });
+
+    // Emit event via Public API
+    this.api?.emit('newNotification', notification);
   }
 
   /**
@@ -221,8 +279,37 @@ pageSize: this.pageSize,
   /**
    * Set filters and reload
    */
-  setFilters(filters: NotificationFilters): void {
-    this.filters = filters;
+  setFilters(filters: Partial<NotificationFilters>): void {
+    this.filters = { ...this.filters, ...filters };
+    
+    // Handle date range filtering
+    if (filters.dateRange) {
+      const now = new Date();
+      let fromDate: Date | undefined;
+
+      switch (filters.dateRange) {
+        case 'today':
+          fromDate = new Date(now.setHours(0, 0, 0, 0));
+          break;
+        case 'week':
+          const day = now.getDay();
+          const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+          fromDate = new Date(now.setDate(diff));
+          fromDate.setHours(0, 0, 0, 0);
+          break;
+        case 'month':
+          fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case 'all':
+        default:
+          fromDate = undefined;
+          break;
+      }
+
+      this.filters.fromDate = fromDate?.toISOString();
+      this.filters.toDate = undefined; // Clear toDate when using quick filters
+    }
+
     this.currentPage = 1;
     this.loadNotifications();
   }
@@ -276,6 +363,27 @@ pageSize: this.pageSize,
    */
   get hasUnread(): boolean {
     return this.unreadCount > 0;
+  }
+
+  /**
+   * Computed: filtered notifications based on search query and category
+   */
+  get filteredNotifications(): Notification[] {
+    let result = this.notifications;
+
+    if (this.filters.category) {
+      result = result.filter(n => (n.type || n.category) === this.filters.category);
+    }
+
+    if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
+      result = result.filter(n =>
+        n.title.toLowerCase().includes(query) ||
+        n.content.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
   }
 
   /**

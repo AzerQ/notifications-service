@@ -6,20 +6,32 @@ export type {
   NotificationFilters,
   GetNotificationsParams,
   SignalRConfig,
-  NotificationComponentConfig,
   UserRoutePreference,
   UserPreferenceDto,
   UserRoutePreferenceView
 } from './types';
 
-export const config = {
+export const config: NotificationComponentConfig = {
     apiBaseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5093',
     signalRHubUrl: import.meta.env.VITE_SIGNALR_URL || 'http://localhost:5093/notificationHub',
-    accessToken: import.meta.env.VITE_ACCESS_TOKEN,
     iconsTheme: (import.meta.env.VITE_ICONS_THEME || 'light') as NotificationsIconsTheme,
+    enabledAuthMethods: (import.meta.env.VITE_ENABLED_AUTH_METHODS?.split(',') as any) || ['windows', 'email'],
   };
 
 export type NotificationsIconsTheme = 'light' | 'dark';
+
+/**
+ * Notification component configuration
+ */
+export interface NotificationComponentConfig {
+  apiBaseUrl: string;
+  signalRHubUrl: string;
+  iconsTheme?: NotificationsIconsTheme;
+  enabledAuthMethods?: Array<'windows' | 'email'>;
+  onNotificationClick?: (notification: any) => void;
+  onEmailCodeRequired?: (email: string, challengeId: string) => void;
+  userEmail?: string;
+}
 
 // Components
 export { NotificationComponent } from './components/NotificationComponent';

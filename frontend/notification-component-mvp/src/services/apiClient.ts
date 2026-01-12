@@ -141,29 +141,19 @@ export class NotificationApiClient {
   ): Promise<PaginatedNotifications> {
     const { page = 1, pageSize = 50, filters } = params || {};
     
-    const response = await this.client.get<Notification[]>(
-      `/api/notification/personal`, 
+    const response = await this.client.get<PaginatedNotifications>(
+      `/api/notification/personal`,
       {
- params: {
-    pageNumber: page,
+        params: {
+          pageNumber: page,
           pageSize,
           onlyUnread: filters?.onlyUnread,
-  ...filters
-   }
+          ...filters
+        }
       }
     );
     
-  // Backend returns array directly, wrap it in PaginatedNotifications format
-    const notifications = response.data;
-    
-    return {
-  notifications,
-      totalItemsCount: notifications.length,
-      request: {
-        pageNumber: page,
-        pageSize
-      }
-};
+    return response.data;
   }
 
   async setReadFlag(notificationId: string, flagValue: boolean) {
@@ -214,7 +204,7 @@ export class NotificationApiClient {
     
     // Convert UserRoutePreferenceView to UserRoutePreference
     return response.data.map(pref => ({
-      id: pref.id || '',
+      id: pref.id,
       userId: pref.userId,
       route: pref.route,
       enabled: pref.enabled,
