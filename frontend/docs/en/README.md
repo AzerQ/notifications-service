@@ -218,7 +218,7 @@ VITE_SIGNALR_URL=http://localhost:5093/notificationHub
 VITE_ENABLED_AUTH_METHODS=windows,email
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 npm test
