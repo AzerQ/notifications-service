@@ -44,7 +44,20 @@ graph TD
 ### ⚙️ Конфигурация
 - [Руководство по конфигурации](CONFIGURATION_RU.md)
 
-## Быстрый старт
+## 🐳 Развертывание в Docker (Рекомендуется)
+
+Самый простой способ запустить весь стек (Бэкенд, Фронтенд и Почтовый сервер) — использовать Docker Compose:
+
+1.  **Запуск сервисов**:
+    ```bash
+    docker-compose up -d
+    ```
+2.  **Доступ к приложениям**:
+    - **Backend API**: [http://localhost:5093](http://localhost:5093)
+    - **Frontend Demo**: [http://localhost:8080](http://localhost:8080)
+    - **Mail Server (smtp4dev)**: [http://localhost:5000](http://localhost:5000)
+
+## Быстрый старт (Локальная разработка)
 
 1. **Бэкенд**: Перейдите в `backend/`, выполните `dotnet run --project src/NotificationService.Api`.
 2. **Фронтенд**: Перейдите в `frontend/notification-component-mvp/`, выполните `npm install` и `npm run dev`.

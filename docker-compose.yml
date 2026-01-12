@@ -1,0 +1,38 @@
+services:
+  notification-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5093:5093"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Notifications=Data Source=/app/data/notifications.db
+      - JwtSettings__SecretKey=DOCKER_DEVELOPMENT_SECRET_KEY_32_CHARS_MIN
+      - Email__SmtpHost=mail-server
+      - Email__SmtpPort=1025
+      - Email__EnableSsl=false
+    volumes:
+      - ./backend-data:/app/data
+      - ./backend/src/NotificationService.Api/Notifications:/app/Notifications
+    depends_on:
+      - mail-server
+
+  notification-frontend:
+    build:
+      context: ./frontend/notification-component-mvp
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_API_URL=http://localhost:5093
+      - VITE_SIGNALR_URL=http://localhost:5093/notificationHub
+    depends_on:
+      - notification-backend
+
+  mail-server:
+    image: rnwood/smtp4dev:v3
+    ports:
+      - "5000:80" # Web UI
+      - "1025:25" # SMTP port
+    restart: always

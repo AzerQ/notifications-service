@@ -44,7 +44,20 @@ graph TD
 ### ⚙️ Configuration
 - [Configuration Guide](CONFIGURATION.md)
 
-## Quick Start
+## 🐳 Docker Deployment (Recommended)
+
+The easiest way to run the entire stack (Backend, Frontend, and Mail Server) is using Docker Compose:
+
+1.  **Start the services**:
+    ```bash
+    docker-compose up -d
+    ```
+2.  **Access the applications**:
+    - **Backend API**: [http://localhost:5093](http://localhost:5093)
+    - **Frontend Demo**: [http://localhost:8080](http://localhost:8080)
+    - **Mail Server (smtp4dev)**: [http://localhost:5000](http://localhost:5000)
+
+## Quick Start (Local Development)
 
 1. **Backend**: Navigate to `backend/`, run `dotnet run --project src/NotificationService.Api`.
 2. **Frontend**: Navigate to `frontend/notification-component-mvp/`, run `npm install` and `npm run dev`.
